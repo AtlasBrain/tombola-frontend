@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { formatSol, formatCountdown, formatTickets } from "./format";
+import {
+  formatSol,
+  formatCountdown,
+  formatTickets,
+  formatSolCompact,
+} from "./format";
 
 describe("formatSol", () => {
   it("renders whole-SOL amounts without a decimal", () => {
@@ -68,5 +73,28 @@ describe("formatTickets", () => {
     expect(formatTickets(0n)).toBe("0");
     expect(formatTickets(1n)).toBe("1");
     expect(formatTickets(10_000n)).toBe("10000");
+  });
+});
+
+describe("formatSolCompact", () => {
+  it("falls back to formatSol below 1k whole SOL", () => {
+    expect(formatSolCompact(0n)).toBe("0 SOL");
+    expect(formatSolCompact(1_000_000_000n)).toBe("1 SOL");
+    expect(formatSolCompact(999_000_000_000n)).toBe("999 SOL");
+  });
+
+  it("uses K SOL for 1k–999k whole SOL", () => {
+    expect(formatSolCompact(1_000_000_000_000n)).toBe("1.0 K SOL");
+    expect(formatSolCompact(12_500_000_000_000n)).toBe("12.5 K SOL");
+    expect(formatSolCompact(999_000_000_000_000n)).toBe("999.0 K SOL");
+  });
+
+  it("uses M SOL for 1M–999M whole SOL", () => {
+    expect(formatSolCompact(1_000_000_000_000_000n)).toBe("1.0 M SOL");
+    expect(formatSolCompact(1_500_000_000_000_000n)).toBe("1.5 M SOL");
+  });
+
+  it("uses B SOL for >= 1B whole SOL", () => {
+    expect(formatSolCompact(1_000_000_000_000_000_000n)).toBe("1.0 B SOL");
   });
 });

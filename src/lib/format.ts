@@ -48,3 +48,16 @@ export function formatCountdown(targetUnix: number, nowUnix: number): string {
 export function formatTickets(n: bigint): string {
   return n.toString();
 }
+
+/**
+ * Compact SOL formatter for tight UI slots (header pills, etc.). Falls back
+ * to formatSol below 1k SOL; uses K/M/B suffix above. Localnet test wallets
+ * with 1M SOL render as "1.0 M SOL" instead of "1000000 SOL".
+ */
+export function formatSolCompact(lamports: bigint): string {
+  const wholeSol = lamports / LAMPORTS_PER_SOL;
+  if (wholeSol < 1_000n) return formatSol(lamports);
+  if (wholeSol < 1_000_000n) return `${(Number(wholeSol) / 1_000).toFixed(1)} K SOL`;
+  if (wholeSol < 1_000_000_000n) return `${(Number(wholeSol) / 1_000_000).toFixed(1)} M SOL`;
+  return `${(Number(wholeSol) / 1_000_000_000).toFixed(1)} B SOL`;
+}
