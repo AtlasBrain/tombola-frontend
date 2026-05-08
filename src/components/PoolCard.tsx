@@ -1,5 +1,6 @@
 import { Countdown } from "./Countdown";
 import { BuyTicketButton } from "./BuyTicketButton";
+import { FlashOnChange } from "./FlashOnChange";
 import { formatSol, formatTickets } from "@/lib/format";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import type { PoolView } from "@/lib/mock-pools";
@@ -50,14 +51,20 @@ export function PoolCard({ pool }: { pool: PoolView }) {
       <div>
         <div className="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
         <div className="text-3xl font-bold text-emerald-400">
-          {formatSol(pool.totalPotLamports)}
+          <FlashOnChange value={pool.totalPotLamports.toString()}>
+            {formatSol(pool.totalPotLamports)}
+          </FlashOnChange>
         </div>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <dt className="text-neutral-500">Tickets</dt>
-          <dd className="font-medium text-neutral-200">{formatTickets(pool.totalTickets)}</dd>
+          <dd className="font-medium text-neutral-200">
+            <FlashOnChange value={pool.totalTickets.toString()}>
+              {formatTickets(pool.totalTickets)}
+            </FlashOnChange>
+          </dd>
         </div>
         <div>
           <dt className="text-neutral-500">{closed ? "Closed" : "Closes in"}</dt>
