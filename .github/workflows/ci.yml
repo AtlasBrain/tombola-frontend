@@ -1,0 +1,49 @@
+name: CI
+
+# Runs on every PR against main and on every push to main itself.
+# Mirrors the local hygiene gate: install → lint → test → build.
+# All four steps run with Node 22 because the SDK's ESM imports break on 24.
+#
+# Vercel handles the deploy preview separately; this workflow exists to catch
+# regressions before merge so we don't push a broken main and trigger a bad
+# Vercel deploy.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel in-flight runs when a new commit lands on the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Tell the build it's targeting devnet by default. Production
+          # values come from Vercel env, not from CI; this just keeps the
+          # build's clusterApiUrl fallback consistent across runs.
+          NEXT_PUBLIC_SOLANA_RPC_URL: https://api.devnet.solana.com

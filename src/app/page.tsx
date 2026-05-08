@@ -7,6 +7,7 @@ import { MyTickets } from "@/components/MyTickets";
 import { NetworkPill } from "@/components/NetworkPill";
 import { PoolCard } from "@/components/PoolCard";
 import { RecentWinners } from "@/components/RecentWinners";
+import { WalletBalance } from "@/components/WalletBalance";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
 import { clusterLabelFor, explorerAddressUrl } from "@/lib/explorer-url";
@@ -54,7 +55,10 @@ export default async function Home() {
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-            <NetworkPill />
+            <div className="flex items-center gap-2">
+              <NetworkPill />
+              <WalletBalance />
+            </div>
             <ConnectWalletButton />
           </div>
         </div>
