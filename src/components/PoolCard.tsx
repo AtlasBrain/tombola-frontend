@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { BuyTicketButton } from "./BuyTicketButton";
 import { FlashOnChange } from "./FlashOnChange";
@@ -23,7 +24,14 @@ export function PoolCard({ pool }: { pool: PoolView }) {
     <div className="group flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 shadow-lg backdrop-blur-sm transition duration-200 hover:border-neutral-700 hover:bg-neutral-900/70 hover:shadow-xl hover:shadow-emerald-500/5 focus-within:border-emerald-500/40 focus-within:ring-2 focus-within:ring-emerald-500/20">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="text-xl font-semibold tracking-tight">{pool.kind}</h3>
+          <h3 className="text-xl font-semibold tracking-tight">
+            <Link
+              href={`/pool/${pool.kind.toLowerCase()}/${pool.round.toString()}`}
+              className="transition-colors hover:text-emerald-100"
+            >
+              {pool.kind}
+            </Link>
+          </h3>
           <p className="text-sm text-neutral-500">
             Round #{pool.round.toString()}
             {pool.poolAddress && (
