@@ -6,7 +6,9 @@ import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { MyTickets } from "@/components/MyTickets";
 import { NetworkPill } from "@/components/NetworkPill";
 import { PoolCard } from "@/components/PoolCard";
+import { PoolComparisonChart } from "@/components/PoolComparisonChart";
 import { RecentWinners } from "@/components/RecentWinners";
+import { StatsBar } from "@/components/StatsBar";
 import { WalletBalance } from "@/components/WalletBalance";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
@@ -64,7 +66,11 @@ export default async function Home() {
         </div>
       </header>
 
+      <StatsBar pools={pools} />
+
       <HowItWorks />
+
+      <PoolComparisonChart pools={pools} />
 
       <main>
         <div className="mb-6 flex items-end justify-between">
