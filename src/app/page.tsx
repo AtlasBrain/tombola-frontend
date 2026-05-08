@@ -1,4 +1,5 @@
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+import { HowItWorks } from "@/components/HowItWorks";
 import { PoolCard } from "@/components/PoolCard";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
@@ -37,6 +38,8 @@ export default async function Home() {
           </div>
         </div>
       </header>
+
+      <HowItWorks />
 
       <main>
         <div className="mb-6 flex items-end justify-between">
