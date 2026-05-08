@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
@@ -26,7 +25,6 @@ export function BuyTicketButton({
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
-  const router = useRouter();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -57,7 +55,8 @@ export function BuyTicketButton({
         { signature: sig, blockhash, lastValidBlockHeight },
         "confirmed",
       );
-      router.refresh();
+      // No router.refresh() here — LivePoolWatcher's accountSubscribe
+      // picks up the pool mutation and triggers the refetch (debounced).
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setErr(msg);
@@ -65,7 +64,7 @@ export function BuyTicketButton({
     } finally {
       setBusy(false);
     }
-  }, [connection, publicKey, sendTransaction, poolType, round, qty, router]);
+  }, [connection, publicKey, sendTransaction, poolType, round, qty]);
 
   if (closed) {
     return (

@@ -2,6 +2,7 @@ import { PROGRAM_ID } from "@tombola/sdk";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { FaqSection } from "@/components/FaqSection";
 import { HowItWorks } from "@/components/HowItWorks";
+import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { PoolCard } from "@/components/PoolCard";
 import { RecentWinners } from "@/components/RecentWinners";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
@@ -28,9 +29,18 @@ async function loadPools(): Promise<{ pools: PoolView[]; source: PoolSource }> {
 
 export default async function Home() {
   const { pools, source } = await loadPools();
+  const watchedAddresses =
+    source === "live"
+      ? pools
+          .map((p) => p.poolAddress)
+          .filter((a): a is string => typeof a === "string")
+      : [];
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
+      {watchedAddresses.length > 0 && (
+        <LivePoolWatcher addresses={watchedAddresses} rpcUrl={RPC_URL} />
+      )}
       <header className="mb-12 sm:mb-20">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
