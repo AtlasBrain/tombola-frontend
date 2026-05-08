@@ -6,6 +6,7 @@ import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import { RaffleClient, type PoolTypeValue } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { formatSol } from "@/lib/format";
+import { useToast } from "./Toast";
 
 interface Props {
   poolType: PoolTypeValue;
@@ -25,6 +26,7 @@ export function BuyTicketButton({
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
+  const { push: pushToast } = useToast();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -57,14 +59,19 @@ export function BuyTicketButton({
       );
       // No router.refresh() here — LivePoolWatcher's accountSubscribe
       // picks up the pool mutation and triggers the refetch (debounced).
+      pushToast(
+        "success",
+        `Bought ${qty} ticket${qty === 1 ? "" : "s"} ✓`,
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setErr(msg);
+      pushToast("error", msg.length > 100 ? msg.slice(0, 100) + "…" : msg);
       console.error("buy ticket failed:", e);
     } finally {
       setBusy(false);
     }
-  }, [connection, publicKey, sendTransaction, poolType, round, qty]);
+  }, [connection, publicKey, sendTransaction, poolType, round, qty, pushToast]);
 
   if (closed) {
     return (
