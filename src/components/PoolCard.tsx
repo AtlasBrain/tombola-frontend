@@ -59,9 +59,8 @@ export function PoolCard({ pool }: { pool: PoolView }) {
         type="button"
         disabled
         className="mt-2 w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
-        title="Wallet connect ships in Phase 2"
       >
-        {closed ? "Round closed" : "Buy ticket — Phase 2"}
+        {closed ? "Round closed" : "Buy ticket — coming soon"}
       </button>
     </div>
   );
