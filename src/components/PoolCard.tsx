@@ -75,7 +75,12 @@ export function PoolCard({ pool }: { pool: PoolView }) {
         </div>
       </dl>
 
-      <BuyTicketButton poolType={pool.poolType} round={pool.round} closed={closed} />
+      <BuyTicketButton
+        poolType={pool.poolType}
+        round={pool.round}
+        ticketPriceLamports={pool.ticketPriceLamports}
+        closed={closed}
+      />
     </div>
   );
 }
