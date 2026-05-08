@@ -5,76 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tombola — Redesign v1 (mockup)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        background: #0a0a0a;
-        color: #e5e5e5;
-        font-family:
-          ui-sans-serif,
-          system-ui,
-          -apple-system,
-          "Segoe UI",
-          sans-serif;
+      :root {
+        --lime: #c0f61c;
+        --lime-dim: #c0f61c33;
+        --bg: #000;
       }
+      html, body {
+        background: var(--bg);
+        color: #f5f5f5;
+        font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+        font-feature-settings: "ss01", "ss02";
+      }
+      .font-mono { font-family: "Space Mono", ui-monospace, monospace; }
+      .font-display { font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: -0.04em; }
+
+      /* Bright lime utilities (the Metadrop signature green) */
+      .text-lime  { color: var(--lime); }
+      .bg-lime    { background: var(--lime); }
+      .ring-lime  { --tw-ring-color: var(--lime); }
+      .border-lime { border-color: var(--lime); }
+      .bg-lime-soft { background: var(--lime-dim); }
+
       /* Ticker marquee */
       @keyframes ticker {
         from { transform: translateX(0); }
         to   { transform: translateX(-50%); }
       }
-      .ticker-track {
-        animation: ticker 60s linear infinite;
-        width: max-content;
+      .ticker-track { animation: ticker 60s linear infinite; width: max-content; }
+
+      /* Subtle dot grid */
+      .bg-dots {
+        background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-size: 28px 28px;
       }
-      /* Subtle grid background */
-      .bg-grid {
-        background-image:
-          linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-        background-size: 32px 32px;
-      }
-      /* Per-pool gradients */
-      .grad-weekly    { background: radial-gradient(120% 100% at 0% 0%, #34d39933 0%, transparent 60%), linear-gradient(140deg, #064e3b22 0%, transparent 70%); }
-      .grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%, #a78bfa33 0%, transparent 60%), linear-gradient(140deg, #4c1d9522 0%, transparent 70%); }
-      .grad-triweekly { background: radial-gradient(120% 100% at 0% 100%, #22d3ee33 0%, transparent 60%), linear-gradient(140deg, #155e7522 0%, transparent 70%); }
-      .grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #fbbf2433 0%, transparent 60%), linear-gradient(140deg, #78350f22 0%, transparent 70%); }
-      /* Glow shadows */
-      .glow-weekly    { box-shadow: 0 0 40px -10px #34d39955; }
-      .glow-biweekly  { box-shadow: 0 0 40px -10px #a78bfa55; }
-      .glow-triweekly { box-shadow: 0 0 40px -10px #22d3ee55; }
-      .glow-monthly   { box-shadow: 0 0 40px -10px #fbbf2455; }
-      /* Pulse for live dot */
-      @keyframes pulse-soft {
-        0%,100% { opacity: 1; }
-        50%     { opacity: 0.4; }
-      }
+
+      /* Pulse */
+      @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.4} }
       .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+      /* Per-pool gradients (vivid neon accents matching Metadrop palette) */
+      .grad-weekly    { background: radial-gradient(120% 100% at 0% 0%, #c0f61c33 0%, transparent 60%); }
+      .grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%, #b87aff33 0%, transparent 60%); }
+      .grad-triweekly { background: radial-gradient(120% 100% at 0% 100%, #4dd2ff33 0%, transparent 60%); }
+      .grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #ff7a4d33 0%, transparent 60%); }
+
+      /* Rotating raffle wheel */
+      @keyframes spin-slow { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+      .spin-slow { animation: spin-slow 40s linear infinite; transform-origin: center; }
     </style>
   </head>
   <body class="min-h-screen overflow-x-hidden">
-    <!-- ==================== TICKER ==================== -->
-    <div
-      class="border-b border-neutral-900 bg-neutral-950/95 backdrop-blur-sm"
-    >
-      <div class="overflow-hidden py-2 text-xs text-neutral-400">
-        <div class="ticker-track flex gap-8 whitespace-nowrap">
-          <!-- duplicate the content for the seamless loop -->
-          <span class="flex gap-8">
-            <span><span class="text-emerald-400">●</span> 9xQT…DWY8 bought 5 tickets · Weekly · 12s</span>
-            <span><span class="text-purple-400">●</span> EaAL…pLBt bought 20 tickets · Biweekly · 47s</span>
-            <span><span class="text-cyan-400">●</span> qWyk…ZB1M bought 1 ticket · Triweekly · 1m</span>
-            <span><span class="text-emerald-400">●</span> HMSq…yJnW bought 3 tickets · Weekly · 2m</span>
-            <span><span class="text-amber-400">●</span> 2uHK…z8JA won 10.18 SOL · Monthly · Round #2</span>
-            <span><span class="text-emerald-400">●</span> AxWU…cW7v bought 50 tickets · Weekly · 4m</span>
-            <span><span class="text-purple-400">●</span> 6zXW…5TM bought 8 tickets · Biweekly · 5m</span>
+    <!-- ==================== TOP TICKER ==================== -->
+    <div class="border-b border-neutral-900/80 bg-black/95">
+      <div class="overflow-hidden py-2.5 text-[11px] uppercase tracking-wider text-neutral-500">
+        <div class="ticker-track flex gap-10 whitespace-nowrap font-mono">
+          <span class="flex gap-10">
+            <span><span class="text-lime">●</span> 9XQT…DWY8 BOUGHT 5 · WEEKLY · 12s</span>
+            <span><span class="text-[#b87aff]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
+            <span><span class="text-[#4dd2ff]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
+            <span><span class="text-lime">●</span> HMSQ…YJNW BOUGHT 3 · WEEKLY · 2m</span>
+            <span><span class="text-[#ff7a4d]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
+            <span><span class="text-lime">●</span> AXWU…CW7V BOUGHT 50 · WEEKLY · 4m</span>
+            <span><span class="text-[#b87aff]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
           </span>
-          <span class="flex gap-8" aria-hidden="true">
-            <span><span class="text-emerald-400">●</span> 9xQT…DWY8 bought 5 tickets · Weekly · 12s</span>
-            <span><span class="text-purple-400">●</span> EaAL…pLBt bought 20 tickets · Biweekly · 47s</span>
-            <span><span class="text-cyan-400">●</span> qWyk…ZB1M bought 1 ticket · Triweekly · 1m</span>
-            <span><span class="text-emerald-400">●</span> HMSq…yJnW bought 3 tickets · Weekly · 2m</span>
-            <span><span class="text-amber-400">●</span> 2uHK…z8JA won 10.18 SOL · Monthly · Round #2</span>
-            <span><span class="text-emerald-400">●</span> AxWU…cW7v bought 50 tickets · Weekly · 4m</span>
-            <span><span class="text-purple-400">●</span> 6zXW…5TM bought 8 tickets · Biweekly · 5m</span>
+          <span class="flex gap-10" aria-hidden="true">
+            <span><span class="text-lime">●</span> 9XQT…DWY8 BOUGHT 5 · WEEKLY · 12s</span>
+            <span><span class="text-[#b87aff]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
+            <span><span class="text-[#4dd2ff]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
+            <span><span class="text-lime">●</span> HMSQ…YJNW BOUGHT 3 · WEEKLY · 2m</span>
+            <span><span class="text-[#ff7a4d]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
+            <span><span class="text-lime">●</span> AXWU…CW7V BOUGHT 50 · WEEKLY · 4m</span>
+            <span><span class="text-[#b87aff]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
           </span>
         </div>
       </div>
@@ -83,385 +91,360 @@
     <!-- ==================== NAV ==================== -->
     <header class="mx-auto max-w-7xl px-6 py-5">
       <div class="flex items-center justify-between gap-4">
-        <a href="#" class="flex items-center gap-2 text-base font-semibold tracking-tight">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-emerald-400">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+        <a href="#" class="flex items-center gap-2.5">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-white">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
-            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2" />
-            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2" />
-            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2" />
-            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" />
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
           </svg>
-          tombola
+          <span class="font-display text-lg uppercase tracking-tight">TOMBOLA</span>
         </a>
-        <nav class="hidden items-center gap-6 text-sm text-neutral-400 sm:flex">
-          <a href="#pools" class="transition-colors hover:text-neutral-100">Pools</a>
-          <a href="#how"   class="transition-colors hover:text-neutral-100">How it works</a>
-          <a href="#stats" class="transition-colors hover:text-neutral-100">Stats</a>
-          <a href="#faq"   class="transition-colors hover:text-neutral-100">FAQ</a>
+        <nav class="hidden items-center gap-7 text-xs font-medium uppercase tracking-wider text-neutral-400 sm:flex">
+          <a href="#pools" class="transition-colors hover:text-white">POOLS</a>
+          <a href="#how"   class="transition-colors hover:text-white">HOW IT WORKS</a>
+          <a href="#stats" class="transition-colors hover:text-white">STATS</a>
+          <a href="#faq"   class="transition-colors hover:text-white">FAQ</a>
         </nav>
         <div class="flex items-center gap-2">
-          <span
-            class="hidden items-center gap-1 rounded-full bg-neutral-500/10 px-2.5 py-1 text-xs font-medium text-neutral-300 ring-1 ring-inset ring-neutral-500/20 sm:inline-flex"
-            >localnet</span
-          >
-          <button
-            class="rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400"
-          >
-            Connect wallet
+          <span class="hidden items-center gap-1.5 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-neutral-300 sm:inline-flex">
+            <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime"></span>
+            LOCALNET
+          </span>
+          <button class="flex items-center gap-2 rounded-full bg-white px-1.5 py-1.5 pl-4 text-xs font-medium uppercase tracking-wider text-black transition hover:bg-neutral-200">
+            CONNECT
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-lime text-[10px] font-bold text-black">→</span>
           </button>
         </div>
       </div>
     </header>
 
     <!-- ==================== HERO ==================== -->
-    <section class="relative mx-auto max-w-7xl px-6 pt-12 pb-24 sm:pt-20 sm:pb-32">
-      <!-- decorative grid bg -->
-      <div class="bg-grid absolute inset-0 -z-10 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"></div>
+    <section class="relative mx-auto max-w-7xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
+      <div class="bg-dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"></div>
 
-      <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
-        <!-- copy -->
-        <div class="lg:col-span-7">
-          <span
-            class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
-          >
-            <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-            Live on Solana · localnet
-          </span>
-          <h1
-            class="mt-6 text-5xl font-bold tracking-tight sm:text-7xl"
-          >
-            Trustless
-            <span class="bg-gradient-to-br from-emerald-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent">
-              raffles.
+      <!-- Headline + raffle wheel as a unified visual block -->
+      <div class="relative mx-auto flex flex-col items-center justify-center">
+        <!-- Big circular raffle wheel (Metadrop-track-style ring of color) -->
+        <div class="relative aspect-square w-full max-w-3xl">
+          <!-- Outer rotating ring -->
+          <svg viewBox="0 0 600 600" class="absolute inset-0 h-full w-full">
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"   stop-color="#c0f61c" />
+                <stop offset="33%"  stop-color="#b87aff" />
+                <stop offset="66%"  stop-color="#ff7a4d" />
+                <stop offset="100%" stop-color="#4dd2ff" />
+              </linearGradient>
+              <linearGradient id="ringInner" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0%"   stop-color="#ff7a4d" />
+                <stop offset="40%"  stop-color="#ec4899" />
+                <stop offset="80%"  stop-color="#4dd2ff" />
+                <stop offset="100%" stop-color="#c0f61c" />
+              </linearGradient>
+            </defs>
+
+            <!-- Outer thick ring -->
+            <g class="spin-slow" style="transform-origin: 300px 300px;">
+              <circle cx="300" cy="300" r="270" stroke="url(#ringGrad)" stroke-width="36" fill="none" />
+              <!-- ticket dot accents floating on the ring -->
+              <circle cx="300" cy="30"  r="10" fill="#c0f61c" />
+              <circle cx="570" cy="300" r="10" fill="#b87aff" />
+              <circle cx="300" cy="570" r="10" fill="#ff7a4d" />
+              <circle cx="30"  cy="300" r="10" fill="#4dd2ff" />
+            </g>
+            <!-- Inner thin ring (counter-rotation feel) -->
+            <circle cx="300" cy="300" r="220" stroke="url(#ringInner)" stroke-width="6" fill="none" opacity="0.7" />
+          </svg>
+
+          <!-- Centered headline content -->
+          <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+            <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-black px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
+              <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-lime"></span>
+              LIVE · 4 POOLS RUNNING
             </span>
-            <br class="hidden sm:block" />
-            On-chain.
-            <span class="bg-gradient-to-br from-purple-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent">
-              Provably fair.
-            </span>
-          </h1>
-          <p class="mt-6 max-w-xl text-base text-neutral-400 sm:text-lg">
-            Buy tickets in SOL, win the pot when your number comes up. Verifiable randomness via Switchboard On-Demand.
-            <span class="text-neutral-200">0.5% protocol fee, no hidden cuts.</span>
-          </p>
-          <div class="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              class="rounded-full bg-emerald-500 px-6 py-3 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400"
-            >
-              Buy a ticket →
-            </button>
-            <a
-              href="#how"
-              class="rounded-full border border-neutral-800 px-6 py-3 text-sm font-medium text-neutral-200 transition hover:border-neutral-700 hover:bg-neutral-900"
-            >
-              How it works
-            </a>
+            <h1 class="font-display text-5xl uppercase leading-[0.95] sm:text-7xl lg:text-[120px]">
+              Where SOL<br />wins big.
+            </h1>
+            <p class="mt-6 max-w-md text-sm text-neutral-400 sm:text-base">
+              Trustless on-chain raffles. Buy tickets, win the pot, repeat — verifiable randomness via Switchboard.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <button class="flex items-center gap-2 rounded-full bg-white px-2 py-2 pl-5 text-xs font-medium uppercase tracking-widest text-black transition hover:bg-neutral-200">
+                LEARN MORE
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9" /></svg>
+                </span>
+              </button>
+              <button class="flex items-center gap-2 rounded-full bg-lime px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-black transition hover:brightness-110">
+                BUY A TICKET
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-lime">→</span>
+              </button>
+            </div>
           </div>
-          <!-- inline stats -->
-          <dl class="mt-10 grid grid-cols-3 gap-4 sm:gap-8">
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-neutral-500">Total pot</dt>
-              <dd class="mt-1 text-2xl font-bold tabular-nums text-emerald-400">19.61 SOL</dd>
-            </div>
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-neutral-500">Tickets sold</dt>
-              <dd class="mt-1 text-2xl font-bold tabular-nums">1,961</dd>
-            </div>
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-neutral-500">Players</dt>
-              <dd class="mt-1 text-2xl font-bold tabular-nums">87</dd>
-            </div>
-          </dl>
-        </div>
 
-        <!-- decorative ticket-stub illustration -->
-        <div class="lg:col-span-5">
-          <div class="relative mx-auto aspect-square max-w-md">
-            <!-- Outer glow rings -->
-            <div class="absolute inset-0 animate-pulse rounded-full bg-emerald-500/10 blur-3xl"></div>
-            <div class="absolute inset-8 rounded-full bg-purple-500/5 blur-2xl"></div>
-            <!-- Ticket SVG -->
-            <svg viewBox="0 0 400 400" class="relative h-full w-full">
-              <defs>
-                <linearGradient id="ticketGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%"  stop-color="#34d399" />
-                  <stop offset="50%" stop-color="#22d3ee" />
-                  <stop offset="100%" stop-color="#a78bfa" />
-                </linearGradient>
-                <radialGradient id="numberGlow" cx="0.5" cy="0.5" r="0.5">
-                  <stop offset="0%"  stop-color="#fbbf24" stop-opacity="0.6" />
-                  <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
-                </radialGradient>
-              </defs>
-              <!-- Outer rounded ticket shape with notches -->
-              <g transform="translate(200,200)">
-                <circle r="180" fill="none" stroke="url(#ticketGrad)" stroke-width="2" stroke-dasharray="4 8" opacity="0.5" />
-                <circle r="150" fill="#0a0a0a" stroke="url(#ticketGrad)" stroke-width="3" />
-                <circle r="120" fill="none" stroke="#262626" stroke-width="1" />
-                <circle r="60"  fill="url(#numberGlow)" />
-                <!-- Big winning number -->
-                <text text-anchor="middle" dominant-baseline="middle" font-size="64" font-weight="700" fill="#fbbf24">047</text>
-                <text text-anchor="middle" y="60" font-size="10" fill="#737373" letter-spacing="2">WINNER · ROUND #12</text>
-                <!-- Decorative tick marks -->
-                <g stroke="#525252" stroke-width="1">
-                  <!-- 12 ticks around the inner circle -->
-                  <line x1="0" y1="-145" x2="0" y2="-135" />
-                  <line x1="0" y1="135"  x2="0" y2="145"  />
-                  <line x1="-145" y1="0" x2="-135" y2="0" />
-                  <line x1="135"  y1="0" x2="145"  y2="0" />
-                  <line x1="-103" y1="-103" x2="-95" y2="-95" transform="rotate(0)" />
-                  <line x1="103"  y1="-103" x2="95"  y2="-95" />
-                  <line x1="-103" y1="103"  x2="-95" y2="95" />
-                  <line x1="103"  y1="103"  x2="95"  y2="95" />
-                </g>
-              </g>
-              <!-- Floating ticket fragments -->
-              <g opacity="0.7">
-                <rect x="40"  y="40"  width="40" height="60" rx="6" fill="#34d399" opacity="0.2" transform="rotate(-15 60 70)" />
-                <rect x="320" y="60"  width="40" height="60" rx="6" fill="#a78bfa" opacity="0.2" transform="rotate(20 340 90)" />
-                <rect x="50"  y="300" width="40" height="60" rx="6" fill="#22d3ee" opacity="0.2" transform="rotate(25 70 330)" />
-                <rect x="320" y="290" width="40" height="60" rx="6" fill="#fbbf24" opacity="0.2" transform="rotate(-20 340 320)" />
-              </g>
-            </svg>
+          <!-- Floating chip avatars on the ring (Metadrop's "20 ETH" style) -->
+          <div class="absolute -left-2 top-[18%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
+            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-lime to-cyan-300"></span>
+            <span class="font-mono">20</span>
+            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
+          </div>
+          <div class="absolute right-[8%] top-[6%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
+            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#b87aff] to-[#ec4899]"></span>
+            <span class="font-mono">6</span>
+            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
+          </div>
+          <div class="absolute left-[10%] bottom-[12%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
+            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#4dd2ff] to-[#3b82f6]"></span>
+            <span class="font-mono">1</span>
+            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ==================== RECENT ACTIVITY ==================== -->
-    <section class="mx-auto max-w-7xl px-6 pb-12">
-      <div class="mb-4 flex items-end justify-between">
-        <h2 class="text-sm font-medium uppercase tracking-wider text-neutral-400">Recent activity</h2>
-        <a class="text-xs text-neutral-500 transition-colors hover:text-neutral-300" href="#">View all →</a>
-      </div>
-      <div class="overflow-hidden rounded-2xl border border-neutral-800">
-        <ul class="divide-y divide-neutral-800/60">
-          <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-neutral-900/40">
-            <span class="flex items-center gap-3">
-              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-medium text-emerald-300">W</span>
-              <span><span class="font-mono text-neutral-300">9xQT…DWY8</span> bought <span class="font-medium text-neutral-100">5 tickets</span> on <span class="text-emerald-300">Weekly</span></span>
+    <!-- ==================== RECENT ACTIVITY (Metadrop list style) ==================== -->
+    <section class="mx-auto max-w-7xl px-6 pb-20">
+      <h2 class="mb-6 font-display text-xl uppercase text-lime sm:text-2xl">Recently played on Tombola</h2>
+      <ul class="space-y-2">
+        <li>
+          <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
+            <span class="flex items-center gap-4">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ff7a4d]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex items-center gap-3 font-mono text-sm uppercase">
+                <span class="text-[#ff7a4d]">MTHLY</span>
+                <span class="text-white normal-case">Monthly Round #2</span>
+                <span class="text-neutral-500 normal-case">won by 2uHK…z8JA — 10.18 SOL</span>
+              </span>
             </span>
-            <span class="text-xs text-neutral-500">12s ago →</span>
-          </li>
-          <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-neutral-900/40">
-            <span class="flex items-center gap-3">
-              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/10 text-xs font-medium text-amber-300">★</span>
-              <span><span class="font-mono text-neutral-300">2uHK…z8JA</span> won <span class="font-medium text-amber-300">10.18 SOL</span> on <span class="text-amber-300">Monthly</span> Round #2</span>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">3 MINS AGO ›</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
+            <span class="flex items-center gap-4">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-lime"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex items-center gap-3 font-mono text-sm uppercase">
+                <span class="text-lime">WKLY</span>
+                <span class="text-white normal-case">Weekly Round #1</span>
+                <span class="text-neutral-500 normal-case">9xQT…DWY8 just bought 5 tickets</span>
+              </span>
             </span>
-            <span class="text-xs text-neutral-500">3m ago →</span>
-          </li>
-          <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-neutral-900/40">
-            <span class="flex items-center gap-3">
-              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10 text-xs font-medium text-purple-300">B</span>
-              <span><span class="font-mono text-neutral-300">EaAL…pLBt</span> bought <span class="font-medium text-neutral-100">20 tickets</span> on <span class="text-purple-300">Biweekly</span></span>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">12 SECS AGO ›</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
+            <span class="flex items-center gap-4">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#4dd2ff]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex items-center gap-3 font-mono text-sm uppercase">
+                <span class="text-[#4dd2ff]">TRIWK</span>
+                <span class="text-white normal-case">Triweekly Round #1</span>
+                <span class="text-neutral-500 normal-case">drawing now — Switchboard reveal pending</span>
+              </span>
             </span>
-            <span class="text-xs text-neutral-500">47s ago →</span>
-          </li>
-          <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-neutral-900/40">
-            <span class="flex items-center gap-3">
-              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-cyan-500/10 text-xs font-medium text-cyan-300">T</span>
-              <span><span class="font-mono text-neutral-300">qWyk…ZB1M</span> bought <span class="font-medium text-neutral-100">1 ticket</span> on <span class="text-cyan-300">Triweekly</span></span>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">2 HRS AGO ›</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
+            <span class="flex items-center gap-4">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#b87aff]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex items-center gap-3 font-mono text-sm uppercase">
+                <span class="text-[#b87aff]">BIWK</span>
+                <span class="text-white normal-case">Biweekly Round #1</span>
+                <span class="text-neutral-500 normal-case">EaAL…pLBt bought 20 tickets</span>
+              </span>
             </span>
-            <span class="text-xs text-neutral-500">1m ago →</span>
-          </li>
-        </ul>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">47 SECS AGO ›</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
+            <span class="flex items-center gap-4">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ec4899]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex items-center gap-3 font-mono text-sm uppercase">
+                <span class="text-[#ec4899]">TRIWK</span>
+                <span class="text-white normal-case">Triweekly Round #0</span>
+                <span class="text-neutral-500 normal-case">won by qWyk…ZB1M — 4.84 SOL</span>
+              </span>
+            </span>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">3 DAYS AGO ›</span>
+          </a>
+        </li>
+      </ul>
+      <div class="mt-6 flex justify-center">
+        <button class="flex items-center gap-2 rounded-full border border-neutral-800 px-5 py-2 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:border-neutral-600 hover:text-white">
+          VIEW ALL <span class="text-lime">›</span>
+        </button>
       </div>
     </section>
 
     <!-- ==================== POOL GRID ==================== -->
     <section id="pools" class="mx-auto max-w-7xl px-6 pb-20">
-      <div class="mb-8 flex items-end justify-between">
-        <div>
-          <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Public pools</h2>
-          <p class="mt-2 text-sm text-neutral-400">Four pools running in parallel. Different cadences, same fair-draw guarantee.</p>
-        </div>
-        <span class="hidden items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20 sm:inline-flex">
-          <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-          live · localnet
-        </span>
-      </div>
+      <h2 class="mb-8 font-display text-xl uppercase text-white sm:text-2xl">Public pools</h2>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Weekly -->
-        <a href="#" class="grad-weekly glow-weekly group relative overflow-hidden rounded-2xl border border-neutral-800 p-6 transition-all hover:-translate-y-0.5 hover:border-emerald-500/30">
-          <div class="flex items-start justify-between">
+        <a href="#" class="grad-weekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-lime/40">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-lime">▲ OPEN</span>
+          </div>
+          <!-- Pool tile mock with glow -->
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#c0f61c33] to-black">
+            <div class="absolute inset-0 bg-radial-gradient" style="background: radial-gradient(circle at 50% 60%, #c0f61c66 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-lime">W</span>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
             <div>
-              <h3 class="text-xl font-semibold tracking-tight">Weekly</h3>
-              <p class="mt-1 text-xs text-neutral-500">Round #1 · explorer ↗</p>
+              <div class="font-display text-lg uppercase">WEEKLY</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Closes 8m 47s</div>
             </div>
-            <span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Open</span>
+            <div class="text-right">
+              <div class="font-mono text-xs text-neutral-500">POT</div>
+              <div class="font-display text-lg uppercase text-lime">1.38</div>
+            </div>
           </div>
-          <div class="mt-6">
-            <div class="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
-            <div class="mt-1 text-3xl font-bold text-emerald-400">1.38 SOL</div>
-          </div>
-          <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div><dt class="text-neutral-500">Tickets</dt><dd class="font-medium tabular-nums">138</dd></div>
-            <div><dt class="text-neutral-500">Closes in</dt><dd class="font-medium tabular-nums">8m 47s</dd></div>
-            <div><dt class="text-neutral-500">Ticket price</dt><dd class="font-medium tabular-nums">0.01 SOL</dd></div>
-            <div><dt class="text-neutral-500">Per 1 SOL</dt><dd class="font-medium tabular-nums">100 tickets</dd></div>
-          </dl>
-          <button class="mt-5 w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400">
-            Buy ticket →
-          </button>
         </a>
 
         <!-- Biweekly -->
-        <a href="#" class="grad-biweekly glow-biweekly group relative overflow-hidden rounded-2xl border border-neutral-800 p-6 transition-all hover:-translate-y-0.5 hover:border-purple-500/30">
-          <div class="flex items-start justify-between">
+        <a href="#" class="grad-biweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#b87aff]/40">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-lime">▲ OPEN</span>
+          </div>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#b87aff33] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #b87aff66 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#b87aff]">B</span>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
             <div>
-              <h3 class="text-xl font-semibold tracking-tight">Biweekly</h3>
-              <p class="mt-1 text-xs text-neutral-500">Round #1 · explorer ↗</p>
+              <div class="font-display text-lg uppercase">BIWEEKLY</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Closes 13d 23h</div>
             </div>
-            <span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Open</span>
+            <div class="text-right">
+              <div class="font-mono text-xs text-neutral-500">POT</div>
+              <div class="font-display text-lg uppercase text-[#b87aff]">3.12</div>
+            </div>
           </div>
-          <div class="mt-6">
-            <div class="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
-            <div class="mt-1 text-3xl font-bold text-purple-300">3.12 SOL</div>
-          </div>
-          <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div><dt class="text-neutral-500">Tickets</dt><dd class="font-medium tabular-nums">312</dd></div>
-            <div><dt class="text-neutral-500">Closes in</dt><dd class="font-medium tabular-nums">13d 23h</dd></div>
-            <div><dt class="text-neutral-500">Ticket price</dt><dd class="font-medium tabular-nums">0.01 SOL</dd></div>
-            <div><dt class="text-neutral-500">Per 1 SOL</dt><dd class="font-medium tabular-nums">100 tickets</dd></div>
-          </dl>
-          <button class="mt-5 w-full rounded-lg bg-purple-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-purple-400">
-            Buy ticket →
-          </button>
         </a>
 
         <!-- Triweekly -->
-        <a href="#" class="grad-triweekly glow-triweekly group relative overflow-hidden rounded-2xl border border-neutral-800 p-6 transition-all hover:-translate-y-0.5 hover:border-cyan-500/30">
-          <div class="flex items-start justify-between">
+        <a href="#" class="grad-triweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#4dd2ff]/40">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[#ff7a4d]">▼ DRAWING</span>
+          </div>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#4dd2ff33] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #4dd2ff66 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#4dd2ff]">T</span>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
             <div>
-              <h3 class="text-xl font-semibold tracking-tight">Triweekly</h3>
-              <p class="mt-1 text-xs text-neutral-500">Round #1 · explorer ↗</p>
+              <div class="font-display text-lg uppercase">TRIWEEKLY</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Closed 2h ago</div>
             </div>
-            <span class="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">Drawing…</span>
+            <div class="text-right">
+              <div class="font-mono text-xs text-neutral-500">POT</div>
+              <div class="font-display text-lg uppercase text-[#4dd2ff]">4.87</div>
+            </div>
           </div>
-          <div class="mt-6">
-            <div class="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
-            <div class="mt-1 text-3xl font-bold text-cyan-300">4.87 SOL</div>
-          </div>
-          <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div><dt class="text-neutral-500">Tickets</dt><dd class="font-medium tabular-nums">487</dd></div>
-            <div><dt class="text-neutral-500">Closed</dt><dd class="font-medium tabular-nums">2h ago</dd></div>
-            <div><dt class="text-neutral-500">Ticket price</dt><dd class="font-medium tabular-nums">0.01 SOL</dd></div>
-            <div><dt class="text-neutral-500">Per 1 SOL</dt><dd class="font-medium tabular-nums">100 tickets</dd></div>
-          </dl>
-          <button disabled class="mt-5 w-full cursor-not-allowed rounded-lg bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-500">
-            Round closed
-          </button>
         </a>
 
         <!-- Monthly -->
-        <a href="#" class="grad-monthly glow-monthly group relative overflow-hidden rounded-2xl border border-neutral-800 p-6 transition-all hover:-translate-y-0.5 hover:border-amber-500/30">
-          <div class="flex items-start justify-between">
+        <a href="#" class="grad-monthly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#ff7a4d]/40">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-lime">▲ OPEN</span>
+          </div>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#ff7a4d33] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #ff7a4d66 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#ff7a4d]">M</span>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
             <div>
-              <h3 class="text-xl font-semibold tracking-tight">Monthly</h3>
-              <p class="mt-1 text-xs text-neutral-500">Round #1 · explorer ↗</p>
+              <div class="font-display text-lg uppercase">MONTHLY</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Closes 29d 23h</div>
             </div>
-            <span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Open</span>
+            <div class="text-right">
+              <div class="font-mono text-xs text-neutral-500">POT</div>
+              <div class="font-display text-lg uppercase text-[#ff7a4d]">10.24</div>
+            </div>
           </div>
-          <div class="mt-6">
-            <div class="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
-            <div class="mt-1 text-3xl font-bold text-amber-300">10.24 SOL</div>
-          </div>
-          <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div><dt class="text-neutral-500">Tickets</dt><dd class="font-medium tabular-nums">1,024</dd></div>
-            <div><dt class="text-neutral-500">Closes in</dt><dd class="font-medium tabular-nums">29d 23h</dd></div>
-            <div><dt class="text-neutral-500">Ticket price</dt><dd class="font-medium tabular-nums">0.01 SOL</dd></div>
-            <div><dt class="text-neutral-500">Per 1 SOL</dt><dd class="font-medium tabular-nums">100 tickets</dd></div>
-          </dl>
-          <button class="mt-5 w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-amber-400">
-            Buy ticket →
-          </button>
         </a>
       </div>
     </section>
 
-    <!-- ==================== STATS TABLE ==================== -->
+    <!-- ==================== ALL ROUNDS TABLE ==================== -->
     <section id="stats" class="mx-auto max-w-7xl px-6 pb-20">
-      <div class="mb-6 flex items-end justify-between">
-        <h2 class="text-2xl font-bold tracking-tight">All rounds</h2>
-        <span class="text-xs text-neutral-500">Live + 6 past rounds</span>
-      </div>
-      <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/30">
+      <h2 class="mb-6 font-display text-xl uppercase sm:text-2xl">All rounds</h2>
+      <div class="overflow-hidden rounded-2xl border border-neutral-900 bg-neutral-950">
         <table class="w-full text-sm">
-          <thead class="border-b border-neutral-800/60">
-            <tr class="text-left text-xs uppercase tracking-wider text-neutral-500">
-              <th class="px-6 py-3 font-medium">#</th>
-              <th class="py-3 font-medium">Pool</th>
-              <th class="py-3 font-medium">Round</th>
-              <th class="py-3 font-medium">Pot</th>
-              <th class="py-3 font-medium">Tickets</th>
-              <th class="py-3 font-medium">Buyers</th>
-              <th class="py-3 font-medium">State</th>
-              <th class="px-6 py-3 text-right font-medium">Closes / Won by</th>
+          <thead class="border-b border-neutral-900">
+            <tr class="text-left font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+              <th class="px-6 py-3 font-medium">RANK</th>
+              <th class="py-3 font-medium">POOL</th>
+              <th class="py-3 font-medium">ROUND</th>
+              <th class="py-3 font-medium">POT</th>
+              <th class="py-3 font-medium">TICKETS</th>
+              <th class="py-3 font-medium">BUYERS</th>
+              <th class="py-3 font-medium">STATE</th>
+              <th class="px-6 py-3 text-right font-medium">CLOSES / WINNER</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-800/40">
+          <tbody class="divide-y divide-neutral-900/60 font-mono text-[13px]">
             <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">01</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-emerald-400"></span>Weekly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#1</td>
-              <td class="py-3 font-medium tabular-nums text-emerald-300">1.38 SOL</td>
-              <td class="py-3 tabular-nums">138</td>
-              <td class="py-3 tabular-nums text-neutral-400">42</td>
-              <td class="py-3"><span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300">Open</span></td>
-              <td class="px-6 py-3 text-right tabular-nums text-neutral-400">8m 47s</td>
+              <td class="px-6 py-3 text-neutral-500">#1</td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#ff7a4d]"></span><span class="text-white">MONTHLY</span></span></td>
+              <td class="py-3 text-neutral-500">#1</td>
+              <td class="py-3 text-[#ff7a4d]">10.24 SOL</td>
+              <td class="py-3 text-white">1,024</td>
+              <td class="py-3 text-neutral-400">181</td>
+              <td class="py-3"><span class="rounded-full bg-lime/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime">OPEN</span></td>
+              <td class="px-6 py-3 text-right text-neutral-400">29d 23h</td>
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">02</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-purple-400"></span>Biweekly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#1</td>
-              <td class="py-3 font-medium tabular-nums text-purple-300">3.12 SOL</td>
-              <td class="py-3 tabular-nums">312</td>
-              <td class="py-3 tabular-nums text-neutral-400">68</td>
-              <td class="py-3"><span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300">Open</span></td>
-              <td class="px-6 py-3 text-right tabular-nums text-neutral-400">13d 23h</td>
+              <td class="px-6 py-3 text-neutral-500">#2</td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#4dd2ff]"></span><span class="text-white">TRIWEEKLY</span></span></td>
+              <td class="py-3 text-neutral-500">#1</td>
+              <td class="py-3 text-[#4dd2ff]">4.87 SOL</td>
+              <td class="py-3 text-white">487</td>
+              <td class="py-3 text-neutral-400">93</td>
+              <td class="py-3"><span class="rounded-full bg-[#ff7a4d]/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#ff7a4d]">DRAWING</span></td>
+              <td class="px-6 py-3 text-right text-neutral-400">closed 2h ago</td>
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">03</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-cyan-400"></span>Triweekly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#1</td>
-              <td class="py-3 font-medium tabular-nums text-cyan-300">4.87 SOL</td>
-              <td class="py-3 tabular-nums">487</td>
-              <td class="py-3 tabular-nums text-neutral-400">93</td>
-              <td class="py-3"><span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-300">Drawing</span></td>
-              <td class="px-6 py-3 text-right tabular-nums text-neutral-400">closed 2h ago</td>
+              <td class="px-6 py-3 text-neutral-500">#3</td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#b87aff]"></span><span class="text-white">BIWEEKLY</span></span></td>
+              <td class="py-3 text-neutral-500">#1</td>
+              <td class="py-3 text-[#b87aff]">3.12 SOL</td>
+              <td class="py-3 text-white">312</td>
+              <td class="py-3 text-neutral-400">68</td>
+              <td class="py-3"><span class="rounded-full bg-lime/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime">OPEN</span></td>
+              <td class="px-6 py-3 text-right text-neutral-400">13d 23h</td>
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">04</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-amber-400"></span>Monthly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#1</td>
-              <td class="py-3 font-medium tabular-nums text-amber-300">10.24 SOL</td>
-              <td class="py-3 tabular-nums">1,024</td>
-              <td class="py-3 tabular-nums text-neutral-400">181</td>
-              <td class="py-3"><span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300">Open</span></td>
-              <td class="px-6 py-3 text-right tabular-nums text-neutral-400">29d 23h</td>
-            </tr>
-            <!-- past rounds -->
-            <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">05</td>
-              <td class="py-3 text-neutral-400"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-neutral-600"></span>Monthly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#0</td>
-              <td class="py-3 font-medium tabular-nums text-neutral-400">10.18 SOL</td>
-              <td class="py-3 tabular-nums text-neutral-400">1,019</td>
-              <td class="py-3 tabular-nums text-neutral-400">175</td>
-              <td class="py-3"><span class="rounded-full bg-neutral-500/10 px-2 py-0.5 text-xs text-neutral-400">Resolved</span></td>
-              <td class="px-6 py-3 text-right font-mono text-neutral-400">2uHK…z8JA ↗</td>
+              <td class="px-6 py-3 text-neutral-500">#4</td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-lime"></span><span class="text-white">WEEKLY</span></span></td>
+              <td class="py-3 text-neutral-500">#1</td>
+              <td class="py-3 text-lime">1.38 SOL</td>
+              <td class="py-3 text-white">138</td>
+              <td class="py-3 text-neutral-400">42</td>
+              <td class="py-3"><span class="rounded-full bg-lime/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime">OPEN</span></td>
+              <td class="px-6 py-3 text-right text-neutral-400">8m 47s</td>
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
-              <td class="px-6 py-3 text-neutral-500 tabular-nums">06</td>
-              <td class="py-3 text-neutral-400"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-neutral-600"></span>Triweekly</span></td>
-              <td class="py-3 tabular-nums text-neutral-500">#0</td>
-              <td class="py-3 font-medium tabular-nums text-neutral-400">4.84 SOL</td>
-              <td class="py-3 tabular-nums text-neutral-400">485</td>
-              <td class="py-3 tabular-nums text-neutral-400">88</td>
-              <td class="py-3"><span class="rounded-full bg-neutral-500/10 px-2 py-0.5 text-xs text-neutral-400">Resolved</span></td>
-              <td class="px-6 py-3 text-right font-mono text-neutral-400">qWyk…ZB1M ↗</td>
+              <td class="px-6 py-3 text-neutral-500">#5</td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-neutral-700"></span><span class="text-neutral-400">MONTHLY</span></span></td>
+              <td class="py-3 text-neutral-500">#0</td>
+              <td class="py-3 text-neutral-400">10.18 SOL</td>
+              <td class="py-3 text-neutral-400">1,019</td>
+              <td class="py-3 text-neutral-500">175</td>
+              <td class="py-3"><span class="rounded-full bg-neutral-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400">RESOLVED</span></td>
+              <td class="px-6 py-3 text-right text-neutral-400">2uHK…z8JA ↗</td>
             </tr>
           </tbody>
         </table>
@@ -471,121 +454,115 @@
     <!-- ==================== FEATURE CARDS ==================== -->
     <section id="how" class="mx-auto max-w-7xl px-6 pb-20">
       <div class="mb-10 max-w-2xl">
-        <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Why it's fair</h2>
-        <p class="mt-2 text-neutral-400">Three things that make Tombola different from a centralized raffle.</p>
+        <h2 class="font-display text-3xl uppercase sm:text-5xl">Why it&apos;s fair</h2>
+        <p class="mt-3 text-neutral-400">Three things that make Tombola different from a centralized raffle.</p>
       </div>
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <!-- Card 1: Verifiable randomness -->
-        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <div class="text-sm font-medium tabular-nums text-purple-400">01</div>
-          <h3 class="mt-3 text-lg font-semibold tracking-tight">Verifiable randomness</h3>
-          <p class="mt-2 text-sm text-neutral-400">Switchboard On-Demand posts a signed reveal on-chain. No team can predict or influence the result before the draw.</p>
-          <!-- Mini-viz: hash bytes radiating -->
-          <div class="mt-6 grid grid-cols-8 gap-1">
-            <!-- 32 hash bytes, faded -->
-            <span class="rounded bg-purple-500/40 px-1 text-center text-[10px] font-mono">a3</span>
-            <span class="rounded bg-purple-500/30 px-1 text-center text-[10px] font-mono">7f</span>
-            <span class="rounded bg-purple-500/50 px-1 text-center text-[10px] font-mono">22</span>
-            <span class="rounded bg-purple-500/20 px-1 text-center text-[10px] font-mono">e1</span>
-            <span class="rounded bg-purple-500/40 px-1 text-center text-[10px] font-mono">9c</span>
-            <span class="rounded bg-purple-500/30 px-1 text-center text-[10px] font-mono">5b</span>
-            <span class="rounded bg-purple-500/50 px-1 text-center text-[10px] font-mono">04</span>
-            <span class="rounded bg-purple-500/20 px-1 text-center text-[10px] font-mono">d7</span>
-            <span class="rounded bg-purple-500/30 px-1 text-center text-[10px] font-mono">3a</span>
-            <span class="rounded bg-purple-500/40 px-1 text-center text-[10px] font-mono">88</span>
-            <span class="rounded bg-purple-500/20 px-1 text-center text-[10px] font-mono">f2</span>
-            <span class="rounded bg-purple-500/50 px-1 text-center text-[10px] font-mono">11</span>
-            <span class="rounded bg-purple-500/30 px-1 text-center text-[10px] font-mono">be</span>
-            <span class="rounded bg-purple-500/40 px-1 text-center text-[10px] font-mono">06</span>
-            <span class="rounded bg-purple-500/20 px-1 text-center text-[10px] font-mono">a5</span>
-            <span class="rounded bg-purple-500/50 px-1 text-center text-[10px] font-mono">cf</span>
+        <div class="overflow-hidden rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <h3 class="font-display text-xl uppercase">Verifiable<br />randomness</h3>
+          <p class="mt-2 text-sm text-neutral-400">Switchboard On-Demand posts a signed reveal on-chain. No one can predict or influence the result.</p>
+          <div class="mt-6 grid grid-cols-8 gap-1 font-mono">
+            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">a3</span>
+            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">7f</span>
+            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">22</span>
+            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">e1</span>
+            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">9c</span>
+            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">5b</span>
+            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">04</span>
+            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">d7</span>
+            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">3a</span>
+            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">88</span>
+            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">f2</span>
+            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">11</span>
+            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">be</span>
+            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">06</span>
+            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">a5</span>
+            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">cf</span>
           </div>
-          <p class="mt-3 text-xs text-neutral-500">Random bytes from Switchboard, parsed via audited byte-offsets (D-035).</p>
+          <div class="mt-4 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ Switchboard</span>
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ Audited byte-offsets</span>
+          </div>
         </div>
 
         <!-- Card 2: Instant payouts -->
-        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <div class="text-sm font-medium tabular-nums text-emerald-400">02</div>
-          <h3 class="mt-3 text-lg font-semibold tracking-tight">Instant payouts</h3>
-          <p class="mt-2 text-sm text-neutral-400">When the winner is picked, the entire pot lands in their wallet in the same transaction. No claims, no delay.</p>
-          <!-- Mini-viz: pot → winner arrow -->
-          <div class="mt-6 flex items-center justify-between gap-2 rounded-lg border border-neutral-800 bg-neutral-950/60 p-4">
+        <div class="overflow-hidden rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <h3 class="font-display text-xl uppercase">Instant<br />payouts</h3>
+          <p class="mt-2 text-sm text-neutral-400">When the winner is picked, the entire pot lands in their wallet in the same transaction.</p>
+          <div class="mt-6 flex items-center justify-between gap-2 rounded-2xl border border-neutral-800 bg-black p-4">
             <div class="text-center">
-              <div class="text-2xl font-bold text-emerald-300 tabular-nums">10.18</div>
-              <div class="text-[10px] uppercase tracking-wider text-neutral-500">SOL pot</div>
+              <div class="font-display text-3xl text-lime">10.18</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">SOL POT</div>
             </div>
-            <svg width="40" height="20" viewBox="0 0 40 20" class="flex-shrink-0 text-emerald-400">
+            <svg width="40" height="20" viewBox="0 0 40 20" class="text-lime">
               <line x1="2" y1="10" x2="34" y2="10" stroke="currentColor" stroke-width="2" />
               <polyline points="28,4 34,10 28,16" fill="none" stroke="currentColor" stroke-width="2" />
             </svg>
             <div class="text-center">
-              <div class="font-mono text-sm text-neutral-300">2uHK…z8JA</div>
-              <div class="text-[10px] uppercase tracking-wider text-neutral-500">Winner</div>
+              <div class="font-mono text-sm text-white">2uHK…z8JA</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">WINNER</div>
             </div>
           </div>
-          <p class="mt-3 text-xs text-neutral-500">Settle-draw and payout in one tx. 0.5% routes to treasury.</p>
+          <div class="mt-4 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ One-tx settle</span>
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ 0.5% to treasury</span>
+          </div>
         </div>
 
         <!-- Card 3: Audit-ready -->
-        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <div class="text-sm font-medium tabular-nums text-cyan-400">03</div>
-          <h3 class="mt-3 text-lg font-semibold tracking-tight">Audit-ready code</h3>
-          <p class="mt-2 text-sm text-neutral-400">71 design decisions, 86 Rust tests, threat model published. Upgrade authority rotates to a 2-of-3 multisig before mainnet.</p>
-          <!-- Mini-viz: test bars -->
+        <div class="overflow-hidden rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <h3 class="font-display text-xl uppercase">Audit-ready<br />code</h3>
+          <p class="mt-2 text-sm text-neutral-400">71 design decisions, 86 Rust tests, threat model published. Multisig upgrade authority before mainnet.</p>
           <div class="mt-6 space-y-1.5">
-            <div class="flex items-center gap-2 text-xs">
-              <span class="w-20 text-neutral-500">LiteSVM</span>
-              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                <div class="h-full rounded-full bg-cyan-400" style="width:85%"></div>
-              </div>
-              <span class="w-8 text-right tabular-nums text-cyan-300">86</span>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="w-20 text-neutral-500">LITESVM</span>
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-900"><div class="h-full rounded-full bg-lime" style="width:85%"></div></div>
+              <span class="w-8 text-right text-lime">86</span>
             </div>
-            <div class="flex items-center gap-2 text-xs">
-              <span class="w-20 text-neutral-500">Proptest</span>
-              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                <div class="h-full rounded-full bg-cyan-400" style="width:60%"></div>
-              </div>
-              <span class="w-8 text-right tabular-nums text-cyan-300">16</span>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="w-20 text-neutral-500">PROPTEST</span>
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-900"><div class="h-full rounded-full bg-lime" style="width:60%"></div></div>
+              <span class="w-8 text-right text-lime">16</span>
             </div>
-            <div class="flex items-center gap-2 text-xs">
-              <span class="w-20 text-neutral-500">TS unit</span>
-              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                <div class="h-full rounded-full bg-cyan-400" style="width:45%"></div>
-              </div>
-              <span class="w-8 text-right tabular-nums text-cyan-300">36</span>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="w-20 text-neutral-500">TS UNIT</span>
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-900"><div class="h-full rounded-full bg-lime" style="width:45%"></div></div>
+              <span class="w-8 text-right text-lime">36</span>
             </div>
-            <div class="flex items-center gap-2 text-xs">
-              <span class="w-20 text-neutral-500">Frontend</span>
-              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                <div class="h-full rounded-full bg-cyan-400" style="width:55%"></div>
-              </div>
-              <span class="w-8 text-right tabular-nums text-cyan-300">47</span>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="w-20 text-neutral-500">FRONTEND</span>
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-900"><div class="h-full rounded-full bg-lime" style="width:55%"></div></div>
+              <span class="w-8 text-right text-lime">47</span>
             </div>
           </div>
-          <p class="mt-3 text-xs text-neutral-500">All tests pass on every PR via GitHub Actions.</p>
+          <div class="mt-4 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ Open source</span>
+            <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ CI on every PR</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ==================== HOW IT WORKS (3-step strip) ==================== -->
+    <!-- ==================== HOW IT WORKS (3-step) ==================== -->
     <section class="mx-auto max-w-7xl px-6 pb-20">
-      <div class="rounded-3xl border border-neutral-800 bg-gradient-to-br from-neutral-900/50 via-neutral-900/30 to-neutral-950 p-8 sm:p-12">
-        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">From SOL to win in three steps.</h2>
-        <div class="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div class="rounded-3xl border border-neutral-900 bg-neutral-950 p-8 sm:p-12">
+        <h2 class="font-display text-3xl uppercase sm:text-4xl">From idea to win<br />in three steps.</h2>
+        <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
           <div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-medium tabular-nums text-emerald-300 ring-1 ring-emerald-500/20">01</div>
-            <h3 class="mt-4 text-lg font-semibold">Pick a pool, buy a ticket</h3>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-lime font-mono text-xs font-bold text-black">01</div>
+            <h3 class="mt-4 font-display text-lg uppercase">Pick &amp; buy</h3>
             <p class="mt-2 text-sm text-neutral-400">Each ticket is 0.01 SOL. The more you hold, the higher your chance.</p>
           </div>
           <div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-sm font-medium tabular-nums text-purple-300 ring-1 ring-purple-500/20">02</div>
-            <h3 class="mt-4 text-lg font-semibold">Wait for the draw</h3>
-            <p class="mt-2 text-sm text-neutral-400">When the round closes, Switchboard On-Demand posts a verifiable random number on-chain.</p>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#b87aff] font-mono text-xs font-bold text-black">02</div>
+            <h3 class="mt-4 font-display text-lg uppercase">Wait for draw</h3>
+            <p class="mt-2 text-sm text-neutral-400">Switchboard On-Demand posts a verifiable random number on-chain.</p>
           </div>
           <div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-sm font-medium tabular-nums text-amber-300 ring-1 ring-amber-500/20">03</div>
-            <h3 class="mt-4 text-lg font-semibold">Auto-payout to winner</h3>
-            <p class="mt-2 text-sm text-neutral-400">Winning ticket gets the pot (minus 0.5% fee) directly to their wallet. No claim step.</p>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff7a4d] font-mono text-xs font-bold text-black">03</div>
+            <h3 class="mt-4 font-display text-lg uppercase">Auto-payout</h3>
+            <p class="mt-2 text-sm text-neutral-400">Winning ticket gets the pot directly. No claim step. 0.5% to treasury.</p>
           </div>
         </div>
       </div>
@@ -593,70 +570,70 @@
 
     <!-- ==================== BENTO ==================== -->
     <section class="mx-auto max-w-7xl px-6 pb-24">
-      <div class="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div class="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4">
         <!-- Big brand tile -->
-        <div class="col-span-2 row-span-2 flex flex-col justify-between rounded-3xl border border-neutral-800 bg-gradient-to-br from-emerald-500/10 via-neutral-900 to-neutral-950 p-8">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="text-emerald-300">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+        <div class="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-neutral-900 bg-gradient-to-br from-lime/10 via-neutral-950 to-black p-8">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" class="text-lime">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
-            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2" />
-            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2" />
-            <line x1="3"  y1="12" x2="6"  y2="12" stroke="currentColor" stroke-width="2" />
-            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" />
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
           </svg>
           <div>
-            <h3 class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Discover, win,<br />repeat.</h3>
+            <h3 class="font-display text-3xl uppercase leading-[0.95] sm:text-5xl">Discover<br />win<br />repeat.</h3>
             <p class="mt-3 max-w-xs text-sm text-neutral-400">A new round opens automatically the moment the last one settles.</p>
           </div>
         </div>
 
-        <!-- Total pot tile -->
-        <div class="flex flex-col justify-between rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <span class="text-xs uppercase tracking-wider text-neutral-500">Total pot</span>
+        <!-- Total pot -->
+        <div class="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">TOTAL POT</span>
           <div>
-            <div class="text-3xl font-bold text-emerald-300 tabular-nums">19.61 SOL</div>
-            <div class="text-xs text-neutral-500">across 4 active rounds</div>
+            <div class="font-display text-3xl uppercase text-lime">19.61</div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">SOL · 4 ROUNDS</div>
           </div>
         </div>
 
-        <!-- Players tile -->
-        <div class="flex flex-col justify-between rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <span class="text-xs uppercase tracking-wider text-neutral-500">Active players</span>
+        <!-- Players -->
+        <div class="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">PLAYERS</span>
           <div>
-            <div class="text-3xl font-bold tabular-nums">87</div>
-            <div class="text-xs text-neutral-500">unique buyers</div>
+            <div class="font-display text-3xl uppercase">87</div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">UNIQUE BUYERS</div>
           </div>
         </div>
 
-        <!-- Twitter tile -->
-        <a href="#" class="flex items-center justify-between rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6 transition-all hover:border-neutral-700 hover:bg-neutral-900">
-          <span class="text-base font-medium">Follow</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-neutral-400"><path d="M17 3h3l-7 8 8 10h-6l-5-6-5 6H2l8-9L2 3h6l4 5 5-5z"/></svg>
+        <!-- Twitter -->
+        <a href="#" class="flex items-center justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6 transition-all hover:border-neutral-700">
+          <span class="font-display text-base uppercase">Follow</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="text-neutral-300"><path d="M17 3h3l-7 8 8 10h-6l-5-6-5 6H2l8-9L2 3h6l4 5 5-5z"/></svg>
         </a>
 
-        <!-- Github tile -->
-        <a href="https://github.com/AtlasBrain/Project-Tombola" target="_blank" class="flex items-center justify-between rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6 transition-all hover:border-neutral-700 hover:bg-neutral-900">
-          <span class="text-base font-medium">github →</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-neutral-400"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+        <!-- Github -->
+        <a href="#" class="flex items-center justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6 transition-all hover:border-neutral-700">
+          <span class="font-display text-base uppercase">GitHub</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="text-neutral-300"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
         </a>
 
-        <!-- Program ID tile -->
-        <div class="col-span-2 flex flex-col justify-between rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <span class="text-xs uppercase tracking-wider text-neutral-500">Program ID · localnet</span>
-          <a href="#" class="mt-3 break-all font-mono text-sm text-neutral-300 transition-colors hover:text-emerald-300">qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M ↗</a>
+        <!-- Program ID -->
+        <div class="col-span-2 flex flex-col justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">PROGRAM ID · LOCALNET</span>
+          <a href="#" class="mt-3 break-all font-mono text-xs text-neutral-300 transition-colors hover:text-lime">qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M ↗</a>
         </div>
 
-        <!-- 0.5% fee tile -->
-        <div class="flex flex-col justify-between rounded-3xl border border-neutral-800 bg-gradient-to-br from-cyan-500/10 to-neutral-900/40 p-6">
-          <span class="text-xs uppercase tracking-wider text-neutral-500">Protocol fee</span>
+        <!-- 0.5% fee -->
+        <div class="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-gradient-to-br from-[#4dd2ff]/10 to-neutral-950 p-6">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">PROTOCOL FEE</span>
           <div>
-            <div class="text-3xl font-bold text-cyan-300 tabular-nums">0.5%</div>
-            <div class="text-xs text-neutral-500">no other cuts</div>
+            <div class="font-display text-3xl uppercase text-[#4dd2ff]">0.5%</div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">NO HIDDEN CUTS</div>
           </div>
         </div>
 
-        <!-- CTA tile -->
-        <a href="#pools" class="flex items-center justify-center rounded-3xl bg-emerald-500 p-6 text-center font-medium text-neutral-950 transition hover:bg-emerald-400">
+        <!-- CTA -->
+        <a href="#pools" class="flex items-center justify-center rounded-3xl bg-lime p-6 text-center font-display text-lg uppercase text-black transition hover:brightness-110">
           Buy a ticket →
         </a>
       </div>
@@ -664,12 +641,12 @@
 
     <!-- ==================== FOOTER ==================== -->
     <footer class="border-t border-neutral-900">
-      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-neutral-500 sm:flex-row">
-        <span>© 2026 Tombola — open-source raffle protocol on Solana.</span>
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 font-mono text-[10px] uppercase tracking-widest text-neutral-600 sm:flex-row">
+        <span>© 2026 TOMBOLA · OPEN SOURCE</span>
         <div class="flex items-center gap-4">
-          <a href="#" class="transition-colors hover:text-neutral-300">Terms</a>
-          <a href="#" class="transition-colors hover:text-neutral-300">Privacy</a>
-          <a href="https://github.com/AtlasBrain/Project-Tombola" class="transition-colors hover:text-neutral-300">GitHub</a>
+          <a href="#" class="transition-colors hover:text-lime">TERMS</a>
+          <a href="#" class="transition-colors hover:text-lime">PRIVACY</a>
+          <a href="#" class="transition-colors hover:text-lime">GITHUB</a>
         </div>
       </div>
     </footer>
