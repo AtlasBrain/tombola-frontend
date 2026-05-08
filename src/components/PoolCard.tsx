@@ -1,7 +1,11 @@
 import { Countdown } from "./Countdown";
 import { BuyTicketButton } from "./BuyTicketButton";
 import { formatSol, formatTickets } from "@/lib/format";
+import { explorerAddressUrl } from "@/lib/explorer-url";
 import type { PoolView } from "@/lib/mock-pools";
+
+const RPC_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 
 const STATE_BADGE: Record<PoolView["state"], { label: string; className: string }> = {
   Open: { label: "Open", className: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" },
@@ -19,7 +23,22 @@ export function PoolCard({ pool }: { pool: PoolView }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="text-xl font-semibold tracking-tight">{pool.kind}</h3>
-          <p className="text-sm text-neutral-500">Round #{pool.round.toString()}</p>
+          <p className="text-sm text-neutral-500">
+            Round #{pool.round.toString()}
+            {pool.poolAddress && (
+              <>
+                {" · "}
+                <a
+                  href={explorerAddressUrl(pool.poolAddress, RPC_URL)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-neutral-500 transition-colors hover:text-neutral-300"
+                >
+                  explorer ↗
+                </a>
+              </>
+            )}
+          </p>
         </div>
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${badge.className}`}

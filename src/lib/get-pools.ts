@@ -34,6 +34,7 @@ export async function getLivePools(): Promise<PoolView[]> {
       const counter = await client.getPoolTypeCounter(poolType);
       const round = counter.currentRound;
       const p = await client.getPublicPool(poolType, round);
+      const [poolAddress] = await client.publicPoolPda(poolType, round);
       return {
         kind: KIND_BY_TYPE[poolType],
         poolType,
@@ -43,6 +44,7 @@ export async function getLivePools(): Promise<PoolView[]> {
         totalPotLamports: p.totalPot,
         closeTimeUnix: Number(p.closeTime),
         ticketPriceLamports: p.ticketPrice,
+        poolAddress: String(poolAddress),
       } satisfies PoolView;
     }),
   );
