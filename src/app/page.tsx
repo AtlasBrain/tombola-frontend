@@ -3,6 +3,7 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { FaqSection } from "@/components/FaqSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
+import { MyTickets } from "@/components/MyTickets";
 import { NetworkPill } from "@/components/NetworkPill";
 import { PoolCard } from "@/components/PoolCard";
 import { RecentWinners } from "@/components/RecentWinners";
@@ -82,6 +83,8 @@ export default async function Home() {
           ))}
         </div>
       </main>
+
+      <MyTickets pools={pools} />
 
       <RecentWinners />
 
