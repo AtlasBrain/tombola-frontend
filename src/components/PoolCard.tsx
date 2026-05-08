@@ -1,6 +1,11 @@
 import { Countdown } from "./Countdown";
+import { BuyTicketButton } from "./BuyTicketButton";
 import { formatSol, formatTickets } from "@/lib/format";
+import { explorerAddressUrl } from "@/lib/explorer-url";
 import type { PoolView } from "@/lib/mock-pools";
+
+const RPC_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 
 const STATE_BADGE: Record<PoolView["state"], { label: string; className: string }> = {
   Open: { label: "Open", className: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" },
@@ -14,11 +19,26 @@ export function PoolCard({ pool }: { pool: PoolView }) {
   const closed = pool.state !== "Open";
 
   return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 shadow-lg backdrop-blur-sm flex flex-col gap-4">
+    <div className="group flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 shadow-lg backdrop-blur-sm transition duration-200 hover:border-neutral-700 hover:bg-neutral-900/70 hover:shadow-xl hover:shadow-emerald-500/5 focus-within:border-emerald-500/40 focus-within:ring-2 focus-within:ring-emerald-500/20">
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="text-xl font-semibold tracking-tight">{pool.kind}</h3>
-          <p className="text-sm text-neutral-500">Round #{pool.round.toString()}</p>
+          <p className="text-sm text-neutral-500">
+            Round #{pool.round.toString()}
+            {pool.poolAddress && (
+              <>
+                {" · "}
+                <a
+                  href={explorerAddressUrl(pool.poolAddress, RPC_URL)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-neutral-500 transition-colors hover:text-neutral-300"
+                >
+                  explorer ↗
+                </a>
+              </>
+            )}
+          </p>
         </div>
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${badge.className}`}
@@ -55,14 +75,12 @@ export function PoolCard({ pool }: { pool: PoolView }) {
         </div>
       </dl>
 
-      <button
-        type="button"
-        disabled
-        className="mt-2 w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
-        title="Wallet connect ships in Phase 2"
-      >
-        {closed ? "Round closed" : "Buy ticket — Phase 2"}
-      </button>
+      <BuyTicketButton
+        poolType={pool.poolType}
+        round={pool.round}
+        ticketPriceLamports={pool.ticketPriceLamports}
+        closed={closed}
+      />
     </div>
   );
 }

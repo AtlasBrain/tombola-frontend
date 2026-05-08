@@ -27,6 +27,8 @@ export interface PoolView {
   closeTimeUnix: number;
   /** Per-ticket price in lamports (uniform 10_000_000 = 0.01 SOL across all four pools). */
   ticketPriceLamports: bigint;
+  /** PublicPool PDA address. Present on live data; undefined for offline mocks. */
+  poolAddress?: string;
 }
 
 const HOUR = 3600;

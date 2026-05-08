@@ -1,12 +1,50 @@
+import { PROGRAM_ID } from "@tombola/sdk";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+import { FaqSection } from "@/components/FaqSection";
+import { HowItWorks } from "@/components/HowItWorks";
+import { LivePoolWatcher } from "@/components/LivePoolWatcher";
+import { MyTickets } from "@/components/MyTickets";
+import { NetworkPill } from "@/components/NetworkPill";
 import { PoolCard } from "@/components/PoolCard";
-import { MOCK_POOLS } from "@/lib/mock-pools";
+import { RecentWinners } from "@/components/RecentWinners";
+import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
+import { getLivePools } from "@/lib/get-pools";
+import { clusterLabelFor, explorerAddressUrl } from "@/lib/explorer-url";
 
-export default function Home() {
+const RPC_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+const CLUSTER = clusterLabelFor(RPC_URL);
+
+export const dynamic = "force-dynamic";
+
+type PoolSource = "live" | "mock";
+
+async function loadPools(): Promise<{ pools: PoolView[]; source: PoolSource }> {
+  try {
+    const pools = await getLivePools();
+    return { pools, source: "live" };
+  } catch (err) {
+    console.warn("getLivePools failed, falling back to mocks:", err);
+    return { pools: MOCK_POOLS, source: "mock" };
+  }
+}
+
+export default async function Home() {
+  const { pools, source } = await loadPools();
+  const watchedAddresses =
+    source === "live"
+      ? pools
+          .map((p) => p.poolAddress)
+          .filter((a): a is string => typeof a === "string")
+      : [];
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
+      {watchedAddresses.length > 0 && (
+        <LivePoolWatcher addresses={watchedAddresses} rpcUrl={RPC_URL} />
+      )}
       <header className="mb-12 sm:mb-20">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">Tombola</h1>
             <p className="mt-2 text-neutral-400 max-w-xl">
@@ -15,39 +53,61 @@ export default function Home() {
               Switchboard On-Demand. 0.5% protocol fee, no hidden cuts.
             </p>
           </div>
-          <div className="hidden sm:block">
+          <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+            <NetworkPill />
             <ConnectWalletButton />
           </div>
         </div>
       </header>
 
+      <HowItWorks />
+
       <main>
         <div className="mb-6 flex items-end justify-between">
           <h2 className="text-xl font-semibold">Public pools</h2>
           <span className="text-sm text-neutral-500">
-            <span className="inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20">
-              mock data — Phase 1
+            <span
+              className={
+                source === "live"
+                  ? "inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/20"
+                  : "inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20"
+              }
+            >
+              {source === "live" ? `live — ${CLUSTER}` : "mock data — RPC offline"}
             </span>
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
-          {MOCK_POOLS.map((pool) => (
+          {pools.map((pool) => (
             <PoolCard key={pool.poolType} pool={pool} />
           ))}
         </div>
       </main>
 
-      <footer className="mt-20 border-t border-neutral-900 pt-8 text-sm text-neutral-500">
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div>
-            <span className="font-mono">qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M</span>
-            <span className="ml-2 text-neutral-600">— program ID (devnet)</span>
+      <MyTickets pools={pools} />
+
+      <RecentWinners />
+
+      <FaqSection />
+
+      <footer className="border-t border-neutral-900 pt-8 text-sm text-neutral-500">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <a
+              href={explorerAddressUrl(PROGRAM_ID, RPC_URL)}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              {PROGRAM_ID}
+            </a>
+            <span className="text-neutral-600">— program ID ({CLUSTER})</span>
           </div>
           <a
             href="https://github.com/AtlasBrain/Project-Tombola"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-neutral-300"
+            className="transition-colors hover:text-neutral-300"
           >
             github →
           </a>
