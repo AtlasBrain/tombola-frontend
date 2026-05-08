@@ -15,10 +15,18 @@
       :root {
         --lime: #c0f61c;
         --lime-dim: #c0f61c33;
-        --bg: #000;
+        --bg: #0b0b0d;
+        --bg-elevated: #131316;
+        --bg-warm: #14110d;
       }
       html, body {
-        background: var(--bg);
+        /* Subtle tonal gradient instead of pure black — adds depth without
+           competing with content. */
+        background:
+          radial-gradient(70% 60% at 50% 0%, #1a1a20 0%, transparent 60%),
+          radial-gradient(50% 40% at 50% 100%, #181612 0%, transparent 70%),
+          var(--bg);
+        background-attachment: fixed;
         color: #f5f5f5;
         font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
         font-feature-settings: "ss01", "ss02";
@@ -122,15 +130,22 @@
     </header>
 
     <!-- ==================== HERO ==================== -->
-    <section class="relative mx-auto max-w-7xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-28">
+    <section class="relative mx-auto max-w-7xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-24">
+      <!-- Soft dot grid + warm radial accent (gives the bg some tonal life) -->
       <div class="bg-dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"></div>
+      <div class="absolute left-1/2 top-1/2 -z-10 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(192,246,28,0.06)_0%,transparent_70%)]"></div>
 
-      <!-- Headline + raffle wheel as a unified visual block -->
-      <div class="relative mx-auto flex flex-col items-center justify-center">
-        <!-- Big circular raffle wheel (Metadrop-track-style ring of color) -->
-        <div class="relative aspect-square w-full max-w-3xl">
-          <!-- Outer rotating ring -->
-          <svg viewBox="0 0 600 600" class="absolute inset-0 h-full w-full">
+      <div class="relative mx-auto max-w-3xl text-center">
+        <!-- Status pill -->
+        <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
+          <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-lime"></span>
+          LIVE · 4 POOLS RUNNING
+        </span>
+
+        <!-- Headline with a small, decorative ring sitting BEHIND the text -->
+        <div class="relative mx-auto">
+          <!-- Smaller ring as a subtle backdrop, no chips, no dot accents -->
+          <svg viewBox="0 0 600 600" class="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 opacity-50 sm:h-[480px] sm:w-[480px]">
             <defs>
               <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%"   stop-color="#c0f61c" />
@@ -138,69 +153,33 @@
                 <stop offset="66%"  stop-color="#f0c8a0" />
                 <stop offset="100%" stop-color="#a8d0e5" />
               </linearGradient>
-              <linearGradient id="ringInner" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%"   stop-color="#f0c8a0" />
-                <stop offset="40%"  stop-color="#f0b8c8" />
-                <stop offset="80%"  stop-color="#a8d0e5" />
-                <stop offset="100%" stop-color="#c0f61c" />
-              </linearGradient>
             </defs>
-
-            <!-- Outer thick ring -->
             <g class="spin-slow" style="transform-origin: 300px 300px;">
-              <circle cx="300" cy="300" r="270" stroke="url(#ringGrad)" stroke-width="36" fill="none" />
-              <!-- ticket dot accents floating on the ring -->
-              <circle cx="300" cy="30"  r="10" fill="#c0f61c" />
-              <circle cx="570" cy="300" r="10" fill="#c9b8e5" />
-              <circle cx="300" cy="570" r="10" fill="#f0c8a0" />
-              <circle cx="30"  cy="300" r="10" fill="#a8d0e5" />
+              <circle cx="300" cy="300" r="280" stroke="url(#ringGrad)" stroke-width="2" fill="none" />
+              <circle cx="300" cy="300" r="240" stroke="url(#ringGrad)" stroke-width="14" fill="none" />
             </g>
-            <!-- Inner thin ring (counter-rotation feel) -->
-            <circle cx="300" cy="300" r="220" stroke="url(#ringInner)" stroke-width="6" fill="none" opacity="0.7" />
           </svg>
 
-          <!-- Centered headline content -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-black px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
-              <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-lime"></span>
-              LIVE · 4 POOLS RUNNING
-            </span>
-            <h1 class="font-display text-5xl uppercase leading-[0.95] sm:text-7xl lg:text-[120px]">
-              Where SOL<br />wins big.
-            </h1>
-            <p class="mt-6 max-w-md text-sm text-neutral-400 sm:text-base">
-              Trustless on-chain raffles. Buy tickets, win the pot, repeat — verifiable randomness via Switchboard.
-            </p>
-            <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <button class="flex items-center gap-2 rounded-full bg-white px-2 py-2 pl-5 text-xs font-medium uppercase tracking-widest text-black transition hover:bg-neutral-200">
-                LEARN MORE
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9" /></svg>
-                </span>
-              </button>
-              <button class="flex items-center gap-2 rounded-full bg-lime px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-black transition hover:brightness-110">
-                BUY A TICKET
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-lime">→</span>
-              </button>
-            </div>
-          </div>
+          <h1 class="font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
+            Where SOL<br />wins big.
+          </h1>
+        </div>
 
-          <!-- Floating chip avatars on the ring (Metadrop's "20 ETH" style) -->
-          <div class="absolute -left-2 top-[18%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
-            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-lime to-cyan-300"></span>
-            <span class="font-mono">20</span>
-            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
-          </div>
-          <div class="absolute right-[8%] top-[6%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
-            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#c9b8e5] to-[#f0b8c8]"></span>
-            <span class="font-mono">6</span>
-            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
-          </div>
-          <div class="absolute left-[10%] bottom-[12%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
-            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#a8d0e5] to-[#3b82f6]"></span>
-            <span class="font-mono">1</span>
-            <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
-          </div>
+        <p class="mx-auto mt-6 max-w-md text-sm text-neutral-400 sm:text-base">
+          Trustless on-chain raffles. Buy tickets, win the pot, repeat — verifiable randomness via Switchboard.
+        </p>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button class="flex items-center gap-2 rounded-full bg-white px-2 py-2 pl-5 text-xs font-medium uppercase tracking-widest text-black transition hover:bg-neutral-200">
+            LEARN MORE
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9" /></svg>
+            </span>
+          </button>
+          <button class="flex items-center gap-2 rounded-full bg-lime px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-black transition hover:brightness-110">
+            BUY A TICKET
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-lime">→</span>
+          </button>
         </div>
       </div>
     </section>
