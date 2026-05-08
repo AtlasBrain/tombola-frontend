@@ -61,7 +61,7 @@ export function LivePoolWatcher({
           const notifications = await subs
             .accountNotifications(toAddress(addr), { commitment: "confirmed" })
             .subscribe({ abortSignal: ac.signal });
-          for await (const _ of notifications) {
+          for await (const _notification of notifications) {
             if (ac.signal.aborted) return;
             scheduleRefresh();
           }
