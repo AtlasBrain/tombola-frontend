@@ -1,5 +1,6 @@
 import { PROGRAM_ID } from "@tombola/sdk";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+import { FaqSection } from "@/components/FaqSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { PoolCard } from "@/components/PoolCard";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
@@ -69,7 +70,9 @@ export default async function Home() {
         </div>
       </main>
 
-      <footer className="mt-20 border-t border-neutral-900 pt-8 text-sm text-neutral-500">
+      <FaqSection />
+
+      <footer className="border-t border-neutral-900 pt-8 text-sm text-neutral-500">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <a
