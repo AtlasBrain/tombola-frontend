@@ -3,6 +3,7 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { FaqSection } from "@/components/FaqSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
+import { NetworkPill } from "@/components/NetworkPill";
 import { PoolCard } from "@/components/PoolCard";
 import { RecentWinners } from "@/components/RecentWinners";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
@@ -51,7 +52,8 @@ export default async function Home() {
               Switchboard On-Demand. 0.5% protocol fee, no hidden cuts.
             </p>
           </div>
-          <div className="shrink-0">
+          <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+            <NetworkPill />
             <ConnectWalletButton />
           </div>
         </div>
