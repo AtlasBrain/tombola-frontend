@@ -1,8 +1,25 @@
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { PoolCard } from "@/components/PoolCard";
-import { MOCK_POOLS } from "@/lib/mock-pools";
+import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
+import { getLivePools } from "@/lib/get-pools";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+type PoolSource = "live" | "mock";
+
+async function loadPools(): Promise<{ pools: PoolView[]; source: PoolSource }> {
+  try {
+    const pools = await getLivePools();
+    return { pools, source: "live" };
+  } catch (err) {
+    console.warn("getLivePools failed, falling back to mocks:", err);
+    return { pools: MOCK_POOLS, source: "mock" };
+  }
+}
+
+export default async function Home() {
+  const { pools, source } = await loadPools();
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
       <header className="mb-12 sm:mb-20">
@@ -25,13 +42,19 @@ export default function Home() {
         <div className="mb-6 flex items-end justify-between">
           <h2 className="text-xl font-semibold">Public pools</h2>
           <span className="text-sm text-neutral-500">
-            <span className="inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20">
-              mock data — Phase 1
+            <span
+              className={
+                source === "live"
+                  ? "inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/20"
+                  : "inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20"
+              }
+            >
+              {source === "live" ? "live — localnet" : "mock data — validator offline"}
             </span>
           </span>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
-          {MOCK_POOLS.map((pool) => (
+          {pools.map((pool) => (
             <PoolCard key={pool.poolType} pool={pool} />
           ))}
         </div>
