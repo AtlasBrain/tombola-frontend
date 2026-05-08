@@ -25,14 +25,14 @@ export function BuyTicketButton({
   closed,
 }: Props) {
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const { push: pushToast } = useToast();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const onClick = useCallback(async () => {
-    if (!publicKey) return;
+    if (!publicKey || !signTransaction) return;
     setBusy(true);
     setErr(null);
     try {
@@ -52,7 +52,16 @@ export function BuyTicketButton({
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
-      const sig = await sendTransaction(tx, connection);
+      // Sign-only flow: ask the wallet to sign without broadcasting. Phantom
+      // and Solflare otherwise broadcast via their own RPC (devnet) instead
+      // of the dapp's connection (localnet/whatever NEXT_PUBLIC_SOLANA_RPC_URL
+      // points at). The wallet will still simulate against its own cluster
+      // and may show a red "transaction may fail" warning — clicking
+      // Approve through the warning is correct on a localnet/custom RPC.
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+      });
       await connection.confirmTransaction(
         { signature: sig, blockhash, lastValidBlockHeight },
         "confirmed",
@@ -71,7 +80,7 @@ export function BuyTicketButton({
     } finally {
       setBusy(false);
     }
-  }, [connection, publicKey, sendTransaction, poolType, round, qty, pushToast]);
+  }, [connection, publicKey, signTransaction, poolType, round, qty, pushToast]);
 
   if (closed) {
     return (
