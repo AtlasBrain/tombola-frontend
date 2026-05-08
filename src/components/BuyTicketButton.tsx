@@ -6,6 +6,7 @@ import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import { RaffleClient, type PoolTypeValue } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { formatSol } from "@/lib/format";
+import { useToast } from "./Toast";
 
 interface Props {
   poolType: PoolTypeValue;
@@ -24,13 +25,14 @@ export function BuyTicketButton({
   closed,
 }: Props) {
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
+  const { push: pushToast } = useToast();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const onClick = useCallback(async () => {
-    if (!publicKey) return;
+    if (!publicKey || !signTransaction) return;
     setBusy(true);
     setErr(null);
     try {
@@ -50,21 +52,35 @@ export function BuyTicketButton({
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
-      const sig = await sendTransaction(tx, connection);
+      // Sign-only flow: ask the wallet to sign without broadcasting. Phantom
+      // and Solflare otherwise broadcast via their own RPC (devnet) instead
+      // of the dapp's connection (localnet/whatever NEXT_PUBLIC_SOLANA_RPC_URL
+      // points at). The wallet will still simulate against its own cluster
+      // and may show a red "transaction may fail" warning — clicking
+      // Approve through the warning is correct on a localnet/custom RPC.
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+      });
       await connection.confirmTransaction(
         { signature: sig, blockhash, lastValidBlockHeight },
         "confirmed",
       );
       // No router.refresh() here — LivePoolWatcher's accountSubscribe
       // picks up the pool mutation and triggers the refetch (debounced).
+      pushToast(
+        "success",
+        `Bought ${qty} ticket${qty === 1 ? "" : "s"} ✓`,
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setErr(msg);
+      pushToast("error", msg.length > 100 ? msg.slice(0, 100) + "…" : msg);
       console.error("buy ticket failed:", e);
     } finally {
       setBusy(false);
     }
-  }, [connection, publicKey, sendTransaction, poolType, round, qty]);
+  }, [connection, publicKey, signTransaction, poolType, round, qty, pushToast]);
 
   if (closed) {
     return (
@@ -91,42 +107,59 @@ export function BuyTicketButton({
     );
   }
 
-  const total = BigInt(qty) * ticketPriceLamports;
-  const decrementDisabled = qty <= MIN_QTY || busy;
-  const incrementDisabled = qty >= MAX_QTY || busy;
+  const qtyValid = qty >= MIN_QTY && qty <= MAX_QTY;
+  const total = qtyValid ? BigInt(qty) * ticketPriceLamports : 0n;
+
+  function onQtyChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // Empty string while editing is fine; clamp on commit. Strip non-digits so
+    // "10e5" / "1.5" don't sneak through Safari's lax `type="number"` parser.
+    const raw = e.target.value.replace(/[^\d]/g, "");
+    if (raw === "") {
+      setQty(NaN); // visual empty until user types or blurs
+      return;
+    }
+    setQty(Number(raw));
+  }
+
+  function onQtyBlur() {
+    if (!Number.isFinite(qty) || qty < MIN_QTY) setQty(MIN_QTY);
+    else if (qty > MAX_QTY) setQty(MAX_QTY);
+  }
 
   return (
     <div className="mt-2 flex flex-col gap-2">
-      <div className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1">
-        <button
-          type="button"
-          aria-label="decrease quantity"
-          onClick={() => setQty((q) => Math.max(MIN_QTY, q - 1))}
-          disabled={decrementDisabled}
-          className="grid h-8 w-8 place-items-center rounded-md text-neutral-300 transition hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-600 disabled:hover:bg-transparent"
-        >
-          −
-        </button>
-        <span className="tabular-nums text-sm font-medium text-neutral-100">
-          {qty} ticket{qty === 1 ? "" : "s"}
-        </span>
-        <button
-          type="button"
-          aria-label="increase quantity"
-          onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))}
-          disabled={incrementDisabled}
-          className="grid h-8 w-8 place-items-center rounded-md text-neutral-300 transition hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-600 disabled:hover:bg-transparent"
-        >
-          +
-        </button>
-      </div>
+      <label className="flex flex-col gap-1">
+        <div className="flex items-center justify-between text-xs text-neutral-500">
+          <span>Quantity (1–{MAX_QTY})</span>
+          <span className="tabular-nums">
+            {qtyValid ? `= ${formatSol(total)}` : "—"}
+          </span>
+        </div>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={MIN_QTY}
+          max={MAX_QTY}
+          step={1}
+          value={Number.isFinite(qty) ? qty : ""}
+          onChange={onQtyChange}
+          onBlur={onQtyBlur}
+          disabled={busy}
+          className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Number of tickets to buy"
+        />
+      </label>
       <button
         type="button"
-        disabled={busy}
+        disabled={busy || !qtyValid}
         onClick={onClick}
         className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
       >
-        {busy ? "Buying…" : `Buy — ${formatSol(total)}`}
+        {busy
+          ? "Buying…"
+          : qtyValid
+            ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} — ${formatSol(total)}`
+            : "Enter a quantity"}
       </button>
       {err && (
         <p className="text-xs text-rose-400 break-words" title={err}>

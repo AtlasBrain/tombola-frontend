@@ -8,6 +8,8 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
+import { ToastProvider } from "./Toast";
+
 // Wallet-adapter modal styles. Imported once at the provider boundary;
 // Tailwind layer order keeps our utilities winning where they conflict.
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -35,7 +37,9 @@ export function WalletProviders({ children }: { children: ReactNode }) {
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={[]} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
+        <WalletModalProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );
