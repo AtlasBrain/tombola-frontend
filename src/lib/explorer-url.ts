@@ -21,3 +21,13 @@ const EXPLORER_BASE = "https://explorer.solana.com";
 export function explorerAddressUrl(address: string, rpcUrl: string): string {
   return `${EXPLORER_BASE}/address/${address}${clusterQueryFor(rpcUrl)}`;
 }
+
+export type ClusterLabel = "localnet" | "devnet" | "testnet" | "mainnet";
+
+export function clusterLabelFor(rpcUrl: string): ClusterLabel {
+  const lower = rpcUrl.toLowerCase();
+  if (LOCAL_HOSTS.some((h) => lower.includes(h))) return "localnet";
+  if (DEVNET_HOSTS.some((h) => lower.includes(h))) return "devnet";
+  if (TESTNET_HOSTS.some((h) => lower.includes(h))) return "testnet";
+  return "mainnet";
+}

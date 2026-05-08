@@ -1,8 +1,14 @@
+import { PROGRAM_ID } from "@tombola/sdk";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { HowItWorks } from "@/components/HowItWorks";
 import { PoolCard } from "@/components/PoolCard";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
+import { clusterLabelFor, explorerAddressUrl } from "@/lib/explorer-url";
+
+const RPC_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+const CLUSTER = clusterLabelFor(RPC_URL);
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +58,7 @@ export default async function Home() {
                   : "inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20"
               }
             >
-              {source === "live" ? "live — localnet" : "mock data — validator offline"}
+              {source === "live" ? `live — ${CLUSTER}` : "mock data — RPC offline"}
             </span>
           </span>
         </div>
@@ -64,16 +70,23 @@ export default async function Home() {
       </main>
 
       <footer className="mt-20 border-t border-neutral-900 pt-8 text-sm text-neutral-500">
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div>
-            <span className="font-mono">qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M</span>
-            <span className="ml-2 text-neutral-600">— program ID (devnet)</span>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <a
+              href={explorerAddressUrl(PROGRAM_ID, RPC_URL)}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              {PROGRAM_ID}
+            </a>
+            <span className="text-neutral-600">— program ID ({CLUSTER})</span>
           </div>
           <a
             href="https://github.com/AtlasBrain/Project-Tombola"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-neutral-300"
+            className="transition-colors hover:text-neutral-300"
           >
             github →
           </a>
