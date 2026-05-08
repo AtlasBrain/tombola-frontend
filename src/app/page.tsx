@@ -23,7 +23,7 @@ export default async function Home() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
       <header className="mb-12 sm:mb-20">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">Tombola</h1>
             <p className="mt-2 text-neutral-400 max-w-xl">
@@ -32,7 +32,7 @@ export default async function Home() {
               Switchboard On-Demand. 0.5% protocol fee, no hidden cuts.
             </p>
           </div>
-          <div className="hidden sm:block">
+          <div className="shrink-0">
             <ConnectWalletButton />
           </div>
         </div>
