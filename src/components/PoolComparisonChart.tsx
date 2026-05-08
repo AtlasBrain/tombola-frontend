@@ -39,7 +39,7 @@ export function PoolComparisonChart({ pools }: { pools: PoolView[] }) {
             <Link
               key={pool.poolType}
               href={`/pool/${pool.kind.toLowerCase()}/${pool.round.toString()}`}
-              className="group flex flex-1 flex-col items-center gap-2"
+              className="group flex h-full flex-1 flex-col items-center gap-2"
             >
               <FlashOnChange value={pool.totalPotLamports.toString()}>
                 <span className="text-xs font-medium tabular-nums text-neutral-300 group-hover:text-emerald-300">
@@ -48,7 +48,7 @@ export function PoolComparisonChart({ pools }: { pools: PoolView[] }) {
               </FlashOnChange>
               <div className="relative flex w-full flex-1 items-end">
                 <div
-                  className="w-full rounded-t-md bg-gradient-to-t from-emerald-500/30 to-emerald-500/70 transition-all duration-700 group-hover:from-emerald-500/40 group-hover:to-emerald-400"
+                  className="w-full rounded-t-md bg-linear-to-t from-emerald-500/30 to-emerald-500/70 transition-all duration-700 group-hover:from-emerald-500/40 group-hover:to-emerald-400"
                   style={{ height: `${heightPct}%` }}
                 />
               </div>
