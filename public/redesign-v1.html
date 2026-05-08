@@ -52,9 +52,9 @@
 
       /* Per-pool gradients (vivid neon accents matching Metadrop palette) */
       .grad-weekly    { background: radial-gradient(120% 100% at 0% 0%, #c0f61c33 0%, transparent 60%); }
-      .grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%, #b87aff33 0%, transparent 60%); }
-      .grad-triweekly { background: radial-gradient(120% 100% at 0% 100%, #4dd2ff33 0%, transparent 60%); }
-      .grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #ff7a4d33 0%, transparent 60%); }
+      .grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%, #c9b8e533 0%, transparent 60%); }
+      .grad-triweekly { background: radial-gradient(120% 100% at 0% 100%, #a8d0e533 0%, transparent 60%); }
+      .grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #f0c8a033 0%, transparent 60%); }
 
       /* Rotating raffle wheel */
       @keyframes spin-slow { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
@@ -68,21 +68,21 @@
         <div class="ticker-track flex gap-10 whitespace-nowrap font-mono">
           <span class="flex gap-10">
             <span><span class="text-lime">●</span> 9XQT…DWY8 BOUGHT 5 · WEEKLY · 12s</span>
-            <span><span class="text-[#b87aff]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
-            <span><span class="text-[#4dd2ff]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
+            <span><span class="text-[#c9b8e5]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
+            <span><span class="text-[#a8d0e5]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
             <span><span class="text-lime">●</span> HMSQ…YJNW BOUGHT 3 · WEEKLY · 2m</span>
-            <span><span class="text-[#ff7a4d]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
+            <span><span class="text-[#f0c8a0]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
             <span><span class="text-lime">●</span> AXWU…CW7V BOUGHT 50 · WEEKLY · 4m</span>
-            <span><span class="text-[#b87aff]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
+            <span><span class="text-[#c9b8e5]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
           </span>
           <span class="flex gap-10" aria-hidden="true">
             <span><span class="text-lime">●</span> 9XQT…DWY8 BOUGHT 5 · WEEKLY · 12s</span>
-            <span><span class="text-[#b87aff]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
-            <span><span class="text-[#4dd2ff]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
+            <span><span class="text-[#c9b8e5]">●</span> EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s</span>
+            <span><span class="text-[#a8d0e5]">●</span> QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m</span>
             <span><span class="text-lime">●</span> HMSQ…YJNW BOUGHT 3 · WEEKLY · 2m</span>
-            <span><span class="text-[#ff7a4d]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
+            <span><span class="text-[#f0c8a0]">●</span> 2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2</span>
             <span><span class="text-lime">●</span> AXWU…CW7V BOUGHT 50 · WEEKLY · 4m</span>
-            <span><span class="text-[#b87aff]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
+            <span><span class="text-[#c9b8e5]">●</span> 6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m</span>
           </span>
         </div>
       </div>
@@ -134,14 +134,14 @@
             <defs>
               <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%"   stop-color="#c0f61c" />
-                <stop offset="33%"  stop-color="#b87aff" />
-                <stop offset="66%"  stop-color="#ff7a4d" />
-                <stop offset="100%" stop-color="#4dd2ff" />
+                <stop offset="33%"  stop-color="#c9b8e5" />
+                <stop offset="66%"  stop-color="#f0c8a0" />
+                <stop offset="100%" stop-color="#a8d0e5" />
               </linearGradient>
               <linearGradient id="ringInner" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%"   stop-color="#ff7a4d" />
-                <stop offset="40%"  stop-color="#ec4899" />
-                <stop offset="80%"  stop-color="#4dd2ff" />
+                <stop offset="0%"   stop-color="#f0c8a0" />
+                <stop offset="40%"  stop-color="#f0b8c8" />
+                <stop offset="80%"  stop-color="#a8d0e5" />
                 <stop offset="100%" stop-color="#c0f61c" />
               </linearGradient>
             </defs>
@@ -151,9 +151,9 @@
               <circle cx="300" cy="300" r="270" stroke="url(#ringGrad)" stroke-width="36" fill="none" />
               <!-- ticket dot accents floating on the ring -->
               <circle cx="300" cy="30"  r="10" fill="#c0f61c" />
-              <circle cx="570" cy="300" r="10" fill="#b87aff" />
-              <circle cx="300" cy="570" r="10" fill="#ff7a4d" />
-              <circle cx="30"  cy="300" r="10" fill="#4dd2ff" />
+              <circle cx="570" cy="300" r="10" fill="#c9b8e5" />
+              <circle cx="300" cy="570" r="10" fill="#f0c8a0" />
+              <circle cx="30"  cy="300" r="10" fill="#a8d0e5" />
             </g>
             <!-- Inner thin ring (counter-rotation feel) -->
             <circle cx="300" cy="300" r="220" stroke="url(#ringInner)" stroke-width="6" fill="none" opacity="0.7" />
@@ -192,12 +192,12 @@
             <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
           </div>
           <div class="absolute right-[8%] top-[6%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
-            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#b87aff] to-[#ec4899]"></span>
+            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#c9b8e5] to-[#f0b8c8]"></span>
             <span class="font-mono">6</span>
             <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
           </div>
           <div class="absolute left-[10%] bottom-[12%] flex items-center gap-1.5 rounded-full border border-neutral-800 bg-black px-2 py-1 text-xs">
-            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#4dd2ff] to-[#3b82f6]"></span>
+            <span class="inline-block h-5 w-5 rounded-full bg-gradient-to-br from-[#a8d0e5] to-[#3b82f6]"></span>
             <span class="font-mono">1</span>
             <svg width="9" height="14" viewBox="0 0 9 14" class="text-neutral-300"><path fill="currentColor" d="M4.5 0L0 7l4.5 2.5L9 7zM0 8l4.5 6L9 8 4.5 10.5z"/></svg>
           </div>
@@ -212,9 +212,9 @@
         <li>
           <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
             <span class="flex items-center gap-4">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ff7a4d]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0c8a0]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
               <span class="flex items-center gap-3 font-mono text-sm uppercase">
-                <span class="text-[#ff7a4d]">MTHLY</span>
+                <span class="text-[#f0c8a0]">MTHLY</span>
                 <span class="text-white normal-case">Monthly Round #2</span>
                 <span class="text-neutral-500 normal-case">won by 2uHK…z8JA — 10.18 SOL</span>
               </span>
@@ -238,9 +238,9 @@
         <li>
           <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
             <span class="flex items-center gap-4">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#4dd2ff]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#a8d0e5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
               <span class="flex items-center gap-3 font-mono text-sm uppercase">
-                <span class="text-[#4dd2ff]">TRIWK</span>
+                <span class="text-[#a8d0e5]">TRIWK</span>
                 <span class="text-white normal-case">Triweekly Round #1</span>
                 <span class="text-neutral-500 normal-case">drawing now — Switchboard reveal pending</span>
               </span>
@@ -251,9 +251,9 @@
         <li>
           <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
             <span class="flex items-center gap-4">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#b87aff]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#c9b8e5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
               <span class="flex items-center gap-3 font-mono text-sm uppercase">
-                <span class="text-[#b87aff]">BIWK</span>
+                <span class="text-[#c9b8e5]">BIWK</span>
                 <span class="text-white normal-case">Biweekly Round #1</span>
                 <span class="text-neutral-500 normal-case">EaAL…pLBt bought 20 tickets</span>
               </span>
@@ -264,9 +264,9 @@
         <li>
           <a href="#" class="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80">
             <span class="flex items-center gap-4">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ec4899]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0b8c8]"><svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/></svg></span>
               <span class="flex items-center gap-3 font-mono text-sm uppercase">
-                <span class="text-[#ec4899]">TRIWK</span>
+                <span class="text-[#f0b8c8]">TRIWK</span>
                 <span class="text-white normal-case">Triweekly Round #0</span>
                 <span class="text-neutral-500 normal-case">won by qWyk…ZB1M — 4.84 SOL</span>
               </span>
@@ -311,14 +311,14 @@
         </a>
 
         <!-- Biweekly -->
-        <a href="#" class="grad-biweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#b87aff]/40">
+        <a href="#" class="grad-biweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#c9b8e5]/40">
           <div class="flex items-center justify-between">
             <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
             <span class="font-mono text-[10px] uppercase tracking-widest text-lime">▲ OPEN</span>
           </div>
-          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#b87aff33] to-black">
-            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #b87aff66 0%, transparent 70%)"></div>
-            <span class="font-display text-6xl uppercase text-[#b87aff]">B</span>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#c9b8e533] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #c9b8e566 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#c9b8e5]">B</span>
           </div>
           <div class="mt-4 flex items-center justify-between">
             <div>
@@ -327,20 +327,20 @@
             </div>
             <div class="text-right">
               <div class="font-mono text-xs text-neutral-500">POT</div>
-              <div class="font-display text-lg uppercase text-[#b87aff]">3.12</div>
+              <div class="font-display text-lg uppercase text-[#c9b8e5]">3.12</div>
             </div>
           </div>
         </a>
 
         <!-- Triweekly -->
-        <a href="#" class="grad-triweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#4dd2ff]/40">
+        <a href="#" class="grad-triweekly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#a8d0e5]/40">
           <div class="flex items-center justify-between">
             <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
-            <span class="font-mono text-[10px] uppercase tracking-widest text-[#ff7a4d]">▼ DRAWING</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[#f0c8a0]">▼ DRAWING</span>
           </div>
-          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#4dd2ff33] to-black">
-            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #4dd2ff66 0%, transparent 70%)"></div>
-            <span class="font-display text-6xl uppercase text-[#4dd2ff]">T</span>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#a8d0e533] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #a8d0e566 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#a8d0e5]">T</span>
           </div>
           <div class="mt-4 flex items-center justify-between">
             <div>
@@ -349,20 +349,20 @@
             </div>
             <div class="text-right">
               <div class="font-mono text-xs text-neutral-500">POT</div>
-              <div class="font-display text-lg uppercase text-[#4dd2ff]">4.87</div>
+              <div class="font-display text-lg uppercase text-[#a8d0e5]">4.87</div>
             </div>
           </div>
         </a>
 
         <!-- Monthly -->
-        <a href="#" class="grad-monthly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#ff7a4d]/40">
+        <a href="#" class="grad-monthly group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 transition-all hover:-translate-y-0.5 hover:border-[#f0c8a0]/40">
           <div class="flex items-center justify-between">
             <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">$0.01 SOL · ROUND #1</span>
             <span class="font-mono text-[10px] uppercase tracking-widest text-lime">▲ OPEN</span>
           </div>
-          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#ff7a4d33] to-black">
-            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #ff7a4d66 0%, transparent 70%)"></div>
-            <span class="font-display text-6xl uppercase text-[#ff7a4d]">M</span>
+          <div class="relative mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-neutral-900 bg-gradient-to-br from-[#f0c8a033] to-black">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #f0c8a066 0%, transparent 70%)"></div>
+            <span class="font-display text-6xl uppercase text-[#f0c8a0]">M</span>
           </div>
           <div class="mt-4 flex items-center justify-between">
             <div>
@@ -371,7 +371,7 @@
             </div>
             <div class="text-right">
               <div class="font-mono text-xs text-neutral-500">POT</div>
-              <div class="font-display text-lg uppercase text-[#ff7a4d]">10.24</div>
+              <div class="font-display text-lg uppercase text-[#f0c8a0]">10.24</div>
             </div>
           </div>
         </a>
@@ -398,9 +398,9 @@
           <tbody class="divide-y divide-neutral-900/60 font-mono text-[13px]">
             <tr class="transition-colors hover:bg-neutral-900/40">
               <td class="px-6 py-3 text-neutral-500">#1</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#ff7a4d]"></span><span class="text-white">MONTHLY</span></span></td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#f0c8a0]"></span><span class="text-white">MONTHLY</span></span></td>
               <td class="py-3 text-neutral-500">#1</td>
-              <td class="py-3 text-[#ff7a4d]">10.24 SOL</td>
+              <td class="py-3 text-[#f0c8a0]">10.24 SOL</td>
               <td class="py-3 text-white">1,024</td>
               <td class="py-3 text-neutral-400">181</td>
               <td class="py-3"><span class="rounded-full bg-lime/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime">OPEN</span></td>
@@ -408,19 +408,19 @@
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
               <td class="px-6 py-3 text-neutral-500">#2</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#4dd2ff]"></span><span class="text-white">TRIWEEKLY</span></span></td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#a8d0e5]"></span><span class="text-white">TRIWEEKLY</span></span></td>
               <td class="py-3 text-neutral-500">#1</td>
-              <td class="py-3 text-[#4dd2ff]">4.87 SOL</td>
+              <td class="py-3 text-[#a8d0e5]">4.87 SOL</td>
               <td class="py-3 text-white">487</td>
               <td class="py-3 text-neutral-400">93</td>
-              <td class="py-3"><span class="rounded-full bg-[#ff7a4d]/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#ff7a4d]">DRAWING</span></td>
+              <td class="py-3"><span class="rounded-full bg-[#f0c8a0]/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#f0c8a0]">DRAWING</span></td>
               <td class="px-6 py-3 text-right text-neutral-400">closed 2h ago</td>
             </tr>
             <tr class="transition-colors hover:bg-neutral-900/40">
               <td class="px-6 py-3 text-neutral-500">#3</td>
-              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#b87aff]"></span><span class="text-white">BIWEEKLY</span></span></td>
+              <td class="py-3"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#c9b8e5]"></span><span class="text-white">BIWEEKLY</span></span></td>
               <td class="py-3 text-neutral-500">#1</td>
-              <td class="py-3 text-[#b87aff]">3.12 SOL</td>
+              <td class="py-3 text-[#c9b8e5]">3.12 SOL</td>
               <td class="py-3 text-white">312</td>
               <td class="py-3 text-neutral-400">68</td>
               <td class="py-3"><span class="rounded-full bg-lime/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime">OPEN</span></td>
@@ -463,22 +463,22 @@
           <h3 class="font-display text-xl uppercase">Verifiable<br />randomness</h3>
           <p class="mt-2 text-sm text-neutral-400">Switchboard On-Demand posts a signed reveal on-chain. No one can predict or influence the result.</p>
           <div class="mt-6 grid grid-cols-8 gap-1 font-mono">
-            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">a3</span>
-            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">7f</span>
-            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">22</span>
-            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">e1</span>
-            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">9c</span>
-            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">5b</span>
-            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">04</span>
-            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">d7</span>
-            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">3a</span>
-            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">88</span>
-            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">f2</span>
-            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">11</span>
-            <span class="rounded bg-[#b87aff]/30 px-1 text-center text-[10px]">be</span>
-            <span class="rounded bg-[#b87aff]/40 px-1 text-center text-[10px]">06</span>
-            <span class="rounded bg-[#b87aff]/20 px-1 text-center text-[10px]">a5</span>
-            <span class="rounded bg-[#b87aff]/50 px-1 text-center text-[10px]">cf</span>
+            <span class="rounded bg-[#c9b8e5]/40 px-1 text-center text-[10px]">a3</span>
+            <span class="rounded bg-[#c9b8e5]/30 px-1 text-center text-[10px]">7f</span>
+            <span class="rounded bg-[#c9b8e5]/50 px-1 text-center text-[10px]">22</span>
+            <span class="rounded bg-[#c9b8e5]/20 px-1 text-center text-[10px]">e1</span>
+            <span class="rounded bg-[#c9b8e5]/40 px-1 text-center text-[10px]">9c</span>
+            <span class="rounded bg-[#c9b8e5]/30 px-1 text-center text-[10px]">5b</span>
+            <span class="rounded bg-[#c9b8e5]/50 px-1 text-center text-[10px]">04</span>
+            <span class="rounded bg-[#c9b8e5]/20 px-1 text-center text-[10px]">d7</span>
+            <span class="rounded bg-[#c9b8e5]/30 px-1 text-center text-[10px]">3a</span>
+            <span class="rounded bg-[#c9b8e5]/40 px-1 text-center text-[10px]">88</span>
+            <span class="rounded bg-[#c9b8e5]/20 px-1 text-center text-[10px]">f2</span>
+            <span class="rounded bg-[#c9b8e5]/50 px-1 text-center text-[10px]">11</span>
+            <span class="rounded bg-[#c9b8e5]/30 px-1 text-center text-[10px]">be</span>
+            <span class="rounded bg-[#c9b8e5]/40 px-1 text-center text-[10px]">06</span>
+            <span class="rounded bg-[#c9b8e5]/20 px-1 text-center text-[10px]">a5</span>
+            <span class="rounded bg-[#c9b8e5]/50 px-1 text-center text-[10px]">cf</span>
           </div>
           <div class="mt-4 flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
             <span class="rounded-full border border-neutral-800 px-2 py-0.5">+ Switchboard</span>
@@ -555,12 +555,12 @@
             <p class="mt-2 text-sm text-neutral-400">Each ticket is 0.01 SOL. The more you hold, the higher your chance.</p>
           </div>
           <div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#b87aff] font-mono text-xs font-bold text-black">02</div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#c9b8e5] font-mono text-xs font-bold text-black">02</div>
             <h3 class="mt-4 font-display text-lg uppercase">Wait for draw</h3>
             <p class="mt-2 text-sm text-neutral-400">Switchboard On-Demand posts a verifiable random number on-chain.</p>
           </div>
           <div>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff7a4d] font-mono text-xs font-bold text-black">03</div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#f0c8a0] font-mono text-xs font-bold text-black">03</div>
             <h3 class="mt-4 font-display text-lg uppercase">Auto-payout</h3>
             <p class="mt-2 text-sm text-neutral-400">Winning ticket gets the pot directly. No claim step. 0.5% to treasury.</p>
           </div>
@@ -624,10 +624,10 @@
         </div>
 
         <!-- 0.5% fee -->
-        <div class="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-gradient-to-br from-[#4dd2ff]/10 to-neutral-950 p-6">
+        <div class="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-gradient-to-br from-[#a8d0e5]/10 to-neutral-950 p-6">
           <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">PROTOCOL FEE</span>
           <div>
-            <div class="font-display text-3xl uppercase text-[#4dd2ff]">0.5%</div>
+            <div class="font-display text-3xl uppercase text-[#a8d0e5]">0.5%</div>
             <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">NO HIDDEN CUTS</div>
           </div>
         </div>
