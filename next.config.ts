@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
-const SDK_ROOT = path.resolve(__dirname, "../../../../Project Tombola/sdk/src");
+const SDK_ROOT = path.resolve(__dirname, "vendor/sdk");
 
 const nextConfig: NextConfig = {
   webpack: (config) => {
