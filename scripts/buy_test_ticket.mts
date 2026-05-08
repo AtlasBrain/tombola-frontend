@@ -30,11 +30,14 @@ import {
   signTransactionMessageWithSigners,
 } from "@solana/kit";
 
+// Dev scripts hit the companion repo's SDK source directly — see
+// init_pools_local.mts header for why the @tombola/sdk alias doesn't work
+// from tsx.
 import {
   PoolType,
   RaffleClient,
   type PoolTypeValue,
-} from "@tombola/sdk";
+} from "/Users/marwanchahboun/Desktop/Project Tombola/sdk/src/index.ts";
 
 const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "http://127.0.0.1:8899";
 
