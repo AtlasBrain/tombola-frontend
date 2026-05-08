@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { BuyTicketButton } from "./BuyTicketButton";
 import { FlashOnChange } from "./FlashOnChange";
+import { WinOdds } from "./WinOdds";
 import { formatSol, formatTickets } from "@/lib/format";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import type { PoolView } from "@/lib/mock-pools";
@@ -89,6 +90,13 @@ export function PoolCard({ pool }: { pool: PoolView }) {
           <dd className="font-medium text-neutral-200">{ticketsForOneSol} tickets</dd>
         </div>
       </dl>
+
+      {pool.poolAddress && (
+        <WinOdds
+          poolAddress={pool.poolAddress}
+          totalTickets={pool.totalTickets}
+        />
+      )}
 
       <BuyTicketButton
         poolType={pool.poolType}
