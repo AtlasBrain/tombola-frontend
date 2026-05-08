@@ -1,3 +1,4 @@
+import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { PoolCard } from "@/components/PoolCard";
 import { MOCK_POOLS } from "@/lib/mock-pools";
 
@@ -14,14 +15,9 @@ export default function Home() {
               Switchboard On-Demand. 0.5% protocol fee, no hidden cuts.
             </p>
           </div>
-          <button
-            type="button"
-            disabled
-            className="hidden sm:inline-flex items-center rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-300 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Wallet connect ships in Phase 2"
-          >
-            Connect wallet — Phase 2
-          </button>
+          <div className="hidden sm:block">
+            <ConnectWalletButton />
+          </div>
         </div>
       </header>
 
