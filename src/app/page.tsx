@@ -3,6 +3,7 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { FaqSection } from "@/components/FaqSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { PoolCard } from "@/components/PoolCard";
+import { RecentWinners } from "@/components/RecentWinners";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
 import { clusterLabelFor, explorerAddressUrl } from "@/lib/explorer-url";
@@ -69,6 +70,8 @@ export default async function Home() {
           ))}
         </div>
       </main>
+
+      <RecentWinners />
 
       <FaqSection />
 
