@@ -2663,3 +2663,25 @@ Mark this step complete once the E2E walkthrough passes. If it fails, file a fol
 - Recent winners panel real-data swap — orthogonal frontend gap.
 - Extending the GH Actions cron daemon to also iterate private pools — would require `getProgramAccounts` scan in the daemon; nontrivial.
 - Mobile-native app, mainnet, token-gated pools (per spec).
+
+---
+
+## Appendix: corrections applied during implementation
+
+The task templates above were drafted from pre-execution memory of the SDK + framework surface. During implementation the subagents hit nine TS / runtime mismatches that they fixed inline before committing. The shipped code at HEAD is correct; the templates above are NOT — read them as intent, not as copy-pastable source. Each correction below points at the actual landed code so a future reader can copy the pattern.
+
+| # | Plan template said | Actual SDK / framework reality | Fix applied | Where to see it |
+|---|---|---|---|---|
+| 1 | `getAddressEncoder().encode(...)` returns `Uint8Array` | Returns `ReadonlyUint8Array` — strict TS rejects passing it where `Uint8Array` is expected | Wrap with `new Uint8Array(...)` | `src/lib/private-pools.ts:128`, commit `be6ad84` |
+| 2 | `AccessModeArgs = { __kind: "WhitelistMode" }` | The vendored SDK exports `AccessMode` as a **numeric enum** (`AccessMode.WhitelistMode = 0`, `AccessMode.OneCodePerTicket = 1`); the tagged-union form is from a different Codama renderer | Use `AccessMode.WhitelistMode` / `AccessMode.OneCodePerTicket` directly | `src/components/CreatePoolForm.tsx:88-89`, commit `cd16a54` |
+| 3 | `buildCodeTree(codes)` returns `proofs: Uint8Array[][]` indexable by position | Returns `proofs: Record<string, Uint8Array[]>` keyed by raw code string | Pass `proofs` through directly: `proofMap: Record<string, Uint8Array[]> = { ...proofs }` | `src/components/CreatePoolForm.tsx:25, 121`, commit `cd16a54` |
+| 4 | `useState("0.1")` for ticket price default | Test 1 expects the form's submit button to be `toBeDisabled()` on first render — a valid default makes it enabled, breaking the test | `useState("")` — empty string fails the `> 0` validator until the user enters a value | `src/components/CreatePoolForm.tsx:38`, commit `cd16a54` |
+| 5 | `client.redeemInviteCode*({ code: codeBytes })` (`Uint8Array`) | The SDK declares `code: string` and runs `TextEncoder` internally | Pass `params.code` (the hex string) directly; drop the `hexToBytes` helper | `src/components/RedeemButton.tsx:46, 53`, commit `9a1d7f7` |
+| 6 | `const ix = await client.buyTicketPrivate(...)` | Returns `{ instruction, ticketBatch, firstTicketId }` — same shape as `buyTicketPublic` | Destructure: `const { instruction } = await client.buyTicketPrivate(...)` | `src/components/BuyTicketPrivateButton.tsx:82`, commit `437e593` |
+| 7 | `import ... from "@switchboard-xyz/on-demand"` | Package was not installed in the frontend repo (only present in the companion repo's daemon) | `npm install @switchboard-xyz/on-demand@^3.10.1` — added to `package.json` + `package-lock.json` | `package.json` `dependencies`, commit `c0f931f` |
+| 8 | `client.settleDrawPrivate({ caller, pool, winningBatch, winner, treasury, randomnessAccount })` | The SDK also requires `creator: Address` (the pool's creator pubkey, needed by the on-chain ix for fee routing) | Pass `creator: creator as Address` from the existing `creator` prop on `<DrawWinnerButton>` | `src/components/DrawWinnerButton.tsx:240`, commit `c0f931f` |
+| 9 | `useCallback(...)` hooks defined after the action-decision early return | React rules-of-hooks: hooks must run unconditionally on every render, can't be skipped by an early return | Hoist all `useCallback` definitions above the conditional `if (action === "stuck") return ...` and `if (action === "none") return null` blocks | `src/components/DrawWinnerButton.tsx`, commit `c0f931f` |
+
+These were caught by subagent self-review + the hygiene gate (`npm run test` / `npm run build` / `npx eslint`), not by reviewers — meaning the per-task TDD discipline + strict TS + lint caught real type errors before they could escape into committed code.
+
+**Pattern for future plans:** when generating template code from memory, flag SDK-shape claims (function return types, enum representations, required field names) as **assumed; verify in the implementer subagent's first step**. The plan should say "verify against `@tombola/sdk/client.ts:407-462` before writing code" rather than baking in a guess.
