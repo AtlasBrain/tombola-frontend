@@ -1,9 +1,9 @@
 # Session Handoff — Tombola Frontend
 
-**Last updated:** 2026-05-09, devnet migration complete · redesign port pending.
+**Last updated:** 2026-05-09, redesign port + devnet migration **MERGED to main** (PR #7).
 **Read this file first when resuming.** Then `README.md` for the layout.
 
-**Live URL:** https://tombola-frontend-gamma.vercel.app/
+**Live URL:** https://tombola-frontend-gamma.vercel.app/ (auto-deploys main)
 **Repo:** https://github.com/AtlasBrain/tombola-frontend (private, owner `AtlasBrain`)
 **Companion repo (program + SDK):** https://github.com/AtlasBrain/Project-Tombola
 
@@ -11,13 +11,132 @@
 
 ## TL;DR for resume
 
-The dapp is **fully functional on devnet**: program deployed (`qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M`), 4 pools initialized (Weekly · Biweekly · Triweekly · Monthly), Phantom popup E2E flow unblocked. Local dev points at devnet via Helius RPC; Vercel env var pending. Localnet recipe preserved for offline iteration.
+**Frontend work is done.** PR #7 merged to `main` (commit `d3d069b`). The dapp is:
+- ✅ Fully redesigned per `public/redesign-v1-recolored.html` (lavender · coral · mint · yellow palette)
+- ✅ Wired to devnet via Helius RPC (env var set on Vercel for Production + Preview)
+- ✅ 52/52 tests passing, build clean, responsive at mobile/tablet/desktop
+- ✅ Phantom popup E2E unblocked: connect on devnet → click BUY 1 TICKET → tx lands in Solscan
+- ✅ Smooth-scroll nav, hero ring + 6 floating icons, all CTAs wired, dead links removed
 
-Outstanding work, in order:
+**The next workstream is in the companion repo, NOT this one.**
 
-1. **Port the recolored mockup (`public/redesign-v1-recolored.html`) to React components.** Plan: `docs/superpowers/plans/2026-05-09-redesign-v1-recolored-port.md` (6 stages, ~25 tasks, ~10–12h).
-2. **Verify Vercel env + production redeploy** picks up the new RPC. Plan: `docs/superpowers/plans/2026-05-09-devnet-migration.md` Stage 6.
-3. *Optional:* Switchboard On-Demand for the draw cycle (operator-side; not needed for the buy-ticket demo).
+To complete the actual on-chain raffle loop (so winners get drawn + paid), an operator-side script needs to be built in `~/Desktop/Project Tombola/scripts/`. The frontend doesn't change — it just displays whatever state the chain is in. See "Next workstream — companion repo" below.
+
+---
+
+## Frontend status
+
+Web UI for the Tombola on-chain raffle protocol. **All shipped to main:** original phases 1–5 + dashboard infographics + pool detail page + 18 component tests + CI + devnet migration + full mockup port + responsive + accessibility.
+
+### Merged PRs (all on `main`)
+
+| # | what | merge commit |
+|---|---|---|
+| 1 | Phase 3+4 (localnet) + phase 5 polish wave (19 commits) | `fe202f1` |
+| 2 | feat+fix: buy-ticket UX — sign-only flow + tx toasts (4 commits) | `6639fc7` |
+| 3 | ci + ux polish: GitHub Actions, wallet balance, flash-on-update (3 commits) | `fc447e3` |
+| 4 | test: 18 component tests — NetworkPill / FlashOnChange / BuyTicketButton | `2f9256a` |
+| 5 | feat: pool detail page at `/pool/[type]/[round]` | merged via #6 |
+| 6 | feat: dashboard infographics — stats bar, pot comparison, win odds | `17a7c99` |
+| **7** | **feat: redesign-v1-recolored React port + devnet migration (~57 commits)** | **`d3d069b`** |
+
+`main` HEAD is **`d3d069b`**. Vercel auto-deploys it to `tombola-frontend-gamma.vercel.app`.
+
+### What PR #7 included (frontend complete)
+
+- **Devnet migration**: program deployed (`qWyk54XHmEa…JFvZB1M`), 4 pools initialized, Helius RPC wired, Vercel env var set
+- **Redesign port (Stages 1–6 + 6 fidelity rounds)**: tokens · Space Grotesk + Space Mono · keyframes · button effects · Ticker · Header · Hero (4-layer ring SVG with `ringGrad` linear gradient + 6 floating icons) · PoolCard (per-pool gradient + POT block + 3-stat tiles + ticket-tear BUY button) · RecentWinners · AllRoundsTable · WhyItsFair · HowItWorks · BentoFooter · responsive (mobile/tablet/desktop) · `prefers-reduced-motion`
+- **Palette**: Weekly lavender `#c9b5dc` · Biweekly **coral `#E89999`** (was `#b8a5d4` lavender — too close to Weekly) · Triweekly mint `#88cfc4` · Monthly yellow `#e8d89e`
+- **Buttons audit**: smooth-scroll on all nav links, wallet modal on CONNECT + BUY 1 TICKET when not connected, all hrefs verified
+- **Test fix**: BuyTicketButton test updated to match the wallet-modal flow (52/52 still passing)
+
+---
+
+## Next workstream — companion repo (Project Tombola)
+
+**Open a fresh Claude session inside `~/Desktop/Project Tombola/`**, NOT in this repo.
+
+### What needs to be built there
+
+An operator-side script `scripts/run_draw_devnet.ts` (or `.mts`) that:
+
+1. **Polls** `getProgramAccounts` for pools with `state === Open` AND `close_time < now`
+2. **Creates a Switchboard `Randomness` account** on devnet (~0.05 SOL each, see `sdk/src/switchboard.ts` for the boundary)
+3. **Bundles `commit_draw_public` + Switchboard's commit ix** in one tx, sends it
+4. **Polls until Switchboard fulfills** the request (~5–30s on devnet)
+5. **Computes the winning ticket index off-chain** (random number → batch index)
+6. **Sends `settle_draw_public`** with the winner pubkey + treasury account
+7. **Sends `reopen_public_pool`** to open round N+1
+8. (Optional) **Sleeps + repeats** so it can run as a daemon
+
+### Why this is companion-repo work, not frontend work
+
+- The frontend already displays whatever state the chain is in (LivePoolWatcher subscribes to WS)
+- The work is Anchor / Switchboard SDK / Solana CLI — companion repo's domain
+- The companion repo's `CLAUDE.md` enforces audit-grade discipline (12-step build, threat model, etc.) that this frontend repo doesn't have
+
+### SDK pieces already in place
+
+The companion repo has:
+
+- `sdk/src/client.ts:283` — `commitDrawPublic(args)` returns the kit Instruction
+- `sdk/src/client.ts:303` — `settleDrawPublic(args)` returns the kit Instruction
+- `sdk/src/client.ts:331` — `retryDrawPublic(args)` (1h timeout fallback)
+- `sdk/src/client.ts:349` — `reopenPublicPool(args)` for round N+1
+- `sdk/src/switchboard.ts` — Switchboard On-Demand boundary (web3.js v1 → kit conversion). Imports `Randomness, Queue, ON_DEMAND_DEVNET_QUEUE, ON_DEMAND_MAINNET_QUEUE` from `@switchboard-xyz/on-demand`
+
+Reference flows:
+- `programs/raffle/tests/test_full_public_lifecycle.rs` — end-to-end test of the draw cycle
+- `tests/surfpool_smoke.test.ts` — TS smoke test that runs the full lifecycle
+
+### First message for the new session (in companion repo)
+
+> Resume from `SESSION_HANDOFF.md`. Build the operator-side draw cycle for devnet:
+> a script `scripts/run_draw_devnet.ts` that watches for closed pools, fires
+> `commit_draw_public` + Switchboard's commit ix, polls for fulfillment,
+> fires `settle_draw_public`, fires `reopen_public_pool`. Reference
+> `sdk/src/client.ts:283-374` for the existing SDK hooks and
+> `sdk/src/switchboard.ts` for the kit↔web3.js boundary. Test against the
+> 4 devnet pools already deployed (program ID `qWyk54XHmEa…JFvZB1M`).
+> Frontend dapp at `tombola-frontend-gamma.vercel.app` will display state
+> changes automatically via LivePoolWatcher.
+
+### Devnet deploy state (for the new session's reference)
+
+- **Program ID:** `qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M`
+- **Operator (CLI) keypair:** `EaALFp4ZsPrP23UoSwmHzMdTM1Yc7pVyS1FfrSUFpLBt` (~1.81 SOL remaining after deploy + init — top up via Helius faucet for Switchboard fees)
+- **Frontend wallet (Phantom):** `A9xZTBN7pwkw4bHdKV1yQ3KBgmUtvf9cV2U6PXVjCDWY`
+- **Pool PDAs:**
+  - Weekly:    `HMSqiATSstvrZBB7Qrxzx94BFc8QTKpLWRtSFv5yqJnW`
+  - Biweekly:  `2uHKExQfGnm5UkLEyYc2kMBaWvsJviRRPF7XATP5z8JA`
+  - Triweekly: `AxWU6PTuC4W2nriNJ1Btzd1uqbMmUMQUvPJ58QH2cW7v`
+  - Monthly:   `6zXWAr7CDr7X6uMmyyUbtq26uUxchQwotATn9uLZV5TM`
+- **RPC:** `https://devnet.helius-rpc.com/?api-key=264e024a-5cda-44c8-8e11-d028c250a3e1` (free Helius tier, 100k req/day)
+
+### SDK patches still uncommitted in companion repo
+
+The companion repo is currently on branch `fix/sdk-esm-and-web-crypto` with uncommitted patches that the frontend depended on:
+
+1. `sdk/src/merkle.ts:11` — `import { keccak_256 } from "js-sha3"` → default-import workaround for ESM/CJS interop
+2. `sdk/src/codes.ts:10` — `crypto.getRandomValues()` instead of `node:crypto` for browser bundling
+
+Both shipped fine in the vendored SDK snapshot used by this frontend. The companion repo session should commit them before doing draw-cycle work.
+
+---
+
+## Optional follow-ups in THIS frontend repo (low priority)
+
+These are nice-to-haves; not blocking the demo loop. Pick up in a future frontend session:
+
+1. **Real recent-winners feed** — currently 5 hardcoded events in `RecentWinners.tsx`. Wire to actual Resolved-state pools. Same source as the on-chain reads.
+2. **Real ticker events** — same story; `Ticker.tsx` uses 7 hardcoded events.
+3. **Re-add MyTickets** — component still exists in `src/components/MyTickets.tsx` but was removed from the page during the redesign. Could fit between Pool Grid and Recently Played.
+4. **Pool card → pool detail page link** — `src/app/pool/[type]/[round]/page.tsx` exists but isn't linked from the cards.
+5. **Lighthouse audit + SEO/OG meta** — nothing fancy added in the redesign.
+6. **Drop unused `--pink: #e8a5c0` token** in `globals.css` (Biweekly is now coral, this is dead).
+7. **More tests** — 52 currently, mostly unit. Add integration tests for buy flow + hero scroll + state transitions.
+
+These don't block anything. The frontend ships as-is.
 
 ---
 
