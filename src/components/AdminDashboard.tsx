@@ -4,12 +4,21 @@ import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { createSolanaRpc, type Address } from "@solana/kit";
+import { PROGRAM_ID } from "@tombola/sdk";
 import { LivePoolWatcher } from "./LivePoolWatcher";
 import { AdminDashboardStats } from "./AdminDashboardStats";
 import { AdminRedemptionStatus } from "./AdminRedemptionStatus";
+import { AdminTopBuyersBar } from "./AdminTopBuyersBar";
+import { AdminParticipantList } from "./AdminParticipantList";
 
 interface Props {
   poolAddress: string;
+}
+
+interface ParticipantRow {
+  owner: string;
+  tickets: bigint;
+  spentLamports: bigint;
 }
 
 interface PoolData {
@@ -39,6 +48,7 @@ export function AdminDashboard({ poolAddress }: Props) {
   const { publicKey } = useWallet();
   const { setVisible: setWalletModalVisible } = useWalletModal();
   const [pool, setPool] = useState<PoolData | null>(null);
+  const [participants, setParticipants] = useState<ParticipantRow[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,6 +77,68 @@ export function AdminDashboard({ poolAddress }: Props) {
       cancelled = true;
     };
   }, [connection, poolAddress]);
+
+  useEffect(() => {
+    if (!pool) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rpc = createSolanaRpc(connection.rpcEndpoint);
+        const { fetchAllMaybeTicketBatch } = await import(
+          "@tombola/sdk/generated"
+        );
+        // getProgramAccounts with memcmp on TicketBatch.pool (offset 8 = first
+        // field after 8-byte discriminator). dataSize = 89 = 8 disc + 32 pool +
+        // 32 owner + 8 first + 8 last + 1 bump. Verified via getTicketBatchSize()
+        // in vendor/sdk/generated/accounts/ticketBatch.ts which also returns 89.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawResult = (await (rpc.getProgramAccounts as any)(
+          PROGRAM_ID as Address,
+          {
+            commitment: "confirmed",
+            encoding: "base64",
+            filters: [
+              { dataSize: BigInt(89) },
+              { memcmp: { offset: 8n, bytes: poolAddress as Address } },
+            ],
+          },
+        ).send()) as { value: ReadonlyArray<{ pubkey: Address }> };
+        const programAccounts = rawResult.value;
+        const addresses = programAccounts.map((p) => p.pubkey);
+        const accs = await fetchAllMaybeTicketBatch(rpc, addresses);
+        const byOwner = new Map<string, { tickets: bigint; spent: bigint }>();
+        for (const a of accs) {
+          if (!a.exists) continue;
+          const owner = String(a.data.owner);
+          const ticketCount = a.data.lastTicketId - a.data.firstTicketId + 1n;
+          const spent = ticketCount * pool.ticketPriceLamports;
+          const cur = byOwner.get(owner) ?? { tickets: 0n, spent: 0n };
+          byOwner.set(owner, {
+            tickets: cur.tickets + ticketCount,
+            spent: cur.spent + spent,
+          });
+        }
+        if (cancelled) return;
+        setParticipants(
+          [...byOwner.entries()]
+            .map(([owner, agg]) => ({
+              owner,
+              tickets: agg.tickets,
+              spentLamports: agg.spent,
+            }))
+            .sort((a, b) => Number(b.tickets - a.tickets)),
+        );
+      } catch (e) {
+        if (!cancelled) {
+          console.warn("participant fetch failed:", e);
+          setParticipants([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pool, connection, poolAddress]);
 
   if (err) {
     return (
@@ -154,7 +226,15 @@ export function AdminDashboard({ poolAddress }: Props) {
             walletAddress={publicKey.toBase58()}
           />
         </div>
-        {/* Section 6 (TopBuyersBar + ParticipantList) lands in Task 6 */}
+        <div className="mt-8">
+          <AdminTopBuyersBar participants={participants} />
+        </div>
+        <div className="mt-8">
+          <AdminParticipantList
+            participants={participants}
+            rpcUrl={connection.rpcEndpoint}
+          />
+        </div>
       </main>
     </>
   );
