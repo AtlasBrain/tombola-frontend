@@ -335,14 +335,53 @@ export function DrawWinnerButton({
 
   if (action === "none" || state === 2) return null;
 
+  // Only the creator sees the manual draw controls. Buyers get passive copy
+  // — the keeper daemon (off-chain cron) handles the draw cycle in normal
+  // operation; the creator's button exists as a fallback if the keeper is
+  // delayed or down. Anyone CAN call commit/settle on-chain (permissionless),
+  // but exposing it to buyers caused confusion (they thought they HAD to).
+  const isCreator = publicKey?.toBase58() === creator;
+
   if (action === "stuck") {
+    if (!isCreator) {
+      return (
+        <div className="mt-6 rounded border border-amber-700/40 bg-amber-900/20 p-4">
+          <p className="text-sm text-amber-300">
+            Draw is delayed — the oracle hasn&apos;t revealed within an hour
+            of close. The pool creator can contact the operator team to
+            recover.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="mt-6 rounded border border-red-700/40 bg-red-900/20 p-4">
         <p className="text-sm text-red-300">
           Draw is stuck: oracle hasn&apos;t revealed within an hour of close. Private
-          pools have no on-chain retry path (protocol limitation). Ask the
-          creator to contact the operator team.
+          pools have no on-chain retry path (protocol limitation). Contact the
+          operator team to recover.
         </p>
+      </div>
+    );
+  }
+
+  // Buyer-facing passive copy. The keeper daemon picks up the round on its
+  // next sweep (devnet cron = every 5 min). LivePoolWatcher updates the
+  // page reactively when the state transition lands on chain — no refresh
+  // needed.
+  if (!isCreator) {
+    const message =
+      action === "settle"
+        ? "Drawing winner — oracle reveal landed; settle is being submitted."
+        : action === "commit"
+          ? "Round closed — the keeper will draw a winner shortly. You'll be notified if you win."
+          : "Round closed with zero tickets sold — the creator can reclaim rent.";
+    return (
+      <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+          Status
+        </p>
+        <p className="mt-1 text-sm text-neutral-300">{message}</p>
       </div>
     );
   }
@@ -371,7 +410,9 @@ export function DrawWinnerButton({
       </button>
       {action === "commit" && (
         <p className="text-xs text-neutral-500">
-          Anyone can trigger this. You pay the tx fee; the pool reimburses you for the VRF cost out of accumulated fees.
+          The keeper daemon normally handles this automatically; this button
+          is a manual fallback. You pay the tx fee; the pool reimburses you
+          for the VRF cost out of accumulated fees.
         </p>
       )}
     </div>
