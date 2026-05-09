@@ -302,6 +302,17 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 }
 .fx-tear:hover::before { filter: brightness(1.1); }
 
+/* fx-tear-lg = fx-tear with bigger corner notches (14px) — used by the
+   final bento CTA card. */
+.fx-tear-lg::before {
+  clip-path: polygon(
+    14px 0, calc(100% - 14px) 0,
+    100% 14px, 100% calc(100% - 14px),
+    calc(100% - 14px) 100%, 14px 100%,
+    0 calc(100% - 14px), 0 14px
+  );
+}
+
 /* fx-stack = vertical viewport with two stacked labels (hover slides up) */
 .fx-stack { overflow: hidden; height: 1.25rem; display: inline-flex; align-items: center; }
 .fx-stack .stack { display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
