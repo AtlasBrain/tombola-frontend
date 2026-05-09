@@ -57,27 +57,25 @@ export default async function Home() {
 
         <PoolComparisonChart pools={pools} />
 
-        <main id="pools">
-          <div className="mb-6 flex items-end justify-between">
-            <h2 className="text-xl font-semibold">Public pools</h2>
-            <span className="text-sm text-neutral-500">
-              <span
-                className={
-                  source === "live"
-                    ? "inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/20"
-                    : "inline-block rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20"
-                }
-              >
-                {source === "live" ? `live — ${CLUSTER}` : "mock data — RPC offline"}
-              </span>
+        <section id="pools" className="-mx-6 px-6 pb-20">
+          <div className="mb-10 flex items-end justify-between">
+            <div>
+              <h2 className="font-display text-4xl uppercase sm:text-6xl">Public pools</h2>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+                {pools.length} ROUNDS RUNNING IN PARALLEL · 0.01 SOL PER TICKET
+              </p>
+            </div>
+            <span className="hidden items-center gap-2 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-neutral-300 sm:inline-flex">
+              <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime" />
+              LIVE · {CLUSTER.toUpperCase()}
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {pools.map((pool) => (
-              <PoolCard key={pool.poolType} pool={pool} />
+              <PoolCard key={pool.poolType} pool={pool} rpcUrl={RPC_URL} />
             ))}
           </div>
-        </main>
+        </section>
 
         <MyTickets pools={pools} />
 

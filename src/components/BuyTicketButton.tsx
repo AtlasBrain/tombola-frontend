@@ -157,6 +157,13 @@ export function BuyTicketButton({
         type="button"
         disabled={busy || !qtyValid}
         onClick={onClick}
+        aria-label={
+          busy
+            ? "Buying…"
+            : qtyValid
+              ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} — ${formatSol(total)}`
+              : "Enter a quantity"
+        }
         style={{ ["--tear-bg" as never]: accentColor }}
         className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
