@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import {
   address as toAddress,
@@ -14,10 +14,12 @@ import { BuyTicketPrivateButton } from "@/components/BuyTicketPrivateButton";
 import { DrawWinnerButton } from "@/components/DrawWinnerButton";
 import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
 import { WinOdds } from "@/components/WinOdds";
-import { formatSol, formatTickets } from "@/lib/format";
+import { explorerAddressUrl } from "@/lib/explorer-url";
+import { formatSol } from "@/lib/format";
 
 const TICKET_BATCH_SIZE = 89n;
 const POOL_OFFSET = 8n;
+const PRIVATE_ACCENT = "#88cfc4"; // mint — see globals.css .grad-private + spec proposal 03
 
 interface PoolData {
   ticketPriceLamports: bigint;
@@ -50,6 +52,20 @@ function unwrapWinner(w: any): string | null {
   }
   return String(w);
 }
+
+function shortAddr(addr: string): string {
+  if (addr.length <= 10) return addr;
+  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
+}
+
+const STATE_PILL: Record<
+  0 | 1 | 2,
+  { label: string; usesAccent: boolean }
+> = {
+  0: { label: "▲ OPEN", usesAccent: true },
+  1: { label: "◷ DRAWING", usesAccent: false },
+  2: { label: "✓ RESOLVED", usesAccent: false },
+};
 
 export default function PrivatePoolPage({
   params,
@@ -84,9 +100,7 @@ export default function PrivatePoolPage({
         });
 
         // Fetch all TicketBatch accounts whose `pool` field == this pool PDA.
-        // Same memcmp filter as the public-pool detail server fetch. Cast
-        // through unknown — Kit's getProgramAccounts return type varies by
-        // overload (with/without withContext).
+        // Same memcmp filter as the public-pool detail server fetch.
         const result = (await rpc
           .getProgramAccounts(toAddress(PROGRAM_ID), {
             encoding: "base64",
@@ -133,6 +147,14 @@ export default function PrivatePoolPage({
     };
   }, [connection, pubkey]);
 
+  // Buyers = unique TicketBatch.owner count. Recompute when the batch list
+  // mutates (e.g. someone buys mid-page).
+  const buyers = useMemo(() => {
+    const set = new Set<string>();
+    for (const b of batches) set.add(b.owner);
+    return set.size;
+  }, [batches]);
+
   if (err) {
     return (
       <>
@@ -156,54 +178,129 @@ export default function PrivatePoolPage({
   }
 
   const closed = pool.state !== 0 || pool.closeTimeUnix * 1000 <= Date.now();
+  const ticketPriceSol = Number(pool.ticketPriceLamports) / 1_000_000_000;
+  const potSol = Number(pool.totalPotLamports) / 1_000_000_000;
+  const pill = STATE_PILL[pool.state];
+  const pillStyle = pill.usesAccent
+    ? {
+        borderColor: `${PRIVATE_ACCENT}4d`,
+        background: `${PRIVATE_ACCENT}1a`,
+        color: PRIVATE_ACCENT,
+      }
+    : undefined;
+  const pillClass = pill.usesAccent
+    ? "border"
+    : pool.state === 1
+      ? "border border-amber-500/30 bg-amber-500/10 text-amber-400"
+      : "border border-neutral-800 bg-neutral-900/50 text-neutral-400";
 
   return (
     <>
       <Header />
       <LivePoolWatcher addresses={[pubkey]} rpcUrl={connection.rpcEndpoint} />
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-neutral-500">
-              Private pool · {pool.accessMode}
-            </p>
-            <h1 className="mt-1 font-mono text-xl text-neutral-300">
-              {pubkey.slice(0, 8)}…{pubkey.slice(-4)}
-            </h1>
-            <p className="mt-1 text-xs text-neutral-500">
-              Creator: {pool.creator.slice(0, 8)}…{pool.creator.slice(-4)} · fee{" "}
-              {(pool.creatorFeeBps / 100).toFixed(1)}%
-            </p>
-          </div>
-          <span
-            className={`rounded-full px-3 py-1 text-xs ring-1 ${
-              pool.state === 0
-                ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20"
-                : pool.state === 1
-                  ? "bg-amber-500/10 text-amber-400 ring-amber-500/20"
-                  : "bg-neutral-500/10 text-neutral-400 ring-neutral-500/20"
-            }`}
+        {/* === HEADER CARD =========================================== */}
+        <article className="grad-private rounded-3xl border border-neutral-800 bg-neutral-950 p-7">
+          <header className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+                Private pool · {pool.accessMode === "Whitelist" ? "WHITELIST" : "ONE CODE PER TICKET"}
+              </p>
+              <h1 className="mt-1 font-display text-3xl uppercase">
+                {shortAddr(pubkey)}
+              </h1>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+                CREATOR {shortAddr(pool.creator)} · FEE {(pool.creatorFeeBps / 100).toFixed(1)}% ·{" "}
+                <a
+                  href={explorerAddressUrl(pubkey, connection.rpcEndpoint)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-white"
+                >
+                  EXPLORER ↗
+                </a>
+              </p>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${pillClass}`}
+              style={pillStyle}
+            >
+              {pill.label}
+            </span>
+          </header>
+
+          {/* === POT BLOCK ============================================== */}
+          <div
+            className="mt-6 rounded-2xl border border-neutral-900 p-5"
+            style={{
+              backgroundImage: `linear-gradient(135deg, ${PRIVATE_ACCENT}14, transparent 70%)`,
+            }}
           >
-            {pool.state === 0
-              ? "Open"
-              : pool.state === 1
-                ? "Drawing…"
-                : "Resolved"}
-          </span>
-        </div>
+            <div className="flex items-baseline justify-between">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+                Pot
+              </div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+                {pool.state === 1 ? "FINAL · AWAITING REVEAL" : ""}
+              </div>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span
+                className="font-display text-6xl uppercase leading-none tabular-nums"
+                style={{ color: PRIVATE_ACCENT }}
+              >
+                {potSol.toFixed(2)}
+              </span>
+              <span className="font-display text-2xl uppercase text-neutral-500">
+                SOL
+              </span>
+            </div>
+          </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <Stat label="Pot" value={formatSol(pool.totalPotLamports)} />
-          <Stat label="Tickets" value={formatTickets(pool.totalTickets)} />
-          <Stat
-            label={pool.state === 0 ? "Closes in" : "Closed"}
-            value={<Countdown targetUnix={pool.closeTimeUnix} />}
-          />
-        </div>
+          {/* === MINI STATS ============================================= */}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <MiniStat label="Tickets" value={pool.totalTickets.toLocaleString()} />
+            <MiniStat label="Buyers" value={buyers.toLocaleString()} />
+            <MiniStat
+              label={pool.state === 0 ? "Closes in" : "Closed"}
+              value={<Countdown targetUnix={pool.closeTimeUnix} />}
+            />
+          </div>
 
+          {/* === BUY ==================================================== */}
+          {pool.accessMode === "Whitelist" && (
+            <BuyTicketPrivateButton
+              poolAddress={pubkey}
+              ticketPriceLamports={pool.ticketPriceLamports}
+              closed={closed}
+              accentColor={PRIVATE_ACCENT}
+              ticketPriceSol={ticketPriceSol}
+            />
+          )}
+
+          {/* === YOUR ODDS ============================================== */}
+          <div className="mt-5">
+            <WinOdds
+              poolAddress={pubkey}
+              totalTickets={pool.totalTickets}
+              accentColor={PRIVATE_ACCENT}
+            />
+          </div>
+        </article>
+
+        {/* === WINNER BANNER (only on resolved pools) =================== */}
         {pool.state === 2 && pool.winner && (
-          <div className="mt-8 rounded-2xl border border-emerald-700/40 bg-emerald-900/20 p-6">
-            <p className="text-xs uppercase tracking-widest text-emerald-400">
+          <div
+            className="mt-8 rounded-2xl border p-6"
+            style={{
+              borderColor: `${PRIVATE_ACCENT}66`,
+              background: `${PRIVATE_ACCENT}14`,
+            }}
+          >
+            <p
+              className="font-mono text-[10px] uppercase tracking-widest"
+              style={{ color: PRIVATE_ACCENT }}
+            >
               Winner
             </p>
             <p className="mt-1 font-mono text-sm text-neutral-200">
@@ -212,18 +309,7 @@ export default function PrivatePoolPage({
           </div>
         )}
 
-        {pool.accessMode === "Whitelist" && (
-          <BuyTicketPrivateButton
-            poolAddress={pubkey}
-            ticketPriceLamports={pool.ticketPriceLamports}
-            closed={closed}
-          />
-        )}
-
-        <div className="mt-6">
-          <WinOdds poolAddress={pubkey} totalTickets={pool.totalTickets} />
-        </div>
-
+        {/* === DRAW (creator-only / public action) ===================== */}
         <DrawWinnerButton
           poolAddress={pubkey}
           state={pool.state}
@@ -232,18 +318,26 @@ export default function PrivatePoolPage({
           creator={pool.creator}
         />
 
+        {/* === RECENT BUYS ============================================ */}
         <div className="mt-10">
           <RecentBuysTable
             batches={batches}
             totalTickets={pool.totalTickets}
+            accentColor={PRIVATE_ACCENT}
+            displayHeading
           />
         </div>
+
+        {/* === ticket-price hint (subtle) ============================== */}
+        <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+          {formatSol(pool.ticketPriceLamports)} per ticket
+        </p>
       </main>
     </>
   );
 }
 
-function Stat({
+function MiniStat({
   label,
   value,
 }: {
@@ -251,11 +345,13 @@ function Stat({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
-      <div className="text-xs uppercase tracking-widest text-neutral-500">
+    <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
         {label}
       </div>
-      <div className="mt-1 text-2xl font-bold text-neutral-100">{value}</div>
+      <div className="mt-1 font-display text-xl uppercase tabular-nums">
+        {value}
+      </div>
     </div>
   );
 }

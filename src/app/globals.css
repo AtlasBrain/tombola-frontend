@@ -182,6 +182,9 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .grad-biweekly  { background-image: radial-gradient(120% 100% at 100% 0%,   #E8999933 0%, transparent 60%); }
 .grad-triweekly { background-image: radial-gradient(120% 100% at 0% 100%,   #88cfc433 0%, transparent 60%); }
 .grad-monthly   { background-image: radial-gradient(120% 100% at 100% 100%, #e8d89e33 0%, transparent 60%); }
+/* Private pools take the mint accent (#88cfc4) but at top-center so the
+   wash visually differs from triweekly's bottom-left. */
+.grad-private   { background-image: radial-gradient(120% 100% at 50% 0%,    #88cfc433 0%, transparent 60%); }
 
 /* === Mockup-named button effects — verbatim from redesign-v1-recolored.html === */
 .btn-fx { position: relative; overflow: hidden; isolation: isolate; will-change: transform, clip-path; }

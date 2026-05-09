@@ -18,6 +18,8 @@ interface Props {
   poolAddress: string;
   ticketPriceLamports: bigint;
   closed: boolean;
+  accentColor?: string;
+  ticketPriceSol?: number;
 }
 
 const MIN_QTY = 1;
@@ -27,6 +29,8 @@ export function BuyTicketPrivateButton({
   poolAddress,
   ticketPriceLamports,
   closed,
+  accentColor = "var(--mint)",
+  ticketPriceSol,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
@@ -114,12 +118,16 @@ export function BuyTicketPrivateButton({
     pushToast,
   ]);
 
+  const priceSolDisplay =
+    ticketPriceSol ?? Number(ticketPriceLamports) / 1_000_000_000;
+
   if (closed) {
     return (
       <button
         type="button"
         disabled
-        className="mt-6 w-full rounded bg-neutral-800 px-4 py-3 text-sm uppercase text-neutral-500"
+        style={{ ["--tear-bg" as never]: "#2a2a2f" }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-neutral-500 transition disabled:cursor-not-allowed"
       >
         Round closed
       </button>
@@ -130,9 +138,11 @@ export function BuyTicketPrivateButton({
       <button
         type="button"
         onClick={() => setWalletModalVisible(true)}
-        className="mt-6 w-full rounded bg-emerald-600 px-4 py-3 font-semibold text-white"
+        style={{ ["--tear-bg" as never]: accentColor }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110"
+        title="Connect a wallet to buy"
       >
-        Connect wallet
+        BUY 1 TICKET <span className="font-mono opacity-70">· {priceSolDisplay.toFixed(2)} SOL</span>
       </button>
     );
   }
@@ -141,7 +151,8 @@ export function BuyTicketPrivateButton({
       <button
         type="button"
         disabled
-        className="mt-6 w-full rounded bg-neutral-800 px-4 py-3 text-sm uppercase text-neutral-500"
+        style={{ ["--tear-bg" as never]: "#2a2a2f" }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-neutral-500 transition disabled:cursor-not-allowed"
       >
         Checking whitelist…
       </button>
@@ -149,18 +160,21 @@ export function BuyTicketPrivateButton({
   }
   if (!whitelisted) {
     return (
-      <p className="mt-6 rounded border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-400">
+      <p className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-400">
         You need an invite code for this pool. Ask the creator for a redemption link.
       </p>
     );
   }
 
+  const total = ticketPriceLamports * BigInt(qty);
+
   return (
     <div className="mt-6 flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <label htmlFor="qty" className="text-sm text-neutral-400">
-          Quantity:
-        </label>
+      <label className="flex flex-col gap-1">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+          <span>Quantity ({MIN_QTY}–{MAX_QTY})</span>
+          <span className="tabular-nums">= {formatSol(total)}</span>
+        </div>
         <input
           id="qty"
           type="number"
@@ -175,19 +189,21 @@ export function BuyTicketPrivateButton({
               ),
             )
           }
-          className="w-20 rounded bg-neutral-800 px-3 py-2 text-neutral-100"
+          disabled={busy}
+          className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-[color:var(--mint)]/40 focus:ring-2 focus:ring-[color:var(--mint)]/20 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Number of tickets to buy"
         />
-        <span className="text-sm text-neutral-500">
-          = {formatSol(ticketPriceLamports * BigInt(qty))}
-        </span>
-      </div>
+      </label>
       <button
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="rounded bg-emerald-600 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-neutral-700"
+        style={{ ["--tear-bg" as never]: accentColor }}
+        className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {busy ? "Buying…" : `Buy ${qty} ticket${qty === 1 ? "" : "s"}`}
+        {busy
+          ? "BUYING…"
+          : <>BUY {qty} TICKET{qty === 1 ? "" : "S"} <span className="font-mono opacity-70">· {formatSol(total)}</span></>}
       </button>
     </div>
   );
