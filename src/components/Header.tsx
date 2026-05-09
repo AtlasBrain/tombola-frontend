@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { NetworkPill } from "@/components/NetworkPill";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
@@ -9,7 +10,10 @@ type NavItem =
   | { kind: "anchor"; id: string; label: string }
   | { kind: "link"; href: string; label: string };
 
-const NAV_ITEMS: readonly NavItem[] = [
+// Full nav — only renders on the homepage where the anchor sections actually
+// exist. POOLS/HOW IT WORKS/STATS/FAQ all scroll to ids inside the homepage's
+// long-form layout, so on any other route they'd no-op and feel broken.
+const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",         label: "POOLS" },
   { kind: "link",   href: "/create",     label: "PRIVATE" },
   { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
@@ -18,7 +22,31 @@ const NAV_ITEMS: readonly NavItem[] = [
   { kind: "anchor", id: "faq",           label: "FAQ" },
 ];
 
+// Subroute nav — only real routes (anchors don't exist outside homepage so
+// they'd no-op). POOLS becomes a cross-page link to /#pools (browser scrolls
+// after navigation). The current page is filtered out by hideHref below.
+const NAV_SUBROUTE: readonly NavItem[] = [
+  { kind: "link", href: "/#pools",     label: "POOLS" },
+  { kind: "link", href: "/create",     label: "PRIVATE" },
+  { kind: "link", href: "/my-tickets", label: "MY TICKETS" },
+];
+
 export function Header() {
+  const pathname = usePathname();
+  const isHomepage = pathname === "/";
+  // Hide whichever item points at the current route so we don't render a
+  // link that goes to itself. /create/* and /pool/private/* both belong to
+  // the "PRIVATE" cluster — suppress that link too while inside.
+  const hideHref =
+    pathname.startsWith("/my-tickets")
+      ? "/my-tickets"
+      : pathname === "/create" || pathname.startsWith("/create/")
+        ? "/create"
+        : null;
+  const navItems = (isHomepage ? NAV_HOMEPAGE : NAV_SUBROUTE).filter(
+    (item) => item.kind === "anchor" || item.href !== hideHref,
+  );
+
   function handleScroll(id: string) {
     return (e: React.MouseEvent) => {
       e.preventDefault();
@@ -44,7 +72,7 @@ export function Header() {
 
         {/* CENTER: nav links */}
         <nav className="hidden items-center gap-1 justify-self-center sm:flex">
-          {NAV_ITEMS.map((item) =>
+          {navItems.map((item) =>
             item.kind === "anchor" ? (
               <a
                 key={item.id}
