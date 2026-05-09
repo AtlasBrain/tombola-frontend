@@ -89,10 +89,12 @@ export function AdminDashboard({ poolAddress }: Props) {
         );
         // getProgramAccounts with memcmp on TicketBatch.pool (offset 8 = first
         // field after 8-byte discriminator). dataSize = 89 = 8 disc + 32 pool +
-        // 32 owner + 8 first + 8 last + 1 bump. Verified via getTicketBatchSize()
-        // in vendor/sdk/generated/accounts/ticketBatch.ts which also returns 89.
+        // 32 owner + 8 first + 8 last + 1 bump. Kit's RPC returns the bare
+        // array (no { value } wrapper) when withContext isn't set; an earlier
+        // version of this code wrongly destructured `.value` and silently
+        // bottomed out to participants=[] in the catch.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rawResult = (await (rpc.getProgramAccounts as any)(
+        const programAccounts = (await (rpc.getProgramAccounts as any)(
           PROGRAM_ID as Address,
           {
             commitment: "confirmed",
@@ -102,8 +104,7 @@ export function AdminDashboard({ poolAddress }: Props) {
               { memcmp: { offset: 8n, bytes: poolAddress as Address } },
             ],
           },
-        ).send()) as { value: ReadonlyArray<{ pubkey: Address }> };
-        const programAccounts = rawResult.value;
+        ).send()) as ReadonlyArray<{ pubkey: Address }>;
         const addresses = programAccounts.map((p) => p.pubkey);
         const accs = await fetchAllMaybeTicketBatch(rpc, addresses);
         const byOwner = new Map<string, { tickets: bigint; spent: bigint }>();
