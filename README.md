@@ -23,6 +23,47 @@ You should see four pool cards (Weekly, Biweekly, Triweekly, Monthly) with
 realistic-looking but mocked pot/ticket counts and a live-updating
 countdown timer.
 
+## Devnet bring-up
+
+One-time setup. After this, the deployed Vercel URL is a real demo —
+connect Phantom (set to Devnet), buy a ticket, watch it land in Solscan.
+
+1. **Get a Helius devnet RPC key** at https://dashboard.helius.dev (free,
+   100k req/day, no credit card). Public `api.devnet.solana.com` works
+   too but throttles aggressively under live polling.
+2. **Fund the CLI keypair** (~3.5 SOL needed for program deploy + pool init):
+   ```bash
+   solana balance --url "$HELIUS_DEVNET"     # check current
+   # Top up via https://www.helius.dev/faucet (5 SOL one-shot, easiest)
+   # Or `solana airdrop 2 <addr> --url "$HELIUS_DEVNET"` (rate-limited).
+   ```
+3. **Deploy the program** from the companion repo (program ID is reused
+   from the keypair, so localnet and devnet share `qWyk54XHmEa...JFvZB1M`):
+   ```bash
+   cd "/Users/marwanchahboun/Desktop/Project Tombola/target/deploy"
+   solana program deploy \
+     --program-id raffle-keypair.json \
+     --keypair ~/.config/solana/id.json \
+     --url "$HELIUS_DEVNET" \
+     raffle.so
+   ```
+4. **Init the 4 public pools** from this repo:
+   ```bash
+   cd ~/Desktop/tombola-frontend
+   NEXT_PUBLIC_SOLANA_RPC_URL="$HELIUS_DEVNET" npm run init:devnet
+   ```
+5. **Wire the frontend env**:
+   - Local: `.env.local` → `NEXT_PUBLIC_SOLANA_RPC_URL=$HELIUS_DEVNET`
+   - Vercel: same env var on the project's settings page (Production +
+     Preview + Development), then push to redeploy.
+
+Reproducible bite-sized version of these steps with bash, expected
+output, and recovery flow for failed-mid-deploy buffer-account orphans:
+`docs/superpowers/plans/2026-05-09-devnet-migration.md`.
+
+For offline iteration the localnet recipe is preserved — see
+`scripts/reset-localnet.sh` and `npm run init:local`.
+
 ## Layout
 
 ```

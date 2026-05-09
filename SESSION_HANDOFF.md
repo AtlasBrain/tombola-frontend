@@ -1,6 +1,6 @@
 # Session Handoff — Tombola Frontend
 
-**Last updated:** 2026-05-09, end of design-exploration phase (active palette selection in progress).
+**Last updated:** 2026-05-09, devnet migration complete · redesign port pending.
 **Read this file first when resuming.** Then `README.md` for the layout.
 
 **Live URL:** https://tombola-frontend-gamma.vercel.app/
@@ -11,19 +11,19 @@
 
 ## TL;DR for resume
 
-The dapp is **fully functional on localnet** (live on-chain reads, buy-ticket via wallet, live WS updates, 47 unit/component tests, CI green on every PR). All 6 PRs from the implementation phase are merged to `main`.
+The dapp is **fully functional on devnet**: program deployed (`qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M`), 4 pools initialized (Weekly · Biweekly · Triweekly · Monthly), Phantom popup E2E flow unblocked. Local dev points at devnet via Helius RPC; Vercel env var pending. Localnet recipe preserved for offline iteration.
 
-The current activity is **design exploration**: the user is evaluating four distinct visual directions to replace the existing dark-emerald aesthetic. The exploration lives as standalone HTML mockups on a feature branch — **not yet ported to React**. The next session's job is most likely:
+Outstanding work, in order:
 
-1. **Lock in a palette direction** (see "Active design decisions pending" below).
-2. **Port the chosen design to React components** in a couple of incremental PRs.
-3. *Optional:* tackle still-blocked items (Switchboard local cloning, devnet redeploy) when their gating conditions clear.
+1. **Port the recolored mockup (`public/redesign-v1-recolored.html`) to React components.** Plan: `docs/superpowers/plans/2026-05-09-redesign-v1-recolored-port.md` (6 stages, ~25 tasks, ~10–12h).
+2. **Verify Vercel env + production redeploy** picks up the new RPC. Plan: `docs/superpowers/plans/2026-05-09-devnet-migration.md` Stage 6.
+3. *Optional:* Switchboard On-Demand for the draw cycle (operator-side; not needed for the buy-ticket demo).
 
 ---
 
 ## Where we are
 
-Web UI for the Tombola on-chain raffle protocol. **Phases 1–5 complete + 5 surfaced ideas + dashboard infographics + pool detail page + 18 component tests + CI workflow shipped to main.** The wallet-popup buy-ticket E2E loop remains gated by the wallet ecosystem (Phantom + Solflare dropped custom-RPC support in 2026); the underlying instruction-encoding/sign/send logic is verified via `scripts/buy_test_ticket.mts`.
+Web UI for the Tombola on-chain raffle protocol. **Phases 1–5 complete + 5 surfaced ideas + dashboard infographics + pool detail page + 18 component tests + CI workflow shipped to main · devnet migration done (program live, pools initialized, Phantom E2E unblocked).**
 
 ### Merged PRs (all on `main`)
 
@@ -107,15 +107,20 @@ Refresh the dapp; the affected card pulses amber via `<FlashOnChange>`.
 
 ## Wallet popup E2E status
 
-Still **blocked** by the wallet ecosystem regression. Phantom Chrome dropped custom RPC URL config in 2025; Solflare also restricts to Mainnet/Testnet/Devnet. Backpack untested.
+✅ **Working on devnet.** Phantom + Solflare speak devnet natively (no custom-RPC blocker). The dapp connects, signs, broadcasts, and tx confirms cleanly via the existing wallet-adapter integration (`signTransaction` + dapp-side `sendRawTransaction` from `BuyTicketButton.tsx`). Localnet recipe is preserved as the offline fallback but no longer the canonical demo target.
 
-The wallet-adapter integration is correct: auto-discovery via Wallet Standard, kit→web3 adapter for sign-and-send. Hot-path verified by `scripts/buy_test_ticket.mts` (commit `5699504`). When devnet SOL flows again to the deployer keypair, the same flow runs unchanged on devnet and the wallet-popup loop works because Phantom/Solflare both speak devnet natively.
+Cluster details:
+- **RPC:** Helius free tier (`https://devnet.helius-rpc.com/?api-key=...`) — 100k req/day handles live polling without throttling.
+- **Signer (deploy + init):** `EaALFp4ZsPrP23UoSwmHzMdTM1Yc7pVyS1FfrSUFpLBt` (CLI keypair · ~1.81 SOL remaining after deploy + init).
+- **Wallet (UI buy flow):** `A9xZTBN7pwkw4bHdKV1yQ3KBgmUtvf9cV2U6PXVjCDWY` (Phantom · ~1 SOL devnet).
+- **Program ID:** `qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M` (same keypair as localnet — reused).
+- **Pool PDAs:**
+  - Weekly:    `HMSqiATSstvrZBB7Qrxzx94BFc8QTKpLWRtSFv5yqJnW` (closes 2026-05-09T10:16:20Z)
+  - Biweekly:  `2uHKExQfGnm5UkLEyYc2kMBaWvsJviRRPF7XATP5z8JA` (closes 2026-05-23)
+  - Triweekly: `AxWU6PTuC4W2nriNJ1Btzd1uqbMmUMQUvPJ58QH2cW7v` (closes 2026-05-30)
+  - Monthly:   `6zXWAr7CDr7X6uMmyyUbtq26uUxchQwotATn9uLZV5TM` (closes 2026-06-08)
 
-Three escape hatches when the user is ready:
-
-1. **Move to devnet** (~30 min once SOL is in `EaALFp4ZsPrP23UoSwmHzMdTM1Yc7pVyS1FfrSUFpLBt`) — `solana program deploy --final` + `tsx scripts/deploy.ts devnet` + `tsx scripts/init_public_pools.ts devnet`. Then the live URL (point at `https://api.devnet.solana.com`) talks to devnet, Phantom too; both sides agree on the cluster. **Best path.**
-2. **Mock Switchboard locally** (~4–8 h, real engineering) — stub program + test oracle daemon. Lets the draw cycle actually loop on local without touching the audited program. **Significant project.**
-3. **Try Backpack** — last wallet that *might* still allow custom RPC. ~5 min check if user wants to validate.
+Bring-up recipe lives in `README.md → "Devnet bring-up"`. Reproducible via the checked-in plan at `docs/superpowers/plans/2026-05-09-devnet-migration.md`.
 
 ---
 
