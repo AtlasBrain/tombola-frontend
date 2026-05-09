@@ -69,9 +69,15 @@
       .grad-triweekly { background: radial-gradient(120% 100% at 0% 100%, #a8d0e533 0%, transparent 60%); }
       .grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #f0c8a033 0%, transparent 60%); }
 
-      /* Rotating raffle wheel */
-      @keyframes spin-slow { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-      .spin-slow { animation: spin-slow 40s linear infinite; transform-origin: center; }
+      /* Rotating raffle wheel — multiple speeds + a counter-spin so the
+         layers move independently. */
+      @keyframes spin-slow     { from { transform: rotate(0deg)   } to { transform: rotate(360deg)  } }
+      @keyframes spin-counter  { from { transform: rotate(0deg)   } to { transform: rotate(-360deg) } }
+      @keyframes spin-fast     { from { transform: rotate(0deg)   } to { transform: rotate(360deg)  } }
+      .spin-slow    { animation: spin-slow    50s linear infinite; transform-origin: center; }
+      .spin-counter { animation: spin-counter 35s linear infinite; transform-origin: center; }
+      .spin-fast    { animation: spin-fast    20s linear infinite; transform-origin: center; }
+
 
       /* Hero floating icons — six unique 3-keyframe animations with bigger
          motion (vertical ±35–45px, slight horizontal sway, rotation up to
@@ -176,7 +182,7 @@
     </header>
 
     <!-- ==================== HERO ==================== -->
-    <section class="relative mx-auto max-w-7xl px-6 pt-12 pb-20 sm:pt-16 sm:pb-24">
+    <section class="relative mx-auto max-w-7xl overflow-hidden px-6 pt-20 pb-24 sm:pt-28 sm:pb-32">
       <!-- Soft dot grid + warm radial accent (gives the bg some tonal life) -->
       <div class="bg-dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"></div>
       <div class="absolute left-1/2 top-1/2 -z-10 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(192,246,28,0.06)_0%,transparent_70%)]"></div>
@@ -255,12 +261,14 @@
         </div>
       </div>
 
-      <!-- Ring that frames the entire hero block (status pill → headline → tagline → CTAs).
-           Big enough to enclose all of it, with a thick visible gradient stroke.
-           No negative z-index (was hiding it behind the body bg in some stacking
-           contexts) — sits at the section's default layer, with the content
-           bumped to z-10 so it stays in front. -->
-      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 sm:h-[860px] sm:w-[860px] lg:h-[920px] lg:w-[920px]">
+      <!-- Ring that frames the hero block. Smaller now so it doesn't kiss
+           the floating icons or leak into the ticker / pools sections.
+           Three layers, each rotating at a different speed/direction:
+             - thin outer hairline (slow, +)
+             - main thin band (slow counter-rotation, -)
+             - dashed comet trail (fast, +)
+             - 4 dot accents pinned to the band -->
+      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 sm:h-[600px] sm:w-[600px] lg:h-[680px] lg:w-[680px]">
         <defs>
           <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%"   stop-color="#c0f61c" />
@@ -269,13 +277,42 @@
             <stop offset="100%" stop-color="#a8d0e5" />
           </linearGradient>
         </defs>
+
+        <!-- Outer hairline (slow, +) -->
         <g class="spin-slow" style="transform-origin: 500px 500px;">
-          <!-- Thick main band — the visible "track" -->
-          <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" stroke-width="32" fill="none" opacity="0.55" />
-          <!-- Thin accent line on the outside -->
-          <circle cx="500" cy="500" r="488" stroke="url(#ringGrad)" stroke-width="1.5" fill="none" opacity="0.9" />
-          <!-- Thin accent line on the inside -->
-          <circle cx="500" cy="500" r="442" stroke="url(#ringGrad)" stroke-width="1.5" fill="none" opacity="0.9" />
+          <circle cx="500" cy="500" r="490" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.5" />
+        </g>
+
+        <!-- Main thin band, counter-rotating, with the 4 color dots -->
+        <g class="spin-counter" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" stroke-width="6" fill="none" opacity="0.5" />
+          <circle cx="500" cy="35"  r="6" fill="#c0f61c" />
+          <circle cx="965" cy="500" r="6" fill="#c9b8e5" />
+          <circle cx="500" cy="965" r="6" fill="#f0c8a0" />
+          <circle cx="35"  cy="500" r="6" fill="#a8d0e5" />
+        </g>
+
+        <!-- Dashed "comet" trail on a separate ring, fast spin + dash-flow.
+             stroke-dasharray = "60 540" puts a 60-unit lit segment in a
+             600-unit perimeter at viewBox r=95, so a single bright arc
+             travels around. -->
+        <g class="spin-fast" style="transform-origin: 500px 500px;">
+          <!-- 40-unit lit arc + 2960-unit gap (pathLength 3000), so a
+               single bright comet travels along the ring as the group
+               rotates with `spin-fast`. -->
+          <circle cx="500" cy="500" r="478"
+                  stroke="#c0f61c"
+                  stroke-width="2"
+                  fill="none"
+                  opacity="0.85"
+                  stroke-dasharray="40 2960"
+                  stroke-linecap="round"
+                  pathLength="3000" />
+        </g>
+
+        <!-- Inner hairline (slow, +) -->
+        <g class="spin-slow" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="448" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.4" />
         </g>
       </svg>
 
