@@ -315,3 +315,57 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
   section[id]:target { animation: none !important; }
   html { scroll-behavior: auto !important; }
 }
+
+/* === wallet-adapter CONNECT button → match mockup .fx-inset-ink ===
+   Wallet-adapter's WalletMultiButton renders a `.wallet-adapter-button-trigger`
+   when no wallet is connected. Force its base style + hover effect to match
+   the mockup's CONNECT pill (white bg + dark wash sweep + lavender chip). */
+.wallet-adapter-button-trigger {
+  background-image: linear-gradient(to right, #0b0b0d 50%, #ffffff 50%) !important;
+  background-size: 200% 100% !important;
+  background-position: 100% 0 !important;
+  background-repeat: no-repeat !important;
+  color: #000 !important;
+  border-radius: 9999px !important;
+  height: 40px !important;
+  padding: 6px 6px 6px 16px !important;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  border: none !important;
+  transition: background-position 0.5s cubic-bezier(.7,0,.2,1), color 0.25s ease !important;
+}
+.wallet-adapter-button-trigger:hover {
+  background-position: 0 0 !important;
+  color: #fff !important;
+}
+/* Insert a lavender chip via ::after carrying the right arrow */
+.wallet-adapter-button-trigger::after {
+  content: "→";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--lavender);
+  color: #000;
+  font-weight: 700;
+  font-size: 10px;
+  margin-left: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.wallet-adapter-button-trigger:hover::after {
+  background: var(--lavender);
+  color: #000;
+}
+/* Hide wallet-adapter's icon (looks like a wallet sprite that shouldn't appear in our pill) */
+.wallet-adapter-button-trigger .wallet-adapter-button-start-icon,
+.wallet-adapter-button-trigger .wallet-adapter-button-end-icon {
+  display: none !important;
+}

@@ -25,26 +25,6 @@ const WalletMultiButton = dynamic(
 
 export function ConnectWalletButton() {
   return (
-    <div className="btn-parent">
-      <WalletMultiButton
-        style={{
-          backgroundColor: "var(--ink)",
-          color: "var(--bg)",
-          borderRadius: "9999px",
-          height: "2.5rem",
-          fontSize: "12px",
-          fontFamily: "inherit",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          padding: "0 0.5rem 0 1rem",
-          border: "none",
-          lineHeight: "1.25rem",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "0.5rem",
-        }}
-      />
-    </div>
+    <WalletMultiButton />
   );
 }
