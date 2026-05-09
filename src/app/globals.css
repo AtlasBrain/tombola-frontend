@@ -164,89 +164,6 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .nav-link:hover::after { transform: scaleX(1); }
 .nav-link:active { background-color: rgba(201, 181, 220, 0.08); color: var(--lavender); }
 
-/* === Button effects (inset-fill, stack-reveal, ticket-tear) === */
-
-/* INSET FILL — dark wash slides in from left, label flips white */
-.btn-inset {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: linear-gradient(to right, var(--ink) 50%, var(--bg) 50%);
-  background-size: 200% 100%;
-  background-position: 0% 0;
-  transition: background-position 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
-  color: var(--bg);
-}
-.btn-inset:hover {
-  background-position: -100% 0;
-  color: var(--ink);
-}
-.btn-inset .chip {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-.btn-inset:hover .chip {
-  background-color: var(--lavender);
-  color: var(--bg);
-}
-
-/* STACK REVEAL — vertical viewport with two stacked labels */
-.btn-stack {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  height: 1.25rem;
-  overflow: hidden;
-  vertical-align: middle;
-}
-.btn-stack > .stack {
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.btn-stack > .stack > span {
-  display: block;
-  height: 1.25rem;
-  line-height: 1.25rem;
-  white-space: nowrap;
-}
-.btn-parent:hover .btn-stack > .stack { transform: translateY(-1.25rem); }
-
-/* TICKET TEAR — notched corners via clip-path on ::before bg layer
-   (chat1.md says: keep clip-path off the button itself so subpixel
-   AA on the label survives) */
-.btn-tear {
-  position: relative;
-  isolation: isolate;
-  background: transparent;
-}
-.btn-tear::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--lavender);
-  clip-path: polygon(
-    8px 0, calc(100% - 8px) 0,
-    100% 8px, 100% calc(100% - 8px),
-    calc(100% - 8px) 100%, 8px 100%,
-    0 calc(100% - 8px), 0 8px
-  );
-  z-index: -1;
-  transition: background-color 0.3s ease;
-}
-.btn-tear:hover::before { background: var(--ink); }
-.btn-tear { color: var(--bg); transition: color 0.3s ease; }
-.btn-tear:hover { color: var(--lavender); }
-
-/* Block-tear variant — bigger notch radius for the final CTA card */
-.btn-tear-block::before {
-  clip-path: polygon(
-    14px 0, calc(100% - 14px) 0,
-    100% 14px, 100% calc(100% - 14px),
-    calc(100% - 14px) 100%, 14px 100%,
-    0 calc(100% - 14px), 0 14px
-  );
-}
-
 /* === Color utility classes (mockup uses .bg-lime, etc. — alias to lavender) === */
 .text-lime    { color: var(--lavender); }
 .bg-lime      { background: var(--lavender); }
@@ -260,68 +177,123 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .grad-triweekly { background: linear-gradient(135deg, rgba(136,207,196,0.06), transparent 70%), #0b0b0d; }
 .grad-monthly   { background: linear-gradient(135deg, rgba(232,165,192,0.06), transparent 70%), #0b0b0d; }
 
-/* === Mockup-named button effects (alias to our internal classes for direct
-       paste-from-mockup compat). The body of each does the same thing as
-       our .btn-* classes. Keeping both names so we can copy mockup markup
-       verbatim without renaming.) === */
+/* === Mockup-named button effects — verbatim from redesign-v1-recolored.html === */
 .btn-fx { position: relative; isolation: isolate; }
 
-/* fx-inset = same as .btn-inset (dark wash from left) */
-.fx-inset {
-  overflow: hidden;
-  background: linear-gradient(to right, var(--ink) 50%, var(--bg) 50%);
-  background-size: 200% 100%;
-  background-position: 0% 0;
-  transition: background-position 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
-  color: var(--bg);
+/* ---- INSET FILL ---- */
+/* A coloured panel slides in from the left behind the label. The
+   pseudo-element sits below the button content (z-index:-1 inside
+   an `isolation: isolate` parent). */
+.fx-inset::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  z-index: -1;
+  background: var(--lime);            /* lavender wash by default */
+  transform: translateX(-101%);
+  transition: transform 0.5s cubic-bezier(.7,0,.2,1);
 }
-.fx-inset:hover { background-position: -100% 0; color: var(--ink); }
+.fx-inset:hover::before { transform: translateX(0); }
 
-/* fx-inset-ink = wash sweeps to the dark BG (matches mockup's dark inset) */
-.fx-inset-ink:hover .chip-flip { background: var(--lavender); color: var(--bg); }
+/* Variant: dark wash for buttons that already sit on light fills. */
+.fx-inset-ink {
+  background-image: linear-gradient(to right, #0b0b0d 50%, #ffffff 50%) !important;
+  background-size: 200% 100% !important;
+  background-position: 100% 0 !important;
+  background-repeat: no-repeat !important;
+  transition: background-position 0.5s cubic-bezier(.7,0,.2,1), color 0.25s ease !important;
+}
+.fx-inset-ink::before { display: none; }   /* disable the wash pseudo for this variant */
+.fx-inset-ink:hover   { background-position: 0 0 !important; color: #ffffff !important; }
+.fx-inset-ink:hover .chip-flip { background: var(--lime) !important; color: #0b0b0d !important; }
 
-/* fx-tear = clip-path notched corners on ::before; --tear-bg controls fill */
+/* ---- STACK REVEAL ---- */
+/* A 1-line viewport that holds two stacked labels; on hover both
+   slide up by 100% so the secondary label takes the visible row. */
+.fx-stack .stack {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: -0.05em;
+}
+.fx-stack .stack > span {
+  display: block;
+  transition: transform 0.45s cubic-bezier(.2,.8,.2,1);
+}
+.fx-stack:hover .stack > span { transform: translateY(-100%); }
+
+/* ---- TICKET TEAR ---- */
+/* Notched corners — like a real raffle ticket. The clip-path lives
+   on a ::before background layer (NOT the button itself) so the
+   button's text is not inside a clipped element. Each fx-tear button
+   sets `--tear-bg` inline to the colour it should paint. */
 .fx-tear {
-  background: transparent;
-  color: var(--bg);
-  transition: color 0.3s ease;
+  background: transparent !important;
+  position: relative;
+  isolation: isolate;
 }
 .fx-tear::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--tear-bg, var(--lavender));
+  z-index: -1;
+  background-color: var(--tear-bg, var(--lime));
   clip-path: polygon(
     8px 0, calc(100% - 8px) 0,
     100% 8px, 100% calc(100% - 8px),
     calc(100% - 8px) 100%, 8px 100%,
     0 calc(100% - 8px), 0 8px
   );
-  z-index: -1;
-  transition: filter 0.3s ease;
+  transition: clip-path 0.4s cubic-bezier(.2,.8,.2,1),
+              background-color 0.25s ease;
 }
-.fx-tear:hover::before { filter: brightness(1.1); }
+.fx-tear:hover::before {
+  clip-path: polygon(
+    0 14px, 14px 0,
+    calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 0 calc(100% - 14px)
+  );
+}
+.fx-tear .chip-flip {
+  transition: transform 0.4s cubic-bezier(.2,.8,.2,1), background-color 0.25s, color 0.25s;
+}
+.fx-tear:hover .chip-flip { transform: rotate(45deg); }
 
-/* fx-tear-lg = fx-tear with bigger corner notches (14px) — used by the
-   final bento CTA card. */
+/* Block-tear variant for big rectangular CTAs — deeper notches scaled
+   to the larger surface, same ::before technique. */
+.fx-tear-lg {
+  background: transparent !important;
+  position: relative;
+  isolation: isolate;
+}
 .fx-tear-lg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--tear-bg, var(--lime));
   clip-path: polygon(
     14px 0, calc(100% - 14px) 0,
     100% 14px, 100% calc(100% - 14px),
     calc(100% - 14px) 100%, 14px 100%,
     0 calc(100% - 14px), 0 14px
   );
+  transition: clip-path 0.45s cubic-bezier(.2,.8,.2,1);
+}
+.fx-tear-lg:hover::before {
+  clip-path: polygon(
+    0 24px, 24px 0,
+    calc(100% - 24px) 0, 100% 24px,
+    100% calc(100% - 24px), calc(100% - 24px) 100%,
+    24px 100%, 0 calc(100% - 24px)
+  );
 }
 
-/* fx-stack = vertical viewport with two stacked labels (hover slides up) */
-.fx-stack { overflow: hidden; height: 1.25rem; display: inline-flex; align-items: center; }
-.fx-stack .stack { display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.fx-stack .stack > span { display: block; height: 1.25rem; line-height: 1.25rem; white-space: nowrap; }
-.btn-fx:hover .fx-stack .stack,
-.fx-stack:hover .stack { transform: translateY(-1.25rem); }
-
-/* chip-flip = the small arrow/icon chip at the right end of the pill;
-   inverts colors on parent hover */
+/* chip-flip = the small arrow/icon chip at the right end of the pill */
 .chip-flip { transition: background-color 0.3s ease, color 0.3s ease; }
 
 /* === Accessibility: reduce motion for users who request it === */
