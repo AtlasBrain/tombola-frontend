@@ -8,9 +8,15 @@ const mockUseConnection = vi.fn(() => ({
   connection: { rpcEndpoint: "http://127.0.0.1:8899" },
 }));
 
+const mockSetWalletModalVisible = vi.fn();
+
 vi.mock("@solana/wallet-adapter-react", () => ({
   useConnection: () => mockUseConnection(),
   useWallet: () => mockUseWallet(),
+}));
+
+vi.mock("@solana/wallet-adapter-react-ui", () => ({
+  useWalletModal: () => ({ setVisible: mockSetWalletModalVisible }),
 }));
 
 vi.mock("./Toast", () => ({
@@ -44,12 +50,15 @@ describe("BuyTicketButton render branches", () => {
     ).toBeDisabled();
   });
 
-  it("shows 'Connect wallet to buy' when no wallet", () => {
+  it("shows BUY 1 TICKET when no wallet, click opens wallet modal", () => {
     mockUseWallet.mockReturnValue({ publicKey: null, signTransaction: null });
+    mockSetWalletModalVisible.mockReset();
     render(<BuyTicketButton {...PROPS} closed={false} />);
-    const button = screen.getByRole("button", { name: "Connect wallet to buy" });
-    expect(button).toBeDisabled();
+    const button = screen.getByRole("button", { name: /buy 1 ticket/i });
+    expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute("title", "Connect a wallet to buy");
+    fireEvent.click(button);
+    expect(mockSetWalletModalVisible).toHaveBeenCalledWith(true);
   });
 
   it("shows the qty input + cost preview when wallet is connected", () => {
