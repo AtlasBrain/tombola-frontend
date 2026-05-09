@@ -19,6 +19,60 @@
         --bg-elevated: #1f1f24;
         --bg-warm: #1c1a16;
       }
+      /* Nav-link hover affordance — a soft pill background fades in and a
+         lime underline sweeps from the left. Active/scrolled-to underlines
+         stay visible. */
+      .nav-link {
+        position: relative;
+        display: inline-block;
+        padding: 0.5rem 0.85rem;
+        font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #a3a3a3;
+        border-radius: 9999px;
+        transition: color 0.2s ease, background-color 0.25s ease;
+      }
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0.85rem;
+        right: 0.85rem;
+        bottom: 0.25rem;
+        height: 1.5px;
+        background: var(--lime);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+      }
+      .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255,255,255,0.04);
+      }
+      .nav-link:hover::after { transform: scaleX(1); }
+      .nav-link:active {
+        background-color: rgba(192,246,28,0.08);
+        color: var(--lime);
+      }
+
+      /* Smooth scroll for in-page anchor clicks. */
+      html { scroll-behavior: smooth; }
+      /* Sections jumped-to via the nav get a small breathing offset so the
+         heading isn't pinned to the top edge of the viewport. */
+      section[id] { scroll-margin-top: 32px; }
+      /* When a section is the URL hash target, briefly highlight it so the
+         user knows their click landed somewhere. */
+      @keyframes target-pulse {
+        0%   { box-shadow: 0 0 0 0    rgba(192, 246, 28, 0.0);  }
+        25%  { box-shadow: 0 0 0 8px  rgba(192, 246, 28, 0.18); }
+        100% { box-shadow: 0 0 0 0    rgba(192, 246, 28, 0.0);  }
+      }
+      section[id]:target {
+        border-radius: 24px;
+        animation: target-pulse 1.6s ease-out 1;
+      }
       html, body {
         /* Multi-zone tonal background — subtle colored radials in the four
            quadrants give the page warm/cool variation without competing with
@@ -149,9 +203,13 @@
     </div>
 
     <!-- ==================== NAV ==================== -->
+    <!-- Three-column grid keeps the nav links truly centered on the page
+         (and therefore on the hero ring's vertical axis). justify-between
+         was bouncing the middle around as the left/right widths changed. -->
     <header class="mx-auto max-w-7xl px-6 py-5">
-      <div class="flex items-center justify-between gap-4">
-        <a href="#" class="flex items-center gap-2.5">
+      <div class="grid grid-cols-3 items-center gap-4">
+        <!-- LEFT: logo -->
+        <a href="#" class="flex items-center gap-2.5 justify-self-start">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-white">
             <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
@@ -162,13 +220,19 @@
           </svg>
           <span class="font-display text-lg uppercase tracking-tight">TOMBOLA</span>
         </a>
-        <nav class="hidden items-center gap-7 text-xs font-medium uppercase tracking-wider text-neutral-400 sm:flex">
-          <a href="#pools" class="transition-colors hover:text-white">POOLS</a>
-          <a href="#how"   class="transition-colors hover:text-white">HOW IT WORKS</a>
-          <a href="#stats" class="transition-colors hover:text-white">STATS</a>
-          <a href="#faq"   class="transition-colors hover:text-white">FAQ</a>
+
+        <!-- CENTER: nav links, justified to center of column. Each link gets
+             a soft hover background pill + an underline that sweeps in
+             from the left for a nice click affordance. -->
+        <nav class="hidden items-center gap-1 justify-self-center sm:flex">
+          <a href="#pools" class="nav-link">POOLS</a>
+          <a href="#how"   class="nav-link">HOW IT WORKS</a>
+          <a href="#stats" class="nav-link">STATS</a>
+          <a href="#faq"   class="nav-link">FAQ</a>
         </nav>
-        <div class="flex items-center gap-2">
+
+        <!-- RIGHT: status + CTA -->
+        <div class="flex items-center gap-2 justify-self-end">
           <span class="hidden items-center gap-1.5 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-neutral-300 sm:inline-flex">
             <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime"></span>
             LOCALNET
@@ -837,8 +901,8 @@
       </div>
     </section>
 
-    <!-- ==================== BENTO ==================== -->
-    <section class="mx-auto max-w-7xl px-6 pb-24">
+    <!-- ==================== BENTO (also serves as the FAQ-link target) ==================== -->
+    <section id="faq" class="mx-auto max-w-7xl px-6 pb-24">
       <div class="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4">
         <!-- Big brand tile -->
         <div class="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-neutral-900 bg-gradient-to-br from-lime/10 via-neutral-950 to-black p-8">
