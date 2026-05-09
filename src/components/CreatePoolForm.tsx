@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { Transaction } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import {
   buildCodeTree,
@@ -91,19 +91,39 @@ export function CreatePoolForm({ onCreated }: Props) {
       const codes = Array.from({ length: count }, () => generateInviteCode());
       const { root, proofs } = buildCodeTree(codes);
 
-      // Derive next pool_id by counting existing pools by this creator
-      const existing = await findMyPrivatePools({
-        rpcUrl: connection.rpcEndpoint,
-        programId: PROGRAM_ID,
-        walletAddress: publicKey.toBase58(),
-      });
-      const poolId = BigInt(existing.length);
-
       const rpc = createSolanaRpc(connection.rpcEndpoint);
       const client = new RaffleClient({ rpc });
       const creatorSigner = {
         address: publicKey.toBase58(),
       } as unknown as TransactionSigner;
+
+      // Derive next pool_id by counting existing pools, then probe forward to
+      // find the first un-allocated PDA. The count is a hint; the probe is
+      // authoritative — it survives a stale dataSize filter or a partial reset.
+      const existing = await findMyPrivatePools({
+        rpcUrl: connection.rpcEndpoint,
+        programId: PROGRAM_ID,
+        walletAddress: publicKey.toBase58(),
+      });
+      let poolId = BigInt(existing.length);
+      const MAX_PROBE = 64;
+      for (let i = 0; i < MAX_PROBE; i++) {
+        const [candidate] = await client.privatePoolPda(
+          publicKey.toBase58() as never,
+          poolId,
+        );
+        const info = await connection.getAccountInfo(
+          new PublicKey(candidate),
+          "confirmed",
+        );
+        if (info === null) break;
+        poolId += 1n;
+        if (i === MAX_PROBE - 1) {
+          throw new Error(
+            "Could not find an unused pool_id within 64 probes from the count hint.",
+          );
+        }
+      }
 
       const accessMode =
         mode === "Whitelist"

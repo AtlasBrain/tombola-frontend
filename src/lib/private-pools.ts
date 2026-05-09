@@ -109,10 +109,11 @@ import {
   getAddressEncoder,
 } from "@solana/kit";
 
-const PRIVATE_POOL_DATA_SIZE = 178; // 8 disc + 170 fields. Confirm via build:
-//   any pool fetched via getPrivatePool will have data of this length.
-//   If a future on-chain change adds a field, regenerate via
+// 8 disc + 208 fields = 216. Verified against live devnet PrivatePool
+// FChacWqQR77V9h9sGnTbDkoiJMugTfg7qRaPzSkKWWe4 (size 216). If a future
+// on-chain change adds a field, regenerate via:
 //   `console.log((await getAccountInfo(somePool)).value.data.length)`.
+const PRIVATE_POOL_DATA_SIZE = 216;
 
 /**
  * Returns all PrivatePool PDAs whose creator field matches `walletAddress`.
