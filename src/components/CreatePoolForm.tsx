@@ -1,6 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Transaction } from "@solana/web3.js";
@@ -14,10 +13,7 @@ import {
 } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { findMyPrivatePools, type RedemptionMode } from "@/lib/private-pools";
-import {
-  saveCodesToStorage,
-  loadAllCodesForWallet,
-} from "@/lib/private-pool-storage";
+import { saveCodesToStorage } from "@/lib/private-pool-storage";
 
 const MIN_DURATION_SECS = 3_600;
 const MAX_DURATION_SECS = 90 * 86_400;
@@ -48,23 +44,6 @@ export function CreatePoolForm({ onCreated }: Props) {
   const [mode, setMode] = useState<RedemptionMode>("Whitelist");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
-  const [unsavedPools, setUnsavedPools] = useState<
-    Array<{ poolAddress: string; createdAt: number }>
-  >([]);
-
-  useEffect(() => {
-    if (!publicKey) {
-      setUnsavedPools([]);
-      return;
-    }
-    const all = loadAllCodesForWallet(publicKey.toBase58());
-    setUnsavedPools(
-      all
-        .map((p) => ({ poolAddress: p.poolAddress, createdAt: p.createdAt }))
-        .sort((a, b) => b.createdAt - a.createdAt),
-    );
-  }, [publicKey]);
 
   const errors = useMemo(
     () => validate({ priceSol, days, hours, feePct, codeCount }),
@@ -205,53 +184,38 @@ export function CreatePoolForm({ onCreated }: Props) {
     setWalletModalVisible,
   ]);
 
-  const inputCls =
-    "rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-neutral-100 tabular-nums outline-none transition focus:border-[#88cfc4]/40 focus:ring-2 focus:ring-[#88cfc4]/20";
+  const ctaActive = isValid && !busy;
+  const ctaTearBg = ctaActive ? "#88cfc4" : "#1a1a1a";
 
   return (
-    <>
-      {unsavedPools.length > 0 && (
-        <div className="mb-4 rounded-2xl border border-amber-700/40 bg-amber-900/20 p-4">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-amber-300">
-            Saved in this browser
-          </p>
-          <p className="mt-1 text-sm text-amber-200">
-            You have {unsavedPools.length} pool
-            {unsavedPools.length === 1 ? "" : "s"} with redemption links saved
-            locally.
-          </p>
-          <ul className="mt-3 space-y-1 text-xs">
-            {unsavedPools.slice(0, 5).map((p) => (
-              <li
-                key={p.poolAddress}
-                className="flex items-center justify-between"
-              >
-                <code className="font-mono text-amber-100">
-                  {p.poolAddress.slice(0, 8)}…{p.poolAddress.slice(-4)}
-                </code>
-                <Link
-                  href={`/create/my-pools/${p.poolAddress}`}
-                  className="rounded-full bg-amber-800/50 px-3 py-1 font-mono text-[10px] uppercase tracking-widest hover:bg-amber-800"
-                >
-                  Open admin →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="flex flex-col gap-5"
+    >
+      {/* TICKET PRICE — hero block, mirrors PoolCard's POT block: mint
+          gradient wash + big display-font value. The input itself uses
+          display font so the typed number scales like a POT readout. */}
+      <div
+        className="rounded-2xl border border-neutral-900 p-5"
+        style={{
+          backgroundImage: `linear-gradient(135deg, ${MINT}14, transparent 70%)`,
         }}
-        className="grad-private flex flex-col gap-5 rounded-3xl border border-neutral-800 bg-neutral-950 p-7"
       >
-        <FieldRow
-          label="Ticket price (SOL)"
-          htmlFor="priceSol"
-          error={errors.priceSol}
-        >
+        <div className="flex items-baseline justify-between">
+          <label
+            htmlFor="priceSol"
+            className="font-mono text-[10px] uppercase tracking-widest text-neutral-500"
+          >
+            Ticket price
+          </label>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+            What each ticket costs
+          </span>
+        </div>
+        <div className="mt-1 flex items-baseline gap-2">
           <input
             id="priceSol"
             type="number"
@@ -260,24 +224,37 @@ export function CreatePoolForm({ onCreated }: Props) {
             value={priceSol}
             onChange={(e) => setPriceSol(e.target.value)}
             placeholder="0.01"
-            className={`w-full ${inputCls}`}
+            className="w-full min-w-0 bg-transparent font-display text-4xl uppercase leading-none tabular-nums outline-none placeholder:text-neutral-700 focus:outline-none sm:text-5xl"
+            style={{ color: MINT }}
           />
-        </FieldRow>
-        <FieldRow label="Duration" error={errors.duration}>
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              id="days"
-              aria-label="Days"
-              type="number"
-              min="0"
-              max="90"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              className={`w-24 ${inputCls}`}
-            />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-              days
-            </span>
+          <span className="font-display text-2xl uppercase text-neutral-500">
+            SOL
+          </span>
+        </div>
+        {errors.priceSol && (
+          <p
+            className="mt-2 font-mono text-[10px] uppercase tracking-widest text-rose-400"
+            role="alert"
+          >
+            {errors.priceSol}
+          </p>
+        )}
+      </div>
+
+      {/* DURATION / FEE / CODES — mini stat grid, mirrors PoolCard's
+          tickets/buyers/closes-in tile row. Each input lives inside its own
+          neutral card with mono caps label + display-font value. */}
+      <div className="grid grid-cols-3 gap-2">
+        <MiniStatInput
+          id="days"
+          label="Days"
+          value={days}
+          onChange={setDays}
+          min={0}
+          max={90}
+          // Show hours under the days input as a secondary control so the
+          // 3-tile rhythm stays clean. Days is the dominant axis (1d–90d).
+          subInput={
             <input
               id="hours"
               aria-label="Hours"
@@ -286,129 +263,204 @@ export function CreatePoolForm({ onCreated }: Props) {
               max="23"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              className={`w-24 ${inputCls}`}
+              className="w-full bg-transparent font-mono text-[10px] uppercase tabular-nums tracking-widest text-neutral-400 outline-none placeholder:text-neutral-700"
+              placeholder="0"
             />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-              hours
-            </span>
-          </div>
-        </FieldRow>
-        <FieldRow
-          label="Creator fee (%)"
-          htmlFor="feePct"
-          error={errors.feePct}
-        >
-          <input
-            id="feePct"
-            type="number"
-            step="0.5"
-            min="0"
-            max="5"
-            value={feePct}
-            onChange={(e) => setFeePct(e.target.value)}
-            className={`w-24 ${inputCls}`}
-          />
-        </FieldRow>
-        <FieldRow
-          label="Number of codes"
-          htmlFor="codeCount"
-          error={errors.codeCount}
-        >
-          <input
-            id="codeCount"
-            type="number"
-            min="1"
-            max="5000"
-            value={codeCount}
-            onChange={(e) => setCodeCount(e.target.value)}
-            className={`w-32 ${inputCls}`}
-          />
-        </FieldRow>
-        <FieldRow label="Access mode">
-          <div className="flex flex-col gap-2 text-sm text-neutral-200 sm:flex-row sm:gap-6">
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="radio"
-                name="mode"
-                value="Whitelist"
-                checked={mode === "Whitelist"}
-                onChange={() => setMode("Whitelist")}
-                className="accent-[#88cfc4]"
-              />
-              Whitelist (code unlocks unlimited buys)
-            </label>
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="radio"
-                name="mode"
-                value="OneCodePerTicket"
-                checked={mode === "OneCodePerTicket"}
-                onChange={() => setMode("OneCodePerTicket")}
-                className="accent-[#88cfc4]"
-              />
-              One ticket per code
-            </label>
-          </div>
-        </FieldRow>
+          }
+          subLabel="hrs"
+          errorOnRow={errors.duration}
+        />
+        <MiniStatInput
+          id="feePct"
+          label="Fee %"
+          value={feePct}
+          onChange={setFeePct}
+          min={0}
+          max={5}
+          step={0.5}
+          errorOnRow={errors.feePct}
+        />
+        <MiniStatInput
+          id="codeCount"
+          label="Codes"
+          value={codeCount}
+          onChange={setCodeCount}
+          min={1}
+          max={5000}
+          errorOnRow={errors.codeCount}
+        />
+      </div>
 
-        <button
-          type="submit"
-          disabled={!isValid || busy}
-          style={{ ["--tear-bg" as never]: isValid && !busy ? "#88cfc4" : "#2a2a2f" }}
-          className="btn-fx fx-tear mt-2 flex w-full items-center justify-center gap-2 px-4 py-4 font-display text-sm uppercase tracking-widest text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:text-neutral-500"
-        >
-          {busy ? (
-            "CREATING…"
-          ) : (
-            <>
-              CREATE POOL
-              <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[#88cfc4]">
-                →
-              </span>
-            </>
-          )}
-        </button>
-        {err && (
-          <p role="alert" className="text-sm text-rose-400">
-            {err}
-          </p>
+      {/* ACCESS MODE — segmented pill toggle. Mint-tinted on the active
+          option, neutral on the inactive. Replaces the old radio row for a
+          cleaner toggle metaphor. */}
+      <div className="flex flex-col gap-2">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+          Access mode
+        </span>
+        <div className="grid grid-cols-2 gap-2 rounded-xl border border-neutral-900 bg-neutral-950/80 p-1">
+          <ModeOption
+            active={mode === "Whitelist"}
+            onClick={() => setMode("Whitelist")}
+            title="Whitelist"
+            sub="code unlocks unlimited buys"
+          />
+          <ModeOption
+            active={mode === "OneCodePerTicket"}
+            onClick={() => setMode("OneCodePerTicket")}
+            title="One per code"
+            sub="single ticket per redemption"
+          />
+        </div>
+      </div>
+
+      {/* CREATE POOL — tear-corner CTA. Disabled state uses a near-black
+          tear-bg (no mint chip) so it doesn't look like an accent button
+          you can press. */}
+      <button
+        type="submit"
+        disabled={!ctaActive}
+        style={{ ["--tear-bg" as never]: ctaTearBg }}
+        className="btn-fx fx-tear mt-2 flex w-full items-center justify-center gap-2 px-4 py-4 font-display text-sm uppercase tracking-widest transition hover:brightness-110 disabled:cursor-not-allowed"
+      >
+        {busy ? (
+          <span className="text-neutral-500">CREATING…</span>
+        ) : ctaActive ? (
+          <>
+            <span className="text-black">CREATE POOL</span>
+            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[#88cfc4]">
+              →
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="text-neutral-500">CREATE POOL</span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-800 text-xs text-neutral-600">
+              →
+            </span>
+          </>
         )}
-      </form>
-    </>
+      </button>
+      {err && (
+        <p role="alert" className="text-sm text-rose-400">
+          {err}
+        </p>
+      )}
+    </form>
   );
 }
 
-function FieldRow({
+const MINT = "#88cfc4";
+
+function MiniStatInput({
+  id,
   label,
-  htmlFor,
-  error,
-  children,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  subInput,
+  subLabel,
+  errorOnRow,
 }: {
+  id: string;
   label: string;
-  htmlFor?: string;
-  error?: string;
-  children: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  min: number;
+  max: number;
+  step?: number;
+  subInput?: React.ReactNode;
+  subLabel?: string;
+  errorOnRow?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      className={`rounded-xl border bg-neutral-950/80 p-3 transition ${
+        errorOnRow
+          ? "border-rose-700/50"
+          : "border-neutral-900 focus-within:border-[#88cfc4]/40"
+      }`}
+    >
       <label
-        htmlFor={htmlFor}
-        className="font-mono text-[10px] uppercase tracking-widest text-neutral-500"
+        htmlFor={id}
+        className="font-mono text-[9px] uppercase tracking-widest text-neutral-500"
       >
         {label}
       </label>
-      {children}
-      {error && (
+      <input
+        id={id}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full bg-transparent font-display text-xl uppercase tabular-nums outline-none focus:outline-none"
+      />
+      {subInput && (
+        <div className="mt-1 flex items-baseline justify-between gap-1">
+          {subInput}
+          {subLabel && (
+            <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+              {subLabel}
+            </span>
+          )}
+        </div>
+      )}
+      {errorOnRow && (
         <p
-          className="font-mono text-[10px] uppercase tracking-widest text-rose-400"
+          className="mt-1 font-mono text-[9px] uppercase tracking-widest text-rose-400"
           role="alert"
         >
-          {error}
+          {errorOnRow}
         </p>
       )}
     </div>
   );
 }
+
+function ModeOption({
+  active,
+  onClick,
+  title,
+  sub,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  sub: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={
+        active
+          ? {
+              borderColor: `${MINT}66`,
+              background: `${MINT}1a`,
+            }
+          : undefined
+      }
+      className={`flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition ${
+        active ? "" : "border-transparent text-neutral-300 hover:bg-neutral-900/60"
+      }`}
+    >
+      <span
+        className="font-display text-sm uppercase"
+        style={active ? { color: MINT } : undefined}
+      >
+        {title}
+      </span>
+      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+        {sub}
+      </span>
+    </button>
+  );
+}
+
 
 function validate(args: {
   priceSol: string;
