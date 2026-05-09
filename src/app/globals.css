@@ -133,3 +133,116 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
   background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+/* === .nav-link — pill hover + lavender underline sweep === */
+.nav-link {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 0.85rem;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a3a3a3;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.25s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.25rem;
+  height: 1.5px;
+  background: var(--lavender);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nav-link:hover { color: #fff; background-color: rgba(255, 255, 255, 0.04); }
+.nav-link:hover::after { transform: scaleX(1); }
+.nav-link:active { background-color: rgba(201, 181, 220, 0.08); color: var(--lavender); }
+
+/* === Button effects (inset-fill, stack-reveal, ticket-tear) === */
+
+/* INSET FILL — dark wash slides in from left, label flips white */
+.btn-inset {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(to right, var(--ink) 50%, var(--bg) 50%);
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  transition: background-position 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
+  color: var(--bg);
+}
+.btn-inset:hover {
+  background-position: -100% 0;
+  color: var(--ink);
+}
+.btn-inset .chip {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.btn-inset:hover .chip {
+  background-color: var(--lavender);
+  color: var(--bg);
+}
+
+/* STACK REVEAL — vertical viewport with two stacked labels */
+.btn-stack {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 1.25rem;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.btn-stack > .stack {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-stack > .stack > span {
+  display: block;
+  height: 1.25rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+.btn-parent:hover .btn-stack > .stack { transform: translateY(-1.25rem); }
+
+/* TICKET TEAR — notched corners via clip-path on ::before bg layer
+   (chat1.md says: keep clip-path off the button itself so subpixel
+   AA on the label survives) */
+.btn-tear {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+.btn-tear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--lavender);
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0,
+    100% 8px, 100% calc(100% - 8px),
+    calc(100% - 8px) 100%, 8px 100%,
+    0 calc(100% - 8px), 0 8px
+  );
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+.btn-tear:hover::before { background: var(--ink); }
+.btn-tear { color: var(--bg); transition: color 0.3s ease; }
+.btn-tear:hover { color: var(--lavender); }
+
+/* Block-tear variant — bigger notch radius for the final CTA card */
+.btn-tear-block::before {
+  clip-path: polygon(
+    14px 0, calc(100% - 14px) 0,
+    100% 14px, 100% calc(100% - 14px),
+    calc(100% - 14px) 100%, 14px 100%,
+    0 calc(100% - 14px), 0 14px
+  );
+}
