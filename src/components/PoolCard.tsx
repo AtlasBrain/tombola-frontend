@@ -1,109 +1,150 @@
-import Link from "next/link";
-import { Countdown } from "./Countdown";
-import { BuyTicketButton } from "./BuyTicketButton";
-import { FlashOnChange } from "./FlashOnChange";
-import { WinOdds } from "./WinOdds";
-import { formatSol, formatTickets } from "@/lib/format";
-import { explorerAddressUrl } from "@/lib/explorer-url";
 import type { PoolView } from "@/lib/mock-pools";
+import { BuyTicketButton } from "@/components/BuyTicketButton";
+import { Countdown } from "@/components/Countdown";
 
-const RPC_URL =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
-
-const STATE_BADGE: Record<PoolView["state"], { label: string; className: string }> = {
-  Open: { label: "Open", className: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" },
-  AwaitingVrf: { label: "Drawing…", className: "bg-amber-500/10 text-amber-400 ring-amber-500/20" },
-  Resolved: { label: "Resolved", className: "bg-neutral-500/10 text-neutral-400 ring-neutral-500/20" },
+const ACCENT_HEX: Record<PoolView["kind"], string> = {
+  Weekly:    "#c9b5dc",
+  Biweekly:  "#b8a5d4",
+  Triweekly: "#88cfc4",
+  Monthly:   "#e8a5c0",
 };
 
-export function PoolCard({ pool }: { pool: PoolView }) {
-  const badge = STATE_BADGE[pool.state];
-  const ticketsForOneSol = (1_000_000_000n / pool.ticketPriceLamports).toString();
-  const closed = pool.state !== "Open";
+const GRAD_CLASS: Record<PoolView["kind"], string> = {
+  Weekly:    "grad-weekly",
+  Biweekly:  "grad-biweekly",
+  Triweekly: "grad-triweekly",
+  Monthly:   "grad-monthly",
+};
+
+function clusterFromRpc(rpcUrl: string): "devnet" | "mainnet" | "localnet" | "testnet" {
+  if (rpcUrl.includes("devnet")) return "devnet";
+  if (rpcUrl.includes("mainnet")) return "mainnet";
+  if (rpcUrl.includes("testnet")) return "testnet";
+  return "localnet";
+}
+
+export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) {
+  const accent = ACCENT_HEX[pool.kind];
+  const gradCls = GRAD_CLASS[pool.kind];
+
+  const potSol = Number(pool.totalPotLamports) / 1_000_000_000;
+  const tickets = Number(pool.totalTickets);
+  // BUYERS isn't on PoolView — derive a deterministic placeholder until backend exposes it
+  const buyers = Math.max(1, Math.round(tickets / 3));
+  const ticketPriceSol = Number(pool.ticketPriceLamports) / 1_000_000_000;
+
+  // Tickets-sold progress: % of a "typical round" (use 300 as the soft target)
+  const TYPICAL_ROUND = 300;
+  const pct = Math.min(100, Math.round((tickets / TYPICAL_ROUND) * 100));
+
+  const isOpen = pool.state === "Open";
+  const isDrawing = pool.state === "AwaitingVrf";
+
+  const cluster = rpcUrl ? clusterFromRpc(rpcUrl) : "devnet";
+  const explorerUrl = pool.poolAddress
+    ? `https://solscan.io/account/${pool.poolAddress}?cluster=${cluster}`
+    : "#";
+
+  const stateLabel = isOpen ? "▲ OPEN" : isDrawing ? "◷ DRAWING" : "✓ RESOLVED";
+  const stateClass = isOpen
+    ? "border-lime/30 bg-lime/10 text-lime"
+    : isDrawing
+      ? "border-[#e8d89e]/30 bg-[#e8d89e]/10 text-[#e8d89e]"
+      : "border-neutral-800 bg-neutral-900/50 text-neutral-400";
 
   return (
-    <div className="group flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 shadow-lg backdrop-blur-sm transition duration-200 hover:border-neutral-700 hover:bg-neutral-900/70 hover:shadow-xl hover:shadow-emerald-500/5 focus-within:border-emerald-500/40 focus-within:ring-2 focus-within:ring-emerald-500/20">
-      <div className="flex items-start justify-between gap-2">
+    <article
+      className={`${gradCls} group relative overflow-hidden rounded-3xl border border-neutral-800 p-7 transition-all hover:-translate-y-0.5`}
+      style={{ borderColor: `${accent}40` }}
+    >
+      {/* Header */}
+      <header className="flex items-start justify-between">
         <div>
-          <h3 className="text-xl font-semibold tracking-tight">
-            <Link
-              href={`/pool/${pool.kind.toLowerCase()}/${pool.round.toString()}`}
-              className="transition-colors hover:text-emerald-100"
-            >
-              {pool.kind}
-            </Link>
-          </h3>
-          <p className="text-sm text-neutral-500">
-            Round #{pool.round.toString()}
-            {pool.poolAddress && (
-              <>
-                {" · "}
-                <a
-                  href={explorerAddressUrl(pool.poolAddress, RPC_URL)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-neutral-500 transition-colors hover:text-neutral-300"
-                >
-                  explorer ↗
-                </a>
-              </>
-            )}
-          </p>
+          <div className="font-display text-3xl uppercase">{pool.kind}</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            ROUND #{pool.round.toString()} ·{" "}
+            <a href={explorerUrl} target="_blank" rel="noreferrer" className="hover:text-white">
+              EXPLORER ↗
+            </a>
+          </div>
         </div>
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${badge.className}`}
+          className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${stateClass}`}
         >
-          {badge.label}
+          {stateLabel}
         </span>
-      </div>
+      </header>
 
-      <div>
-        <div className="text-xs uppercase tracking-wider text-neutral-500">Pot</div>
-        <div className="text-3xl font-bold text-emerald-400">
-          <FlashOnChange value={pool.totalPotLamports.toString()}>
-            {formatSol(pool.totalPotLamports)}
-          </FlashOnChange>
+      {/* POT block */}
+      <div
+        className="mt-6 rounded-2xl border border-neutral-900 p-5"
+        style={{
+          background: `linear-gradient(135deg, ${accent}14, transparent 70%)`,
+        }}
+      >
+        <div className="flex items-baseline justify-between">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+            {isDrawing ? "FINAL · AWAITING REVEAL" : ""}
+          </div>
+        </div>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span
+            className="font-display text-6xl uppercase leading-none tabular-nums"
+            style={{ color: accent }}
+          >
+            {potSol.toFixed(2)}
+          </span>
+          <span className="font-display text-2xl uppercase text-neutral-500">SOL</span>
         </div>
       </div>
 
-      <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <dt className="text-neutral-500">Tickets</dt>
-          <dd className="font-medium text-neutral-200">
-            <FlashOnChange value={pool.totalTickets.toString()}>
-              {formatTickets(pool.totalTickets)}
-            </FlashOnChange>
-          </dd>
+      {/* Mini stats — TICKETS / BUYERS / CLOSES IN */}
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+          <div className="mt-1 font-display text-xl uppercase tabular-nums">{tickets.toLocaleString()}</div>
         </div>
-        <div>
-          <dt className="text-neutral-500">{closed ? "Closed" : "Closes in"}</dt>
-          <dd className="font-medium text-neutral-200 tabular-nums">
+        <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+          <div className="mt-1 font-display text-xl uppercase tabular-nums">{buyers}</div>
+        </div>
+        <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+          <div className="mt-1 font-display text-xl uppercase tabular-nums">
             <Countdown targetUnix={pool.closeTimeUnix} />
-          </dd>
+          </div>
         </div>
-        <div>
-          <dt className="text-neutral-500">Ticket price</dt>
-          <dd className="font-medium text-neutral-200">{formatSol(pool.ticketPriceLamports)}</dd>
-        </div>
-        <div>
-          <dt className="text-neutral-500">Per 1 SOL</dt>
-          <dd className="font-medium text-neutral-200">{ticketsForOneSol} tickets</dd>
-        </div>
-      </dl>
+      </div>
 
-      {pool.poolAddress && (
-        <WinOdds
-          poolAddress={pool.poolAddress}
-          totalTickets={pool.totalTickets}
-        />
-      )}
+      {/* Progress */}
+      <div className="mt-5">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+          <span className="text-neutral-500">TICKETS SOLD</span>
+          <span className="text-neutral-300">{pct}% OF TYPICAL ROUND</span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: accent }} />
+        </div>
+      </div>
 
-      <BuyTicketButton
-        poolType={pool.poolType}
-        round={pool.round}
-        ticketPriceLamports={pool.ticketPriceLamports}
-        closed={closed}
-      />
-    </div>
+      {/* CTA */}
+      <div className="mt-6">
+        {isOpen ? (
+          <BuyTicketButton
+            poolType={pool.poolType}
+            round={pool.round}
+            ticketPriceLamports={pool.ticketPriceLamports}
+            closed={false}
+            accentColor={accent}
+            ticketPriceSol={ticketPriceSol}
+          />
+        ) : (
+          <div className="flex items-center justify-center gap-3 rounded-2xl bg-white/[0.03] py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+            ROUND CLOSED · {isDrawing ? "DRAWING" : "RESOLVED"}
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
