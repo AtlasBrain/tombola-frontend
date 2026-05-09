@@ -10,6 +10,13 @@ import { loadCodesFromStorage, type StoredCodesPayload } from "@/lib/private-poo
 interface Props {
   poolAddress: string;
   walletAddress: string;
+  /** Pool state (0 Open, 1 AwaitingVrf, 2 Resolved). After close, unredeemed
+   *  codes are voided on chain (close_time check in redeem_invite_code).
+   *  Reflect that visually so the creator can't accidentally hand out dead links. */
+  poolState: 0 | 1 | 2;
+  /** Pool close_time in unix seconds. Used together with poolState to
+   *  compute the "closed" predicate — Open + past-close also counts. */
+  closeTimeUnix: number;
 }
 
 interface RowState {
@@ -18,13 +25,26 @@ interface RowState {
   redeemed: boolean;
 }
 
-export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
+const COPY_FEEDBACK_MS = 1_500;
+
+export function AdminRedemptionStatus({
+  poolAddress,
+  walletAddress,
+  poolState,
+  closeTimeUnix,
+}: Props) {
   const { connection } = useConnection();
   const [stored, setStored] = useState<StoredCodesPayload | null | "missing">(
     null,
   );
   const [rows, setRows] = useState<RowState[] | null>(null);
   const [showRedeemed, setShowRedeemed] = useState(false);
+  // copiedKey === code (per row) | "all" (bulk) | "csv" (download). Cleared
+  // after COPY_FEEDBACK_MS so the user sees a transient confirmation.
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const isClosed =
+    poolState !== 0 || closeTimeUnix * 1000 <= Date.now();
 
   // Load codes from localStorage
   useEffect(() => {
@@ -82,9 +102,20 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
     [stored, origin, poolAddress],
   );
 
-  const onCopyOne = useCallback((url: string) => {
-    void navigator.clipboard.writeText(url);
+  const flashCopied = useCallback((key: string) => {
+    setCopiedKey(key);
+    setTimeout(() => {
+      setCopiedKey((current) => (current === key ? null : current));
+    }, COPY_FEEDBACK_MS);
   }, []);
+
+  const onCopyOne = useCallback(
+    (url: string, key: string) => {
+      void navigator.clipboard.writeText(url);
+      flashCopied(key);
+    },
+    [flashCopied],
+  );
 
   const onCopyAllUnredeemed = useCallback(() => {
     if (!rows) return;
@@ -93,7 +124,8 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
       .map(linkFor)
       .join("\n");
     void navigator.clipboard.writeText(all);
-  }, [rows, linkFor]);
+    flashCopied("all");
+  }, [rows, linkFor, flashCopied]);
 
   const onDownloadCsv = useCallback(() => {
     if (!rows) return;
@@ -112,7 +144,8 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
     a.download = `tombola-codes-${poolAddress.slice(0, 8)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
-  }, [rows, linkFor, poolAddress]);
+    flashCopied("csv");
+  }, [rows, linkFor, poolAddress, flashCopied]);
 
   if (stored === null) {
     return (
@@ -157,6 +190,19 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
 
   return (
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+      {isClosed && (
+        <div className="mb-4 rounded-xl border border-amber-700/40 bg-amber-900/20 p-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-amber-300">
+            Pool closed
+          </p>
+          <p className="mt-1 text-sm text-neutral-300">
+            Unredeemed codes are <span className="font-semibold text-amber-200">voided</span>.
+            The on-chain <code className="font-mono text-amber-200">redeem_invite_code</code>{" "}
+            instruction rejects redemptions after <code>close_time</code>, so any link copied
+            now would fail at simulation. Sharing them won&apos;t help your buyers.
+          </p>
+        </div>
+      )}
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="text-xs uppercase tracking-widest text-neutral-500">
@@ -173,16 +219,27 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
           <button
             type="button"
             onClick={onCopyAllUnredeemed}
-            className="rounded bg-neutral-800 px-3 py-1.5 text-xs hover:bg-neutral-700"
+            disabled={isClosed}
+            className={`rounded px-3 py-1.5 text-xs transition ${
+              isClosed
+                ? "cursor-not-allowed bg-neutral-900 text-neutral-600"
+                : copiedKey === "all"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
+            }`}
           >
-            Copy all unredeemed
+            {copiedKey === "all" ? "Copied ✓" : "Copy all unredeemed"}
           </button>
           <button
             type="button"
             onClick={onDownloadCsv}
-            className="rounded bg-neutral-800 px-3 py-1.5 text-xs hover:bg-neutral-700"
+            className={`rounded px-3 py-1.5 text-xs transition ${
+              copiedKey === "csv"
+                ? "bg-emerald-600 text-white"
+                : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
+            }`}
           >
-            Download CSV
+            {copiedKey === "csv" ? "Downloaded ✓" : "Download CSV"}
           </button>
         </div>
       </div>
@@ -201,27 +258,46 @@ export function AdminRedemptionStatus({ poolAddress, walletAddress }: Props) {
         <p className="text-sm text-neutral-500">All codes redeemed.</p>
       ) : (
         <ul className="max-h-[40vh] overflow-y-auto rounded border border-neutral-800 bg-neutral-950/40 p-2 font-mono text-xs">
-          {unredeemed.map((r, i) => (
-            <li
-              key={r.code}
-              className="flex items-center gap-2 border-b border-neutral-800/50 py-2 last:border-b-0"
-            >
-              <span className="w-8 shrink-0 text-right text-neutral-600">
-                {i + 1}
-              </span>
-              <code className="flex-1 truncate text-neutral-300">
-                {r.code.slice(0, 16)}…
-              </code>
-              <button
-                type="button"
-                onClick={() => onCopyOne(linkFor(r))}
-                aria-label={`Copy redemption link ${i + 1}`}
-                className="shrink-0 rounded bg-neutral-800 px-2 py-1 text-xs hover:bg-neutral-700"
+          {unredeemed.map((r, i) => {
+            const copied = copiedKey === r.code;
+            return (
+              <li
+                key={r.code}
+                className="flex items-center gap-2 border-b border-neutral-800/50 py-2 last:border-b-0"
               >
-                Copy link
-              </button>
-            </li>
-          ))}
+                <span className="w-8 shrink-0 text-right text-neutral-600">
+                  {i + 1}
+                </span>
+                <code
+                  className={`flex-1 truncate ${
+                    isClosed
+                      ? "text-neutral-600 line-through"
+                      : "text-neutral-300"
+                  }`}
+                >
+                  {r.code.slice(0, 16)}…
+                </code>
+                {isClosed ? (
+                  <span className="shrink-0 rounded bg-neutral-900 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+                    Voided
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onCopyOne(linkFor(r), r.code)}
+                    aria-label={`Copy redemption link ${i + 1}`}
+                    className={`shrink-0 rounded px-2 py-1 text-xs transition ${
+                      copied
+                        ? "scale-105 bg-emerald-600 text-white shadow-[0_0_0_3px_rgba(16,185,129,0.2)]"
+                        : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
+                    }`}
+                  >
+                    {copied ? "Copied ✓" : "Copy link"}
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 

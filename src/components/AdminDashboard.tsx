@@ -224,6 +224,8 @@ export function AdminDashboard({ poolAddress }: Props) {
           <AdminRedemptionStatus
             poolAddress={poolAddress}
             walletAddress={publicKey.toBase58()}
+            poolState={pool.state}
+            closeTimeUnix={pool.closeTimeUnix}
           />
         </div>
         <div className="mt-8">
