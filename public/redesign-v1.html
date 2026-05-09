@@ -57,8 +57,10 @@
         color: var(--lime);
       }
 
-      /* Smooth scroll for in-page anchor clicks. */
-      html { scroll-behavior: smooth; }
+      /* Smooth scroll handled in JS at the bottom of the page (CSS
+         `scroll-behavior: smooth` doesn't expose a duration). The JS
+         version uses easeInOutCubic over ~1100 ms, which feels much
+         calmer than the browser's ~400 ms default. */
       /* Sections jumped-to via the nav get a small breathing offset so the
          heading isn't pinned to the top edge of the viewport. */
       section[id] { scroll-margin-top: 32px; }
@@ -983,5 +985,42 @@
         </div>
       </div>
     </footer>
+    <!-- Slow, eased smooth-scroll for nav links. ~1100 ms with easeInOutCubic;
+         CSS scroll-behavior: smooth was too snappy. -->
+    <script>
+      (function () {
+        const DURATION_MS = 1100;
+        const OFFSET = 32; // matches scroll-margin-top on section[id]
+        const easeInOutCubic = (t) =>
+          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        function smoothScrollTo(targetY) {
+          const startY = window.scrollY;
+          const distance = targetY - startY;
+          if (Math.abs(distance) < 2) return;
+          const startTime = performance.now();
+          function step(now) {
+            const t = Math.min((now - startTime) / DURATION_MS, 1);
+            window.scrollTo(0, startY + distance * easeInOutCubic(t));
+            if (t < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach((a) => {
+          a.addEventListener("click", (e) => {
+            const id = a.getAttribute("href").slice(1);
+            if (!id) return;
+            const target = document.getElementById(id);
+            if (!target) return;
+            e.preventDefault();
+            const targetY =
+              target.getBoundingClientRect().top + window.scrollY - OFFSET;
+            smoothScrollTo(targetY);
+            history.replaceState(null, "", "#" + id);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

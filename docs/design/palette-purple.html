@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tombola — Palette: Solana Native</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0d0820;          /* deep purple-black */
+        --bg-elev: #15102e;
+        --purple: #9945ff;       /* Solana brand primary */
+        --aqua:   #14f195;       /* Solana brand secondary */
+        --pink:   #f472b6;
+        --orange: #fb923c;
+        --ink:    #060311;
+        --cream:  #efebff;
+      }
+      html, body {
+        background:
+          radial-gradient(40% 35% at 15% 20%, #9945ff20 0%, transparent 70%),
+          radial-gradient(40% 35% at 85% 25%, #14f19520 0%, transparent 70%),
+          radial-gradient(40% 35% at 10% 75%, #f472b620 0%, transparent 70%),
+          radial-gradient(40% 35% at 90% 80%, #fb923c20 0%, transparent 70%),
+          var(--bg);
+        background-attachment: fixed;
+        color: var(--cream);
+        font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+      }
+      .font-mono { font-family: "Space Mono", ui-monospace, monospace; }
+      .font-display { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; letter-spacing: -0.04em; }
+      @keyframes spin-slow    { to { transform: rotate(360deg);  } }
+      @keyframes spin-counter { to { transform: rotate(-360deg); } }
+      .spin-slow    { animation: spin-slow    50s linear infinite; transform-origin: center; }
+      .spin-counter { animation: spin-counter 35s linear infinite; transform-origin: center; }
+      @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.4} }
+      .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+    </style>
+  </head>
+  <body class="min-h-screen overflow-x-hidden">
+    <div class="border-b border-[#1f1838] bg-[#060311]/95">
+      <div class="mx-auto max-w-7xl overflow-hidden px-6 py-2.5 text-[11px] font-mono uppercase tracking-wider text-[#867aa8]">
+        <span class="text-[var(--aqua)]">●</span> SOLANA NATIVE PALETTE · Purple #9945FF + Aqua #14F195 + Pink + Orange
+      </div>
+    </div>
+
+    <header class="mx-auto max-w-7xl px-6 py-5">
+      <div class="grid grid-cols-3 items-center gap-4">
+        <a href="#" class="flex items-center gap-2.5 justify-self-start">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-[var(--cream)]">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" />
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <span class="font-display text-lg uppercase">TOMBOLA</span>
+        </a>
+        <nav class="hidden items-center gap-2 justify-self-center text-xs uppercase tracking-wider text-[#867aa8] sm:flex">
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">POOLS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">HOW IT WORKS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">STATS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2 justify-self-end">
+          <span class="hidden items-center gap-1.5 rounded-full border border-[#1f1838] px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-[#867aa8] sm:inline-flex">
+            <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-[var(--aqua)]"></span>
+            LOCALNET
+          </span>
+          <button class="flex items-center gap-2 rounded-full bg-[var(--cream)] px-1.5 py-1.5 pl-4 text-xs font-medium uppercase tracking-wider text-[var(--ink)] transition hover:brightness-95">
+            CONNECT
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--purple)] to-[var(--aqua)] text-[10px] font-bold text-white">→</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="relative mx-auto max-w-7xl overflow-hidden px-6 pt-20 pb-32">
+      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 sm:h-[600px] sm:w-[600px] lg:h-[680px] lg:w-[680px]">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#9945ff" />
+            <stop offset="50%"  stop-color="#14f195" />
+            <stop offset="100%" stop-color="#f472b6" />
+          </linearGradient>
+        </defs>
+        <g class="spin-slow" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="490" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.5" />
+        </g>
+        <g class="spin-counter" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" stroke-width="6" fill="none" opacity="0.5" />
+          <circle cx="500" cy="35"  r="6" fill="#9945ff" />
+          <circle cx="965" cy="500" r="6" fill="#14f195" />
+          <circle cx="500" cy="965" r="6" fill="#f472b6" />
+          <circle cx="35"  cy="500" r="6" fill="#fb923c" />
+        </g>
+        <g class="spin-slow" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="448" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.4" />
+        </g>
+      </svg>
+
+      <div class="relative z-10 mx-auto max-w-3xl text-center">
+        <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-[#1f1838] bg-[#060311] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">
+          <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-[var(--aqua)]"></span>
+          LIVE · 4 POOLS RUNNING
+        </span>
+        <h1 class="font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
+          Where SOL<br />wins big.
+        </h1>
+        <p class="mx-auto mt-6 max-w-md text-sm text-[#867aa8] sm:text-base">
+          Trustless on-chain raffles. Buy tickets, win the pot, repeat — verifiable randomness via Switchboard.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button class="flex items-center gap-2 rounded-full bg-[var(--cream)] px-2 py-2 pl-5 text-xs font-medium uppercase tracking-widest text-[var(--ink)] transition hover:brightness-95">
+            LEARN MORE
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--cream)]">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9" /></svg>
+            </span>
+          </button>
+          <button class="flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--purple)] to-[var(--aqua)] px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-white transition hover:brightness-110">
+            BUY A TICKET
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--aqua)]">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-6 pb-20">
+      <div class="mb-10">
+        <h2 class="font-display text-4xl uppercase sm:text-6xl">Public pools</h2>
+        <p class="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#867aa8]">4 ROUNDS · 0.01 SOL PER TICKET</p>
+      </div>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="rounded-3xl border border-[#1f1838] bg-[#15102e] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase">WEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">ROUND #1</div></div>
+            <span class="rounded-full border border-[var(--purple)]/40 bg-[var(--purple)]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--purple)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#1f1838] bg-[#9945ff1a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--purple)]">1.38</span><span class="font-display text-2xl uppercase text-[#867aa8]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--purple)] px-4 py-3 font-display text-sm uppercase text-white transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+        <div class="rounded-3xl border border-[#1f1838] bg-[#15102e] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">ROUND #1</div></div>
+            <span class="rounded-full border border-[var(--aqua)]/40 bg-[var(--aqua)]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--aqua)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#1f1838] bg-[#14f1951a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--aqua)]">3.12</span><span class="font-display text-2xl uppercase text-[#867aa8]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--aqua)] px-4 py-3 font-display text-sm uppercase text-[var(--ink)] transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+        <div class="rounded-3xl border border-[#1f1838] bg-[#15102e] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase">TRIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">ROUND #1</div></div>
+            <span class="rounded-full border border-[var(--orange)]/40 bg-[var(--orange)]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--orange)]">◷ DRAWING</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#1f1838] bg-[#fb923c1a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">POT · FINAL</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--orange)]">4.87</span><span class="font-display text-2xl uppercase text-[#867aa8]">SOL</span></div>
+          </div>
+          <button disabled class="mt-6 w-full cursor-not-allowed rounded-full bg-[#1f1838] px-4 py-3 font-display text-sm uppercase text-[#867aa8]">ROUND CLOSED</button>
+        </div>
+        <div class="rounded-3xl border border-[#1f1838] bg-[#15102e] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase">MONTHLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">ROUND #1</div></div>
+            <span class="rounded-full border border-[var(--pink)]/40 bg-[var(--pink)]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--pink)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#1f1838] bg-[#f472b61a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--pink)]">10.24</span><span class="font-display text-2xl uppercase text-[#867aa8]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--pink)] px-4 py-3 font-display text-sm uppercase text-[var(--ink)] transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="border-t border-[#1f1838] py-6 text-center font-mono text-[10px] uppercase tracking-widest text-[#867aa8]">
+      SOLANA NATIVE · purple #9945FF + aqua #14F195 + pink + orange · <a href="/redesign-v1.html" class="text-[var(--aqua)] hover:brightness-110">← back to v1 (lime)</a>
+    </footer>
+  </body>
+</html>
