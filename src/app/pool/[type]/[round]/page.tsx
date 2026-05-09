@@ -4,12 +4,13 @@ import { BuyTicketButton } from "@/components/BuyTicketButton";
 import { Countdown } from "@/components/Countdown";
 import { FlashOnChange } from "@/components/FlashOnChange";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
+import { RecentBuysTable } from "@/components/RecentBuysTable";
+import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, formatTickets } from "@/lib/format";
 import {
   getPoolDetail,
   poolTypeFromSlug,
-  type TicketBatchView,
 } from "@/lib/get-pool-detail";
 import type { PoolView } from "@/lib/mock-pools";
 
@@ -161,70 +162,28 @@ export default async function PoolDetailPage({
             ticketPriceLamports={pool.ticketPriceLamports}
             closed={closed}
           />
+          {pool.poolAddress && (
+            <div className="mt-4">
+              <WinOdds
+                poolAddress={pool.poolAddress}
+                totalTickets={pool.totalTickets}
+              />
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="mb-12">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-xl font-semibold">Ticket batches</h2>
-          <span className="text-sm text-neutral-500 tabular-nums">
-            {batches.length} buyer{batches.length === 1 ? "" : "s"} ·{" "}
-            {formatTickets(pool.totalTickets)} ticket
-            {pool.totalTickets === 1n ? "" : "s"} sold
-          </span>
-        </div>
-
-        {batches.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 p-8 text-center text-sm text-neutral-500">
-            No tickets bought in this round yet.
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-2xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-sm">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-neutral-500">
-                  <th className="px-6 pt-4 pb-2 font-medium">Buyer</th>
-                  <th className="pt-4 pb-2 font-medium">Tickets</th>
-                  <th className="pt-4 pb-2 font-medium">Range</th>
-                  <th className="px-6 pt-4 pb-2 text-right font-medium">Spent</th>
-                </tr>
-              </thead>
-              <tbody>
-                {batches.map((b) => (
-                  <BatchRow key={b.batchAddress} b={b} rpcUrl={RPC_URL} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <RecentBuysTable
+        batches={batches.map((b) => ({
+          batchAddress: b.batchAddress,
+          owner: b.owner,
+          firstTicketId: b.firstTicketId,
+          lastTicketId: b.lastTicketId,
+          quantity: b.quantity,
+          spentLamports: b.spentLamports,
+        }))}
+        totalTickets={pool.totalTickets}
+      />
     </div>
-  );
-}
-
-function BatchRow({ b, rpcUrl }: { b: TicketBatchView; rpcUrl: string }) {
-  return (
-    <tr className="border-t border-neutral-800/50 transition-colors hover:bg-neutral-900/40">
-      <td className="px-6 py-3">
-        <a
-          href={explorerAddressUrl(b.owner, rpcUrl)}
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-neutral-300 transition-colors hover:text-neutral-100"
-          title={b.owner}
-        >
-          {shortAddress(b.owner)}
-        </a>
-      </td>
-      <td className="py-3 pr-4 font-medium tabular-nums text-neutral-200">
-        {b.quantity.toString()}
-      </td>
-      <td className="py-3 pr-4 tabular-nums text-neutral-500">
-        #{b.firstTicketId.toString()}–#{b.lastTicketId.toString()}
-      </td>
-      <td className="px-6 py-3 text-right font-medium tabular-nums text-emerald-400">
-        {formatSol(b.spentLamports)}
-      </td>
-    </tr>
   );
 }

@@ -1,0 +1,225 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { explorerAddressUrl, explorerTxUrl } from "@/lib/explorer-url";
+import { formatSol, formatTickets } from "@/lib/format";
+import {
+  fetchBuySignatures,
+  relativeTime,
+  type BuySig,
+} from "@/lib/fetch-buy-signatures";
+
+export interface BatchRow {
+  batchAddress: string;
+  owner: string;
+  firstTicketId: bigint;
+  lastTicketId: bigint;
+  quantity: bigint;
+  spentLamports: bigint;
+}
+
+interface Props {
+  batches: BatchRow[];
+  totalTickets: bigint;
+}
+
+const DEFAULT_LIMIT = 10;
+
+function shortAddress(addr: string): string {
+  if (addr.length <= 10) return addr;
+  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
+}
+
+/**
+ * Sort by firstTicketId DESC = most-recent-first (ticket IDs are monotonic
+ * within a pool — every successful buy increments the pool's total_tickets
+ * counter, so a higher firstTicketId can only have come from a later buy).
+ */
+function sortByRecency(batches: BatchRow[]): BatchRow[] {
+  return [...batches].sort((a, b) =>
+    a.firstTicketId > b.firstTicketId
+      ? -1
+      : a.firstTicketId < b.firstTicketId
+        ? 1
+        : 0,
+  );
+}
+
+export function RecentBuysTable({ batches, totalTickets }: Props) {
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+  const [showAll, setShowAll] = useState(false);
+  const [sigs, setSigs] = useState<Map<string, BuySig>>(new Map());
+
+  const sorted = useMemo(() => sortByRecency(batches), [batches]);
+  const visible = showAll ? sorted : sorted.slice(0, DEFAULT_LIMIT);
+  const hiddenCount = Math.max(0, sorted.length - DEFAULT_LIMIT);
+  const myAddr = publicKey?.toBase58() ?? null;
+
+  // Fetch sigs for whatever's currently visible. When the user expands to
+  // "Show all" we top-up sigs for the additional batches in a second call.
+  useEffect(() => {
+    if (visible.length === 0) {
+      setSigs(new Map());
+      return;
+    }
+    let cancelled = false;
+    const missing = visible
+      .map((b) => b.batchAddress)
+      .filter((a) => !sigs.has(a));
+    if (missing.length === 0) return;
+    (async () => {
+      const map = await fetchBuySignatures(connection, missing);
+      if (cancelled) return;
+      setSigs((prev) => {
+        const merged = new Map(prev);
+        for (const [k, v] of map) merged.set(k, v);
+        return merged;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // sigs intentionally excluded — would re-trigger on every set merge.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection, visible]);
+
+  const rpcUrl = connection.rpcEndpoint;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const hasMine = myAddr ? sorted.some((b) => b.owner === myAddr) : false;
+
+  return (
+    <section className="mb-12">
+      <div className="mb-4 flex items-end justify-between">
+        <h2 className="text-xl font-semibold">Recent buys</h2>
+        <span className="text-sm text-neutral-500 tabular-nums">
+          {sorted.length} buy{sorted.length === 1 ? "" : "s"} ·{" "}
+          {formatTickets(totalTickets)} ticket
+          {totalTickets === 1n ? "" : "s"} sold
+        </span>
+      </div>
+
+      {sorted.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 p-8 text-center text-sm text-neutral-500">
+          No tickets bought in this round yet.
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-2xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-neutral-500">
+                  <th className="px-6 pt-4 pb-2 font-medium">Buyer</th>
+                  <th className="pt-4 pb-2 font-medium">Tickets</th>
+                  <th className="pt-4 pb-2 font-medium">Range</th>
+                  <th className="pt-4 pb-2 font-medium">When</th>
+                  <th className="pt-4 pb-2 font-medium">Spent</th>
+                  <th className="px-6 pt-4 pb-2 text-right font-medium">Tx</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((b) => {
+                  const sig = sigs.get(b.batchAddress);
+                  const mine = myAddr !== null && b.owner === myAddr;
+                  return (
+                    <tr
+                      key={b.batchAddress}
+                      className={`border-t border-neutral-800/50 transition-colors ${
+                        mine
+                          ? "bg-emerald-500/5 hover:bg-emerald-500/10"
+                          : "hover:bg-neutral-900/40"
+                      }`}
+                    >
+                      <td className="px-6 py-3">
+                        <a
+                          href={explorerAddressUrl(b.owner, rpcUrl)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`font-mono transition-colors ${
+                            mine
+                              ? "text-emerald-300 hover:text-emerald-200"
+                              : "text-neutral-300 hover:text-neutral-100"
+                          }`}
+                          title={b.owner}
+                        >
+                          {shortAddress(b.owner)}
+                          {mine && (
+                            <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wider">
+                              you
+                            </span>
+                          )}
+                        </a>
+                      </td>
+                      <td className="py-3 pr-4 font-medium tabular-nums text-neutral-200">
+                        {b.quantity.toString()}
+                      </td>
+                      <td className="py-3 pr-4 tabular-nums text-neutral-500">
+                        #{b.firstTicketId.toString()}–#{b.lastTicketId.toString()}
+                      </td>
+                      <td className="py-3 pr-4 tabular-nums text-neutral-500">
+                        {sig ? relativeTime(sig.blockTime, nowSec) : "…"}
+                      </td>
+                      <td className="py-3 pr-4 tabular-nums text-emerald-400">
+                        {formatSol(b.spentLamports)}
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        {sig ? (
+                          <a
+                            href={explorerTxUrl(sig.signature, rpcUrl)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-mono text-xs text-neutral-400 transition-colors hover:text-neutral-200"
+                            title={sig.signature}
+                          >
+                            {sig.signature.slice(0, 4)}…↗
+                          </a>
+                        ) : (
+                          <span className="font-mono text-xs text-neutral-600">…</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {!showAll && hiddenCount > 0 && (
+            <div className="mt-3 flex items-center justify-between text-sm">
+              <span className="text-neutral-500">
+                Showing {DEFAULT_LIMIT} most recent ·{" "}
+                <span className="text-neutral-400">{hiddenCount} more</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="rounded-full border border-neutral-700 bg-neutral-900 px-4 py-1.5 text-sm text-neutral-200 transition-colors hover:border-neutral-600 hover:bg-neutral-800"
+              >
+                Show all {sorted.length}
+              </button>
+            </div>
+          )}
+          {showAll && hiddenCount > 0 && (
+            <div className="mt-3 flex justify-end text-sm">
+              <button
+                type="button"
+                onClick={() => setShowAll(false)}
+                className="rounded-full border border-neutral-700 bg-neutral-900 px-4 py-1.5 text-sm text-neutral-200 transition-colors hover:border-neutral-600 hover:bg-neutral-800"
+              >
+                Collapse to {DEFAULT_LIMIT}
+              </button>
+            </div>
+          )}
+          {!hasMine && myAddr && (
+            <p className="mt-3 text-xs text-neutral-500">
+              You haven&apos;t bought tickets in this round yet.
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+export const __test = { sortByRecency };

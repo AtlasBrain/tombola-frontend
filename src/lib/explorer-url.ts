@@ -22,6 +22,10 @@ export function explorerAddressUrl(address: string, rpcUrl: string): string {
   return `${EXPLORER_BASE}/address/${address}${clusterQueryFor(rpcUrl)}`;
 }
 
+export function explorerTxUrl(signature: string, rpcUrl: string): string {
+  return `${EXPLORER_BASE}/tx/${signature}${clusterQueryFor(rpcUrl)}`;
+}
+
 export type ClusterLabel = "localnet" | "devnet" | "testnet" | "mainnet";
 
 export function clusterLabelFor(rpcUrl: string): ClusterLabel {
