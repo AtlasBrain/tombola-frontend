@@ -1,18 +1,17 @@
 import { PROGRAM_ID } from "@tombola/sdk";
-import { FaqSection } from "@/components/FaqSection";
+import { AllRoundsTable } from "@/components/AllRoundsTable";
+import { BentoFooter } from "@/components/BentoFooter";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { HowItWorks } from "@/components/HowItWorks";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
-import { MyTickets } from "@/components/MyTickets";
 import { PoolCard } from "@/components/PoolCard";
-import { PoolComparisonChart } from "@/components/PoolComparisonChart";
 import { RecentWinners } from "@/components/RecentWinners";
-import { StatsBar } from "@/components/StatsBar";
 import { Ticker } from "@/components/Ticker";
+import { WhyItsFair } from "@/components/WhyItsFair";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
 import { getLivePools } from "@/lib/get-pools";
-import { clusterLabelFor, explorerAddressUrl } from "@/lib/explorer-url";
+import { clusterLabelFor } from "@/lib/explorer-url";
 
 const RPC_URL =
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
@@ -46,67 +45,46 @@ export default async function Home() {
       <Ticker />
       <Header />
       <Hero />
-      <div className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
-        {watchedAddresses.length > 0 && (
-          <LivePoolWatcher addresses={watchedAddresses} rpcUrl={RPC_URL} />
-        )}
+      {watchedAddresses.length > 0 && (
+        <LivePoolWatcher addresses={watchedAddresses} rpcUrl={RPC_URL} />
+      )}
 
-        <section id="stats"><StatsBar pools={pools} /></section>
-
-        <section id="how-it-works"><HowItWorks /></section>
-
-        <PoolComparisonChart pools={pools} />
-
-        <section id="pools" className="-mx-6 px-6 pb-20">
-          <div className="mb-10 flex items-end justify-between">
-            <div>
-              <h2 className="font-display text-4xl uppercase sm:text-6xl">Public pools</h2>
-              <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-neutral-500">
-                {pools.length} ROUNDS RUNNING IN PARALLEL · 0.01 SOL PER TICKET
-              </p>
-            </div>
-            <span className="hidden items-center gap-2 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-neutral-300 sm:inline-flex">
-              <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime" />
-              LIVE · {CLUSTER.toUpperCase()}
-            </span>
+      <section id="pools" className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="mb-10 flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-4xl uppercase sm:text-6xl">Public pools</h2>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+              {pools.length} ROUNDS RUNNING IN PARALLEL · 0.01 SOL PER TICKET
+            </p>
           </div>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {pools.map((pool) => (
-              <PoolCard key={pool.poolType} pool={pool} rpcUrl={RPC_URL} />
-            ))}
+          <span className="hidden items-center gap-2 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-neutral-300 sm:inline-flex">
+            <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime" />
+            LIVE · {CLUSTER.toUpperCase()}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {pools.map((pool) => (
+            <PoolCard key={pool.poolType} pool={pool} rpcUrl={RPC_URL} />
+          ))}
+        </div>
+      </section>
+
+      <RecentWinners />
+      <AllRoundsTable pools={pools} />
+      <WhyItsFair />
+      <HowItWorks />
+      <BentoFooter pools={pools} programId={PROGRAM_ID.toString()} cluster={CLUSTER} />
+
+      <footer className="border-t border-neutral-900">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 font-mono text-[10px] uppercase tracking-widest text-neutral-600 sm:flex-row">
+          <span>© 2026 TOMBOLA · OPEN SOURCE</span>
+          <div className="flex items-center gap-4">
+            <a href="#" className="transition-colors hover:text-lime">TERMS</a>
+            <a href="#" className="transition-colors hover:text-lime">PRIVACY</a>
+            <a href="https://github.com/AtlasBrain/Project-Tombola" target="_blank" rel="noreferrer" className="transition-colors hover:text-lime">GITHUB</a>
           </div>
-        </section>
-
-        <MyTickets pools={pools} />
-
-        <RecentWinners />
-
-        <section id="faq"><FaqSection /></section>
-
-        <footer className="border-t border-neutral-900 pt-8 text-sm text-neutral-500">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <a
-                href={explorerAddressUrl(PROGRAM_ID, RPC_URL)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-mono text-neutral-400 transition-colors hover:text-neutral-200"
-              >
-                {PROGRAM_ID}
-              </a>
-              <span className="text-neutral-600">— program ID ({CLUSTER})</span>
-            </div>
-            <a
-              href="https://github.com/AtlasBrain/Project-Tombola"
-              target="_blank"
-              rel="noreferrer"
-              className="transition-colors hover:text-neutral-300"
-            >
-              github →
-            </a>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </>
   );
 }
