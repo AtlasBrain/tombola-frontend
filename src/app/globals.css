@@ -138,6 +138,9 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .nav-link {
   position: relative;
   display: inline-block;
+  /* Force single-line so multi-word labels (HOW IT WORKS) don't wrap and
+     break the equidistant rhythm between nav items. */
+  white-space: nowrap;
   padding: 0.5rem 0.85rem;
   font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
