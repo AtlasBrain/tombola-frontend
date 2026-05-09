@@ -16,6 +16,15 @@ import {
   type PoolMembership,
 } from "@/lib/buyer-pools";
 
+// Brand palette tokens — match globals.css :root accents
+const ACCENT_LAVENDER = "#c9b5dc";
+const ACCENT_PINK = "#E89999";
+const ACCENT_MINT = "#88cfc4";
+const ACCENT_YELLOW = "#e8d89e";
+// Money-tone replacements (Q3b: brand instead of emerald/rose)
+const MONEY_POS = ACCENT_MINT;
+const MONEY_NEG = ACCENT_PINK;
+
 const POOL_KIND_LABELS: Record<number, string> = {
   0: "Weekly",
   1: "Biweekly",
@@ -23,8 +32,31 @@ const POOL_KIND_LABELS: Record<number, string> = {
   3: "Monthly",
 };
 
+/** Per-pool accent lookup (Q1a). Public pools color-coded by cadence to
+ *  match landing-page PoolCards; private pools take mint (matches the
+ *  /pool/private design). */
+function accentFor(p: PoolMembership): string {
+  if (p.kind === "private") return ACCENT_MINT;
+  switch (p.publicPoolType) {
+    case 0:
+      return ACCENT_LAVENDER;
+    case 1:
+      return ACCENT_PINK;
+    case 2:
+      return ACCENT_MINT;
+    case 3:
+      return ACCENT_YELLOW;
+    default:
+      return ACCENT_LAVENDER;
+  }
+}
+
 function poolHref(p: PoolMembership): string {
-  if (p.kind === "public" && p.publicPoolType !== undefined && p.publicRound !== undefined) {
+  if (
+    p.kind === "public" &&
+    p.publicPoolType !== undefined &&
+    p.publicRound !== undefined
+  ) {
     const slug = (POOL_KIND_LABELS[p.publicPoolType] ?? "weekly").toLowerCase();
     return `/pool/${slug}/${p.publicRound.toString()}`;
   }
@@ -35,7 +67,7 @@ function poolDisplayName(p: PoolMembership): string {
   if (p.kind === "public" && p.publicPoolType !== undefined) {
     return `${POOL_KIND_LABELS[p.publicPoolType] ?? "Public"} #${p.publicRound?.toString() ?? "?"}`;
   }
-  return `Private · ${p.poolAddress.slice(0, 6)}…${p.poolAddress.slice(-4)}`;
+  return `Private`;
 }
 
 function shortAddr(addr: string): string {
@@ -48,23 +80,34 @@ function pctStr(my: bigint, total: bigint): string {
   return `${pctTimes100.toFixed(pctTimes100 < 10 ? 2 : 1)}%`;
 }
 
-const STATUS_BADGE: Record<
-  PoolMembership["state"],
-  { label: string; cls: string }
-> = {
-  Open: {
-    label: "Open",
-    cls: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20",
-  },
-  AwaitingVrf: {
-    label: "Drawing",
-    cls: "bg-amber-500/10 text-amber-400 ring-amber-500/20",
-  },
-  Resolved: {
-    label: "Resolved",
-    cls: "bg-neutral-500/10 text-neutral-400 ring-neutral-500/20",
-  },
-};
+function statePill(
+  state: PoolMembership["state"],
+  accent: string,
+): { label: string; style: React.CSSProperties; cls: string } {
+  if (state === "Open") {
+    return {
+      label: "▲ OPEN",
+      style: {
+        borderColor: `${accent}4d`,
+        background: `${accent}1a`,
+        color: accent,
+      },
+      cls: "border",
+    };
+  }
+  if (state === "AwaitingVrf") {
+    return {
+      label: "◷ DRAWING",
+      style: {},
+      cls: "border border-amber-500/30 bg-amber-500/10 text-amber-400",
+    };
+  }
+  return {
+    label: "✓ RESOLVED",
+    style: {},
+    cls: "border border-neutral-800 bg-neutral-900/50 text-neutral-400",
+  };
+}
 
 export function BuyerDashboard() {
   const { connection } = useConnection();
@@ -138,7 +181,7 @@ export function BuyerDashboard() {
   }
   if (err) {
     return (
-      <p className="text-sm text-red-400" role="alert">
+      <p className="text-sm text-rose-400" role="alert">
         Couldn&apos;t load your activity: {err}
       </p>
     );
@@ -154,17 +197,19 @@ export function BuyerDashboard() {
           You haven&apos;t bought into any pool from this wallet.
         </p>
         <Link
-          href="/"
-          className="mt-6 inline-flex rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+          href="/#pools"
+          style={{ ["--tear-bg" as never]: ACCENT_LAVENDER }}
+          className="btn-fx fx-tear mt-6 inline-flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
         >
-          Browse public pools →
+          BROWSE PUBLIC POOLS
+          <span className="chip-flip flex h-6 w-6 items-center justify-center rounded-full bg-black text-[10px] text-white">
+            →
+          </span>
         </Link>
       </div>
     );
   }
 
-  // Split visible into Live and History sections so resolved pools live
-  // below their still-running counterparts.
   const live = visible!.filter((p) => p.state !== "Resolved");
   const history = visible!.filter((p) => p.state === "Resolved");
 
@@ -204,14 +249,16 @@ function LifetimeStats({
 }: {
   stats: ReturnType<typeof computeLifetimeStats>;
 }) {
-  const pnlSign = stats.netPnLLamports > 0n ? "+" : stats.netPnLLamports < 0n ? "−" : "";
-  const pnlAbs = stats.netPnLLamports < 0n ? -stats.netPnLLamports : stats.netPnLLamports;
-  const pnlClass =
+  const pnlSign =
+    stats.netPnLLamports > 0n ? "+" : stats.netPnLLamports < 0n ? "−" : "";
+  const pnlAbs =
+    stats.netPnLLamports < 0n ? -stats.netPnLLamports : stats.netPnLLamports;
+  const pnlColor =
     stats.netPnLLamports > 0n
-      ? "text-emerald-400"
+      ? MONEY_POS
       : stats.netPnLLamports < 0n
-        ? "text-rose-400"
-        : "text-neutral-400";
+        ? MONEY_NEG
+        : undefined;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -229,7 +276,7 @@ function LifetimeStats({
         label="Won"
         value={formatSol(stats.totalWonLamports)}
         sub={`${stats.wonCount} of ${stats.resolvedCount} resolved`}
-        accent="emerald"
+        valueColor={MONEY_POS}
       />
       <Stat
         label="Net P&L"
@@ -239,7 +286,7 @@ function LifetimeStats({
             ? "no resolved pools yet"
             : "won − spent on resolved"
         }
-        valueClass={pnlClass}
+        valueColor={pnlColor}
       />
     </div>
   );
@@ -249,24 +296,22 @@ function Stat({
   label,
   value,
   sub,
-  accent,
-  valueClass,
+  valueColor,
 }: {
   label: string;
   value: string;
   sub?: string;
-  accent?: "emerald";
-  valueClass?: string;
+  valueColor?: string;
 }) {
-  const cls =
-    valueClass ??
-    (accent === "emerald" ? "text-emerald-400" : "text-neutral-100");
   return (
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
       <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
         {label}
       </div>
-      <div className={`mt-1 font-display text-2xl uppercase tabular-nums ${cls}`}>
+      <div
+        className="mt-1 font-display text-2xl uppercase tabular-nums"
+        style={{ color: valueColor ?? "#f5f5f5" }}
+      >
         {value}
       </div>
       {sub && (
@@ -297,14 +342,22 @@ function FilterChips({
     <div className="flex flex-wrap gap-2">
       {chips.map((c) => {
         const active = filter === c.key;
+        const activeStyle = active
+          ? {
+              borderColor: ACCENT_LAVENDER,
+              background: `${ACCENT_LAVENDER}26`,
+              color: ACCENT_LAVENDER,
+            }
+          : undefined;
         return (
           <button
             key={c.key}
             type="button"
             onClick={() => onChange(c.key)}
+            style={activeStyle}
             className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition ${
               active
-                ? "border-emerald-500 bg-emerald-500/15 text-emerald-300"
+                ? ""
                 : "border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200"
             }`}
           >
@@ -352,6 +405,16 @@ function PoolsSection({
   );
 }
 
+/**
+ * Compact accent-strip row (Q2b). Visual structure:
+ *   [accent left rule]  Pool name + status pill        [Pot in display font]
+ *                       Pool address ↗ + winner ↗
+ *                       ─────────── 4-col metrics grid ──────────────
+ *
+ * When iWon: row uses an accent-tinted gradient + glow, "Pot" label
+ * becomes "Paid to you" in mint. Hover bumps brightness on the accent
+ * rule (subtle .btn-fx-style polish).
+ */
 function PoolRow({
   pool,
   rpcUrl,
@@ -361,41 +424,59 @@ function PoolRow({
   rpcUrl: string;
   myAddress: string;
 }) {
-  const badge = STATUS_BADGE[pool.state];
-  const youWonBg = pool.iWon
+  const accent = accentFor(pool);
+  const pill = statePill(pool.state, accent);
+
+  const baseStyle: React.CSSProperties = pool.iWon
     ? {
-        background:
-          "linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.05) 60%, transparent)",
-        borderColor: "rgba(16,185,129,0.5)",
-        boxShadow: "0 0 0 1px rgba(16,185,129,0.2), 0 8px 30px rgba(16,185,129,0.15)",
+        background: `linear-gradient(135deg, ${MONEY_POS}26, ${MONEY_POS}0d 60%, transparent)`,
+        borderColor: `${MONEY_POS}80`,
+        boxShadow: `0 0 0 1px ${MONEY_POS}33, 0 8px 30px ${MONEY_POS}26`,
       }
-    : undefined;
+    : {
+        backgroundImage: `linear-gradient(90deg, ${accent}10 0%, transparent 30%)`,
+        borderColor: "rgb(38 38 38)",
+      };
+
+  const ruleColor = pool.iWon ? MONEY_POS : accent;
+  const potColor = pool.iWon ? MONEY_POS : accent;
 
   return (
     <article
-      className={`rounded-2xl border p-5 transition ${
-        pool.iWon
-          ? ""
-          : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
-      }`}
-      style={youWonBg}
+      className="group relative overflow-hidden rounded-2xl border bg-neutral-900/40 p-5 transition hover:-translate-y-px"
+      style={baseStyle}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      {/* Accent rule on the left edge — the "strip" of an accent-strip row */}
+      <span
+        aria-hidden
+        className="absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5"
+        style={{ background: ruleColor }}
+      />
+
+      <div className="flex flex-wrap items-start justify-between gap-3 pl-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link
               href={poolHref(pool)}
-              className="font-display text-xl uppercase hover:text-white"
+              className="font-display text-xl uppercase transition hover:brightness-125"
+              style={{ color: pool.iWon ? MONEY_POS : "#f5f5f5" }}
             >
               {poolDisplayName(pool)}
             </Link>
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${badge.cls}`}
+              className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${pill.cls}`}
+              style={pill.style}
             >
-              {badge.label}
+              {pill.label}
             </span>
             {pool.iWon && (
-              <span className="rounded-full bg-emerald-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-200">
+              <span
+                className="rounded-full px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest"
+                style={{
+                  background: `${MONEY_POS}40`,
+                  color: MONEY_POS,
+                }}
+              >
                 🏆 You won
               </span>
             )}
@@ -425,28 +506,20 @@ function PoolRow({
           </p>
         </div>
 
-        {pool.iWon ? (
-          <div className="text-right">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-emerald-300">
-              Paid to you
-            </div>
-            <div className="font-display text-2xl uppercase tabular-nums text-emerald-300">
-              {formatSol(pool.totalPotLamports)}
-            </div>
+        <div className="text-right">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            {pool.iWon ? "Paid to you" : "Pot"}
           </div>
-        ) : (
-          <div className="text-right">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-              Pot
-            </div>
-            <div className="font-display text-2xl uppercase tabular-nums text-neutral-100">
-              {formatSol(pool.totalPotLamports)}
-            </div>
+          <div
+            className="font-display text-3xl uppercase leading-none tabular-nums"
+            style={{ color: potColor }}
+          >
+            {formatSol(pool.totalPotLamports)}
           </div>
-        )}
+        </div>
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+      <dl className="mt-5 grid grid-cols-2 gap-3 pl-2 text-sm sm:grid-cols-4">
         <Metric
           label="Your tickets"
           value={pool.myTickets.toString()}
@@ -478,7 +551,10 @@ function PoolRow({
       </dl>
 
       {pool.state === "Resolved" && pool.iWon && pool.winningTicketId !== null && (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-emerald-400">
+        <p
+          className="mt-3 pl-2 font-mono text-[10px] uppercase tracking-widest"
+          style={{ color: MONEY_POS }}
+        >
           Winning ticket #{pool.winningTicketId.toString()} — paid into{" "}
           <a
             href={explorerAddressUrl(myAddress, rpcUrl)}
@@ -486,7 +562,7 @@ function PoolRow({
             rel="noreferrer"
             className="underline"
           >
-            your wallet
+            your wallet ↗
           </a>
         </p>
       )}
