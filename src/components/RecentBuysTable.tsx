@@ -22,6 +22,12 @@ export interface BatchRow {
 interface Props {
   batches: BatchRow[];
   totalTickets: bigint;
+  /** When set, "you"-row highlight + section heading use this hex/CSS color
+   *  instead of emerald. Spent-amount cells stay accent-colored too. */
+  accentColor?: string;
+  /** When true, section heading is rendered as font-display uppercase to
+   *  match the landing-page typography. Default false (legacy public page). */
+  displayHeading?: boolean;
 }
 
 const DEFAULT_LIMIT = 10;
@@ -46,7 +52,12 @@ function sortByRecency(batches: BatchRow[]): BatchRow[] {
   );
 }
 
-export function RecentBuysTable({ batches, totalTickets }: Props) {
+export function RecentBuysTable({
+  batches,
+  totalTickets,
+  accentColor,
+  displayHeading = false,
+}: Props) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
   const [showAll, setShowAll] = useState(false);
@@ -89,11 +100,31 @@ export function RecentBuysTable({ batches, totalTickets }: Props) {
   const nowSec = Math.floor(Date.now() / 1000);
   const hasMine = myAddr ? sorted.some((b) => b.owner === myAddr) : false;
 
+  // Pre-compute colored styles once so JSX stays readable.
+  const youRowStyle = accentColor
+    ? { background: `${accentColor}0d` }
+    : undefined;
+  const youBadgeStyle = accentColor
+    ? { background: `${accentColor}33`, color: accentColor }
+    : undefined;
+  const youOwnerStyle = accentColor ? { color: accentColor } : undefined;
+  const spentAccent = accentColor ?? undefined;
+
   return (
     <section className="mb-12">
       <div className="mb-4 flex items-end justify-between">
-        <h2 className="text-xl font-semibold">Recent buys</h2>
-        <span className="text-sm text-neutral-500 tabular-nums">
+        {displayHeading ? (
+          <h2 className="font-display text-3xl uppercase">Recent buys</h2>
+        ) : (
+          <h2 className="text-xl font-semibold">Recent buys</h2>
+        )}
+        <span
+          className={
+            displayHeading
+              ? "font-mono text-[10px] uppercase tracking-widest text-neutral-500 tabular-nums"
+              : "text-sm text-neutral-500 tabular-nums"
+          }
+        >
           {sorted.length} buy{sorted.length === 1 ? "" : "s"} ·{" "}
           {formatTickets(totalTickets)} ticket
           {totalTickets === 1n ? "" : "s"} sold
@@ -127,9 +158,12 @@ export function RecentBuysTable({ batches, totalTickets }: Props) {
                       key={b.batchAddress}
                       className={`border-t border-neutral-800/50 transition-colors ${
                         mine
-                          ? "bg-emerald-500/5 hover:bg-emerald-500/10"
+                          ? accentColor
+                            ? "hover:brightness-110"
+                            : "bg-emerald-500/5 hover:bg-emerald-500/10"
                           : "hover:bg-neutral-900/40"
                       }`}
+                      style={mine ? youRowStyle : undefined}
                     >
                       <td className="px-6 py-3">
                         <a
@@ -138,14 +172,22 @@ export function RecentBuysTable({ batches, totalTickets }: Props) {
                           rel="noreferrer"
                           className={`font-mono transition-colors ${
                             mine
-                              ? "text-emerald-300 hover:text-emerald-200"
+                              ? accentColor
+                                ? "hover:brightness-125"
+                                : "text-emerald-300 hover:text-emerald-200"
                               : "text-neutral-300 hover:text-neutral-100"
                           }`}
+                          style={mine ? youOwnerStyle : undefined}
                           title={b.owner}
                         >
                           {shortAddress(b.owner)}
                           {mine && (
-                            <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wider">
+                            <span
+                              className={`ml-2 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${
+                                accentColor ? "" : "bg-emerald-500/20"
+                              }`}
+                              style={mine ? youBadgeStyle : undefined}
+                            >
                               you
                             </span>
                           )}
@@ -160,7 +202,14 @@ export function RecentBuysTable({ batches, totalTickets }: Props) {
                       <td className="py-3 pr-4 tabular-nums text-neutral-500">
                         {sig ? relativeTime(sig.blockTime, nowSec) : "…"}
                       </td>
-                      <td className="py-3 pr-4 tabular-nums text-emerald-400">
+                      <td
+                        className={`py-3 pr-4 tabular-nums ${
+                          spentAccent ? "" : "text-emerald-400"
+                        }`}
+                        style={
+                          spentAccent ? { color: spentAccent } : undefined
+                        }
+                      >
                         {formatSol(b.spentLamports)}
                       </td>
                       <td className="px-6 py-3 text-right">

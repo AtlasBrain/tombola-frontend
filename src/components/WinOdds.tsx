@@ -10,6 +10,8 @@ interface Props {
   poolAddress: string;
   /** Total tickets in this round; the denominator. */
   totalTickets: bigint;
+  /** CSS color string used for the bar fill. Default emerald. */
+  accentColor?: string;
 }
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + …
@@ -23,7 +25,7 @@ const OWNER_OFFSET = 40n;
  * changes, so a pool mutation (own buy or someone else's) refetches the
  * user's stake.
  */
-export function WinOdds({ poolAddress, totalTickets }: Props) {
+export function WinOdds({ poolAddress, totalTickets, accentColor }: Props) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
   const [userTickets, setUserTickets] = useState<bigint | null>(null);
@@ -92,6 +94,38 @@ export function WinOdds({ poolAddress, totalTickets }: Props) {
   const pctTimes100 = Number((userTickets * 10_000n) / totalTickets) / 100;
   const pctStr = pctTimes100.toFixed(2);
   const pctClamped = Math.min(100, Math.max(0, pctTimes100));
+
+  // When an accent is provided, render the lavender/pink/mint variant with
+  // CSS-in-style hex tokens so the same component covers public (default
+  // emerald) and private (mint) pages without a Tailwind class explosion.
+  if (accentColor) {
+    return (
+      <div
+        className="flex flex-col gap-1 rounded-lg border px-3 py-2"
+        style={{
+          borderColor: `${accentColor}33`,
+          background: `${accentColor}0d`,
+        }}
+      >
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+          <span className="text-neutral-500">Your odds</span>
+          <span className="tabular-nums" style={{ color: accentColor }}>
+            {pctStr}%
+          </span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${pctClamped}%`, background: accentColor }}
+          />
+        </div>
+        <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
+          {userTickets.toString()} of {totalTickets.toString()} ticket
+          {totalTickets === 1n ? "" : "s"}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
