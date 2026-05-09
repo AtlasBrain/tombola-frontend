@@ -17,12 +17,12 @@ type TickerItem = {
 
 const ITEMS: readonly TickerItem[] = [
   { dot: "var(--lavender)", text: "9XQT…DWY8 BOUGHT 5 · WEEKLY · 12s" },
-  { dot: "#b8a5d4",         text: "EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s" },
+  { dot: "#E89999",         text: "EAAL…PLBT BOUGHT 20 · BIWEEKLY · 47s" },
   { dot: "#88cfc4",         text: "QWYK…ZB1M BOUGHT 1 · TRIWEEKLY · 1m" },
   { dot: "var(--lavender)", text: "HMSQ…YJNW BOUGHT 3 · WEEKLY · 2m" },
   { dot: "#e8d89e",         text: "2UHK…Z8JA WON 10.18 SOL · MONTHLY · #2" },
   { dot: "var(--lavender)", text: "AXWU…CW7V BOUGHT 50 · WEEKLY · 4m" },
-  { dot: "#b8a5d4",         text: "6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m" },
+  { dot: "#E89999",         text: "6ZXW…5TM BOUGHT 8 · BIWEEKLY · 5m" },
 ];
 
 function TickerSpan() {

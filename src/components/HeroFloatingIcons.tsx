@@ -21,7 +21,7 @@ export function HeroFloatingIcons() {
       {/* LEFT: dice */}
       <div className="float-b absolute left-[9%] top-[55%] h-20 w-20 rounded-2xl border border-neutral-800 bg-neutral-950 p-3 shadow-lg shadow-black/40">
         <svg viewBox="0 0 40 40" className="h-full w-full" aria-hidden>
-          <rect x="6" y="6" width="28" height="28" rx="6" fill="#b8a5d4" />
+          <rect x="6" y="6" width="28" height="28" rx="6" fill="#E89999" />
           <circle cx="14" cy="14" r="2.4" fill="#0b0b0d" />
           <circle cx="26" cy="14" r="2.4" fill="#0b0b0d" />
           <circle cx="20" cy="20" r="2.4" fill="#0b0b0d" />
@@ -61,16 +61,16 @@ export function HeroFloatingIcons() {
         <svg viewBox="0 0 40 40" className="h-full w-full" aria-hidden>
           <g strokeLinecap="round" strokeWidth="2.5" fill="none">
             <line x1="20" y1="20" x2="20" y2="6"  stroke="#c9b5dc" />
-            <line x1="20" y1="20" x2="32" y2="10" stroke="#b8a5d4" />
+            <line x1="20" y1="20" x2="32" y2="10" stroke="#E89999" />
             <line x1="20" y1="20" x2="34" y2="20" stroke="#e8d89e" />
             <line x1="20" y1="20" x2="32" y2="32" stroke="#88cfc4" />
             <line x1="20" y1="20" x2="20" y2="34" stroke="#e8a5c0" />
             <line x1="20" y1="20" x2="8"  y2="32" stroke="#c9b5dc" />
-            <line x1="20" y1="20" x2="6"  y2="20" stroke="#b8a5d4" />
+            <line x1="20" y1="20" x2="6"  y2="20" stroke="#E89999" />
             <line x1="20" y1="20" x2="8"  y2="10" stroke="#e8d89e" />
           </g>
           <rect x="3"  y="3"  width="3" height="3" rx="0.5" fill="#c9b5dc" transform="rotate(20 4.5 4.5)" />
-          <rect x="34" y="4"  width="3" height="3" rx="0.5" fill="#b8a5d4" transform="rotate(-15 35.5 5.5)" />
+          <rect x="34" y="4"  width="3" height="3" rx="0.5" fill="#E89999" transform="rotate(-15 35.5 5.5)" />
           <rect x="35" y="34" width="3" height="3" rx="0.5" fill="#88cfc4" transform="rotate(30 36.5 35.5)" />
           <rect x="3"  y="35" width="3" height="3" rx="0.5" fill="#e8a5c0" transform="rotate(-25 4.5 36.5)" />
           <circle cx="20" cy="20" r="2" fill="#c9b5dc" />

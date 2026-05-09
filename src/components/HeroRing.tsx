@@ -22,7 +22,7 @@ export function HeroRing() {
       <defs>
         <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%"   stopColor="#c9b5dc" />
-          <stop offset="33%"  stopColor="#b8a5d4" />
+          <stop offset="33%"  stopColor="#E89999" />
           <stop offset="66%"  stopColor="#e8d89e" />
           <stop offset="100%" stopColor="#88cfc4" />
         </linearGradient>
@@ -37,7 +37,7 @@ export function HeroRing() {
       <g className="spin-counter" style={{ transformOrigin: "500px 500px" }}>
         <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" strokeWidth="6" fill="none" opacity="0.5" />
         <circle cx="500" cy="35"  r="6" fill="#c9b5dc" />
-        <circle cx="965" cy="500" r="6" fill="#b8a5d4" />
+        <circle cx="965" cy="500" r="6" fill="#E89999" />
         <circle cx="500" cy="965" r="6" fill="#e8d89e" />
         <circle cx="35"  cy="500" r="6" fill="#88cfc4" />
       </g>

@@ -4,7 +4,7 @@ import { Countdown } from "@/components/Countdown";
 
 const ACCENT_HEX: Record<PoolView["kind"], string> = {
   Weekly:    "#c9b5dc",
-  Biweekly:  "#b8a5d4",
+  Biweekly:  "#E89999",
   Triweekly: "#88cfc4",
   Monthly:   "#e8d89e",
 };
@@ -56,7 +56,7 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
 
   const hoverBorderClass =
     pool.kind === "Weekly"    ? "hover:border-lime/40" :
-    pool.kind === "Biweekly"  ? "hover:border-[#b8a5d4]/40" :
+    pool.kind === "Biweekly"  ? "hover:border-[#E89999]/40" :
     pool.kind === "Triweekly" ? "hover:border-[#88cfc4]/40" :
                                 "hover:border-[#e8d89e]/40";
 

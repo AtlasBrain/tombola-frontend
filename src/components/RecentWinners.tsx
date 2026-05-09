@@ -27,7 +27,7 @@ const EVENTS: readonly Event[] = [
   { kind: "Monthly",   round: 2, summary: "won by 2uHK…z8JA — 10.18 SOL",            age: "3 MINS AGO",  accent: "#e8d89e" },
   { kind: "Weekly",    round: 1, summary: "9xQT…DWY8 just bought 5 tickets",          age: "12 SECS AGO", accent: "#c9b5dc" },
   { kind: "Triweekly", round: 1, summary: "drawing now — Switchboard reveal pending",  age: "2 HRS AGO",   accent: "#88cfc4" },
-  { kind: "Biweekly",  round: 1, summary: "EaAL…pLBt bought 20 tickets",              age: "47 SECS AGO", accent: "#b8a5d4" },
+  { kind: "Biweekly",  round: 1, summary: "EaAL…pLBt bought 20 tickets",              age: "47 SECS AGO", accent: "#E89999" },
   { kind: "Triweekly", round: 0, summary: "won by qWyk…ZB1M — 4.84 SOL",              age: "3 DAYS AGO",  accent: "#e8a5c0" },
 ];
 

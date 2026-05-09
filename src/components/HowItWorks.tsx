@@ -18,7 +18,7 @@ export function HowItWorks() {
             </p>
           </div>
           <div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#b8a5d4] font-mono text-xs font-bold text-black">02</div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E89999] font-mono text-xs font-bold text-black">02</div>
             <h3 className="mt-4 font-display text-lg uppercase">Wait for draw</h3>
             <p className="mt-2 text-sm text-neutral-400">
               Switchboard On-Demand posts a verifiable random number on-chain.
