@@ -13,8 +13,10 @@ export function BentoFooter({
   const totalPotSol = Number(totalPotLamports) / 1_000_000_000;
   const totalRounds = pools.length;
   const totalTickets = pools.reduce((s, p) => s + Number(p.totalTickets), 0);
-  // BUYERS placeholder — totalTickets/3 rounded
-  const totalPlayers = Math.max(1, Math.round(totalTickets / 3));
+  // BUYERS placeholder — totalTickets/3 rounded. Floored at 0 when no
+  // tickets sold (otherwise "PLAYERS 1" appears on a fresh deploy with
+  // empty pools — confusing alongside a "0 SOL pot · 1 player" header).
+  const totalPlayers = totalTickets === 0 ? 0 : Math.max(1, Math.round(totalTickets / 3));
 
   return (
     <section id="faq" className="mx-auto max-w-7xl px-6 pb-24">
