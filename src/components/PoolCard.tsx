@@ -6,7 +6,7 @@ const ACCENT_HEX: Record<PoolView["kind"], string> = {
   Weekly:    "#c9b5dc",
   Biweekly:  "#b8a5d4",
   Triweekly: "#88cfc4",
-  Monthly:   "#e8a5c0",
+  Monthly:   "#e8d89e",
 };
 
 const GRAD_CLASS: Record<PoolView["kind"], string> = {
@@ -52,10 +52,15 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
       ? "border-[#e8d89e]/30 bg-[#e8d89e]/10 text-[#e8d89e]"
       : "border-neutral-800 bg-neutral-900/50 text-neutral-400";
 
+  const hoverBorderClass =
+    pool.kind === "Weekly"    ? "hover:border-lime/40" :
+    pool.kind === "Biweekly"  ? "hover:border-[#b8a5d4]/40" :
+    pool.kind === "Triweekly" ? "hover:border-[#88cfc4]/40" :
+                                "hover:border-[#e8d89e]/40";
+
   return (
     <article
-      className={`${gradCls} group relative overflow-hidden rounded-3xl border border-neutral-800 p-7 transition-all hover:-translate-y-0.5`}
-      style={{ borderColor: `${accent}40` }}
+      className={`${gradCls} group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-7 transition-all hover:-translate-y-0.5 ${hoverBorderClass}`}
     >
       {/* Header */}
       <header className="flex items-start justify-between">
@@ -140,9 +145,9 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
             ticketPriceSol={ticketPriceSol}
           />
         ) : (
-          <div className="flex items-center justify-center gap-3 rounded-2xl bg-white/[0.03] py-3 font-mono text-[11px] uppercase tracking-widest text-neutral-400">
-            ROUND CLOSED · {isDrawing ? "DRAWING" : "RESOLVED"}
-          </div>
+          <button disabled className="mt-0 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 font-display text-sm uppercase text-neutral-500">
+            ROUND CLOSED <span className="font-mono opacity-70">· {isDrawing ? "DRAWING" : "RESOLVED"}</span>
+          </button>
         )}
       </div>
     </article>

@@ -4,7 +4,7 @@ const HEX: Record<PoolView["kind"], string> = {
   Weekly:    "#c9b5dc",
   Biweekly:  "#b8a5d4",
   Triweekly: "#88cfc4",
-  Monthly:   "#e8a5c0",
+  Monthly:   "#e8d89e",
 };
 
 function formatCloses(p: PoolView): string {

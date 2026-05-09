@@ -14,26 +14,21 @@ const SHORT: Record<FeedKind, string> = {
   Monthly:   "MTHLY",
 };
 
-const HEX: Record<FeedKind, string> = {
-  Weekly:    "#c9b5dc",
-  Biweekly:  "#b8a5d4",
-  Triweekly: "#88cfc4",
-  Monthly:   "#e8a5c0",
-};
-
 type Event = {
   kind: FeedKind;
   round: number;
   summary: string;
   age: string;
+  /** Override accent hex — mockup assigns distinct colors per row */
+  accent: string;
 };
 
 const EVENTS: readonly Event[] = [
-  { kind: "Monthly",   round: 2, summary: "won by 2uHK…z8JA — 10.18 SOL",            age: "3 MINS AGO" },
-  { kind: "Weekly",    round: 1, summary: "9xQT…DWY8 just bought 5 tickets",         age: "12 SECS AGO" },
-  { kind: "Triweekly", round: 1, summary: "drawing now — Switchboard reveal pending", age: "2 HRS AGO" },
-  { kind: "Biweekly",  round: 1, summary: "EaAL…pLBt bought 20 tickets",             age: "47 SECS AGO" },
-  { kind: "Triweekly", round: 0, summary: "won by qWyk…ZB1M — 4.84 SOL",              age: "3 DAYS AGO" },
+  { kind: "Monthly",   round: 2, summary: "won by 2uHK…z8JA — 10.18 SOL",            age: "3 MINS AGO",  accent: "#e8d89e" },
+  { kind: "Weekly",    round: 1, summary: "9xQT…DWY8 just bought 5 tickets",          age: "12 SECS AGO", accent: "#c9b5dc" },
+  { kind: "Triweekly", round: 1, summary: "drawing now — Switchboard reveal pending",  age: "2 HRS AGO",   accent: "#88cfc4" },
+  { kind: "Biweekly",  round: 1, summary: "EaAL…pLBt bought 20 tickets",              age: "47 SECS AGO", accent: "#b8a5d4" },
+  { kind: "Triweekly", round: 0, summary: "won by qWyk…ZB1M — 4.84 SOL",              age: "3 DAYS AGO",  accent: "#e8a5c0" },
 ];
 
 export function RecentWinners() {
@@ -52,12 +47,12 @@ export function RecentWinners() {
               <span className="flex items-center gap-4">
                 <span
                   className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: HEX[ev.kind] }}
+                  style={{ background: ev.accent }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10" /></svg>
                 </span>
-                <span className="flex flex-wrap items-center gap-3 font-mono text-sm uppercase">
-                  <span style={{ color: HEX[ev.kind] }}>{SHORT[ev.kind]}</span>
+                <span className="flex items-center gap-3 font-mono text-sm uppercase">
+                  <span style={{ color: ev.accent }}>{SHORT[ev.kind]}</span>
                   <span className="text-white normal-case">{ev.kind} Round #{ev.round}</span>
                   <span className="text-neutral-500 normal-case">{ev.summary}</span>
                 </span>
@@ -68,12 +63,9 @@ export function RecentWinners() {
         ))}
       </ul>
       <div className="mt-6 flex justify-center">
-        <a
-          href="#stats"
-          className="btn-fx fx-inset flex items-center gap-2 rounded-full border border-neutral-800 px-5 py-2 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:text-black hover:border-transparent"
-        >
+        <button className="btn-fx fx-inset flex items-center gap-2 rounded-full border border-neutral-800 px-5 py-2 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:text-black hover:border-transparent">
           VIEW ALL <span className="chip-flip text-lime">›</span>
-        </a>
+        </button>
       </div>
     </section>
   );

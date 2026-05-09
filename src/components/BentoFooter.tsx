@@ -111,7 +111,7 @@ export function BentoFooter({
         <a
           href="#pools"
           style={{ ["--tear-bg" as string]: "#c9b5dc" } as React.CSSProperties}
-          className="btn-fx fx-tear fx-tear-lg fx-stack flex items-center justify-center bg-lime p-6 text-center font-display text-lg uppercase text-black transition hover:brightness-110"
+          className="btn-fx fx-tear-lg fx-stack flex items-center justify-center bg-lime p-6 text-center font-display text-lg uppercase text-black transition hover:brightness-110"
         >
           <span className="stack">
             <span>Buy a ticket →</span>

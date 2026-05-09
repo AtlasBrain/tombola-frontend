@@ -62,7 +62,7 @@ body {
 
 /* Hero rotating ring — 4 layers spinning at different speeds */
 @keyframes spin-slow    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes spin-counter { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes spin-counter { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
 @keyframes spin-fast    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 .spin-slow    { animation: spin-slow 50s linear infinite; transform-origin: center; }
@@ -90,43 +90,43 @@ body {
 section[id] { scroll-margin-top: 32px; }
 section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 1; }
 
-/* Hero floating icons — 6 unique 3-keyframe loops */
+/* Hero floating icons — 6 unique 3-keyframe loops (verbatim from mockup) */
 @keyframes float-a {
-  0%, 100% { transform: translateY(0)    rotate(0deg)  scale(1); }
-  33%      { transform: translateY(-38px) rotate(8deg)  scale(1.08); }
-  66%      { transform: translateY(20px)  rotate(-5deg) scale(0.96); }
+  0%,100% { transform: translate(0, 0)         rotate(-8deg)  scale(1);    }
+  33%     { transform: translate(-6px, -32px)  rotate(6deg)   scale(1.04); }
+  66%     { transform: translate(8px, -10px)   rotate(-3deg)  scale(0.98); }
 }
 @keyframes float-b {
-  0%, 100% { transform: translateY(0)    rotate(0deg)  scale(1); }
-  33%      { transform: translateY(28px)  rotate(-12deg) scale(0.94); }
-  66%      { transform: translateY(-22px) rotate(7deg)  scale(1.06); }
+  0%,100% { transform: translate(0, -8px)      rotate(10deg)  scale(1);    }
+  33%     { transform: translate(10px, 22px)   rotate(-8deg)  scale(1.05); }
+  66%     { transform: translate(-4px, 8px)    rotate(4deg)   scale(0.97); }
 }
 @keyframes float-c {
-  0%, 100% { transform: translateY(0)    rotate(0deg)  scale(1); }
-  33%      { transform: translateY(-30px) rotate(-9deg) scale(1.05); }
-  66%      { transform: translateY(35px)  rotate(11deg) scale(0.95); }
+  0%,100% { transform: translate(0, 0)         rotate(-15deg) scale(1);    }
+  33%     { transform: translate(-8px, -38px)  rotate(8deg)   scale(1.08); }
+  66%     { transform: translate(6px, -16px)   rotate(-2deg)  scale(0.95); }
 }
 @keyframes float-d {
-  0%, 100% { transform: translateY(0)    rotate(0deg)   scale(1); }
-  33%      { transform: translateY(32px)  rotate(13deg)  scale(0.93); }
-  66%      { transform: translateY(-25px) rotate(-8deg)  scale(1.07); }
+  0%,100% { transform: translate(0, -4px)      rotate(12deg)  scale(1);    }
+  33%     { transform: translate(8px, 28px)    rotate(-6deg)  scale(1.06); }
+  66%     { transform: translate(-6px, 14px)   rotate(2deg)   scale(0.97); }
 }
 @keyframes float-e {
-  0%, 100% { transform: translateY(0)    rotate(0deg)  scale(1); }
-  33%      { transform: translateY(-25px) rotate(15deg)  scale(1.04); }
-  66%      { transform: translateY(30px)  rotate(-10deg) scale(0.97); }
+  0%,100% { transform: translate(0, 0)         rotate(4deg)   scale(1);    }
+  33%     { transform: translate(-10px, -28px) rotate(-12deg) scale(1.05); }
+  66%     { transform: translate(4px, -8px)    rotate(8deg)   scale(0.98); }
 }
 @keyframes float-f {
-  0%, 100% { transform: translateY(0)    rotate(0deg)  scale(1); }
-  33%      { transform: translateY(28px)  rotate(-14deg) scale(1.05); }
-  66%      { transform: translateY(-30px) rotate(9deg)   scale(0.95); }
+  0%,100% { transform: translate(0, 0)         rotate(-5deg)  scale(1);    }
+  33%     { transform: translate(8px, 36px)    rotate(12deg)  scale(1.07); }
+  66%     { transform: translate(-4px, 18px)   rotate(-2deg)  scale(0.96); }
 }
-.float-a { animation: float-a 11s ease-in-out infinite; }
-.float-b { animation: float-b 13s ease-in-out infinite; }
-.float-c { animation: float-c 9s  ease-in-out infinite; }
-.float-d { animation: float-d 14s ease-in-out infinite; }
-.float-e { animation: float-e 10s ease-in-out infinite; }
-.float-f { animation: float-f 12s ease-in-out infinite; }
+.float-a { animation: float-a 5.2s ease-in-out infinite;       transform-origin: center; }
+.float-b { animation: float-b 6.4s ease-in-out infinite -1.2s; transform-origin: center; }
+.float-c { animation: float-c 4.8s ease-in-out infinite -2.4s; transform-origin: center; }
+.float-d { animation: float-d 7.0s ease-in-out infinite -0.8s; transform-origin: center; }
+.float-e { animation: float-e 5.6s ease-in-out infinite -3.2s; transform-origin: center; }
+.float-f { animation: float-f 6.0s ease-in-out infinite -1.6s; transform-origin: center; }
 
 /* Subtle dot grid — used as a hero background hatch */
 .bg-dots {
@@ -172,13 +172,13 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .bg-lime-soft { background: var(--lavender-dim); }
 
 /* === Per-pool gradient cards (mockup uses .grad-weekly etc. on PoolCard) === */
-.grad-weekly    { background: linear-gradient(135deg, rgba(201,181,220,0.06), transparent 70%), #0b0b0d; }
-.grad-biweekly  { background: linear-gradient(135deg, rgba(184,165,212,0.06), transparent 70%), #0b0b0d; }
-.grad-triweekly { background: linear-gradient(135deg, rgba(136,207,196,0.06), transparent 70%), #0b0b0d; }
-.grad-monthly   { background: linear-gradient(135deg, rgba(232,165,192,0.06), transparent 70%), #0b0b0d; }
+.grad-weekly    { background: radial-gradient(120% 100% at 0% 0%,     #c9b5dc33 0%, transparent 60%); }
+.grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%,   #b8a5d433 0%, transparent 60%); }
+.grad-triweekly { background: radial-gradient(120% 100% at 0% 100%,   #88cfc433 0%, transparent 60%); }
+.grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #e8d89e33 0%, transparent 60%); }
 
 /* === Mockup-named button effects — verbatim from redesign-v1-recolored.html === */
-.btn-fx { position: relative; isolation: isolate; }
+.btn-fx { position: relative; overflow: hidden; isolation: isolate; will-change: transform, clip-path; }
 
 /* ---- INSET FILL ---- */
 /* A coloured panel slides in from the left behind the label. The
