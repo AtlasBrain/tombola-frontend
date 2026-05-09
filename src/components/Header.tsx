@@ -10,11 +10,12 @@ type NavItem =
   | { kind: "link"; href: string; label: string };
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { kind: "anchor", id: "pools",        label: "POOLS" },
-  { kind: "link",   href: "/create",    label: "PRIVATE" },
-  { kind: "anchor", id: "how-it-works", label: "HOW IT WORKS" },
-  { kind: "anchor", id: "stats",        label: "STATS" },
-  { kind: "anchor", id: "faq",          label: "FAQ" },
+  { kind: "anchor", id: "pools",         label: "POOLS" },
+  { kind: "link",   href: "/create",     label: "PRIVATE" },
+  { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
+  { kind: "anchor", id: "how-it-works",  label: "HOW IT WORKS" },
+  { kind: "anchor", id: "stats",         label: "STATS" },
+  { kind: "anchor", id: "faq",           label: "FAQ" },
 ];
 
 export function Header() {
