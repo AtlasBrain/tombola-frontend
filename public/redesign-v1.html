@@ -15,21 +15,21 @@
       :root {
         --lime: #c0f61c;
         --lime-dim: #c0f61c33;
-        --bg: #0b0b0d;
-        --bg-elevated: #131316;
-        --bg-warm: #14110d;
+        --bg: #17171b;
+        --bg-elevated: #1f1f24;
+        --bg-warm: #1c1a16;
       }
       html, body {
         /* Multi-zone tonal background — subtle colored radials in the four
            quadrants give the page warm/cool variation without competing with
-           content. Each radial sits at ~5–8% opacity so it reads as a hint,
-           not a tint. */
+           content. Each radial sits at ~10–12% opacity so it reads as a
+           gentle wash on the (now lighter) base. */
         background:
-          radial-gradient(35% 30% at 12% 18%,  #c0f61c14 0%, transparent 70%),  /* top-left lime */
-          radial-gradient(35% 30% at 88% 22%,  #c9b8e514 0%, transparent 70%),  /* top-right lavender */
-          radial-gradient(35% 30% at 8%  72%,  #f0c8a014 0%, transparent 70%),  /* bottom-left peach */
-          radial-gradient(35% 30% at 92% 78%,  #a8d0e514 0%, transparent 70%),  /* bottom-right sky */
-          radial-gradient(60% 50% at 50% 35%,  #1a1a22 0%, transparent 60%),    /* center cool wash */
+          radial-gradient(35% 30% at 12% 18%,  #c0f61c1f 0%, transparent 70%),  /* top-left lime */
+          radial-gradient(35% 30% at 88% 22%,  #c9b8e51f 0%, transparent 70%),  /* top-right lavender */
+          radial-gradient(35% 30% at 8%  72%,  #f0c8a01f 0%, transparent 70%),  /* bottom-left peach */
+          radial-gradient(35% 30% at 92% 78%,  #a8d0e51f 0%, transparent 70%),  /* bottom-right sky */
+          radial-gradient(60% 50% at 50% 35%,  #232328 0%, transparent 60%),    /* center cool wash */
           var(--bg);
         background-attachment: fixed;
         color: #f5f5f5;
@@ -73,32 +73,39 @@
       @keyframes spin-slow { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
       .spin-slow { animation: spin-slow 40s linear infinite; transform-origin: center; }
 
-      /* Hero floating icons — six unique animations so each blob drifts at
-         its own pace. Subtle vertical drift + rotation, no horizontal motion
-         (would conflict with the centered headline). */
+      /* Hero floating icons — six unique 3-keyframe animations with bigger
+         motion (vertical ±35–45px, slight horizontal sway, rotation up to
+         ±18°, gentle scale pulse). Staggered durations + negative delays so
+         they bob out of phase. */
       @keyframes float-a {
-        0%,100% { transform: translateY(0)    rotate(-6deg); }
-        50%     { transform: translateY(-18px) rotate(4deg); }
+        0%,100% { transform: translate(0, 0)         rotate(-8deg)  scale(1);    }
+        33%     { transform: translate(-6px, -32px)  rotate(6deg)   scale(1.04); }
+        66%     { transform: translate(8px, -10px)   rotate(-3deg)  scale(0.98); }
       }
       @keyframes float-b {
-        0%,100% { transform: translateY(-4px) rotate(8deg); }
-        50%     { transform: translateY(14px) rotate(-6deg); }
+        0%,100% { transform: translate(0, -8px)      rotate(10deg)  scale(1);    }
+        33%     { transform: translate(10px, 22px)   rotate(-8deg)  scale(1.05); }
+        66%     { transform: translate(-4px, 8px)    rotate(4deg)   scale(0.97); }
       }
       @keyframes float-c {
-        0%,100% { transform: translateY(0)    rotate(-12deg); }
-        50%     { transform: translateY(-22px) rotate(0deg); }
+        0%,100% { transform: translate(0, 0)         rotate(-15deg) scale(1);    }
+        33%     { transform: translate(-8px, -38px)  rotate(8deg)   scale(1.08); }
+        66%     { transform: translate(6px, -16px)   rotate(-2deg)  scale(0.95); }
       }
       @keyframes float-d {
-        0%,100% { transform: translateY(-2px) rotate(10deg); }
-        50%     { transform: translateY(16px) rotate(-4deg); }
+        0%,100% { transform: translate(0, -4px)      rotate(12deg)  scale(1);    }
+        33%     { transform: translate(8px, 28px)    rotate(-6deg)  scale(1.06); }
+        66%     { transform: translate(-6px, 14px)   rotate(2deg)   scale(0.97); }
       }
       @keyframes float-e {
-        0%,100% { transform: translateY(0)    rotate(2deg); }
-        50%     { transform: translateY(-14px) rotate(-10deg); }
+        0%,100% { transform: translate(0, 0)         rotate(4deg)   scale(1);    }
+        33%     { transform: translate(-10px, -28px) rotate(-12deg) scale(1.05); }
+        66%     { transform: translate(4px, -8px)    rotate(8deg)   scale(0.98); }
       }
       @keyframes float-f {
-        0%,100% { transform: translateY(0)    rotate(-3deg); }
-        50%     { transform: translateY(20px) rotate(8deg); }
+        0%,100% { transform: translate(0, 0)         rotate(-5deg)  scale(1);    }
+        33%     { transform: translate(8px, 36px)    rotate(12deg)  scale(1.07); }
+        66%     { transform: translate(-4px, 18px)   rotate(-2deg)  scale(0.96); }
       }
       .float-a { animation: float-a 5.2s ease-in-out infinite;       transform-origin: center; }
       .float-b { animation: float-b 6.4s ease-in-out infinite -1.2s; transform-origin: center; }
@@ -248,9 +255,12 @@
         </div>
       </div>
 
-      <!-- Circle that frames the entire hero block (status pill → headline → tagline → CTAs).
-           Big enough to enclose the content, thin stroke, slowly rotating. -->
-      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 -z-[5] h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 opacity-70 sm:h-[860px] sm:w-[860px] lg:h-[920px] lg:w-[920px]">
+      <!-- Ring that frames the entire hero block (status pill → headline → tagline → CTAs).
+           Big enough to enclose all of it, with a thick visible gradient stroke.
+           No negative z-index (was hiding it behind the body bg in some stacking
+           contexts) — sits at the section's default layer, with the content
+           bumped to z-10 so it stays in front. -->
+      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 sm:h-[860px] sm:w-[860px] lg:h-[920px] lg:w-[920px]">
         <defs>
           <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%"   stop-color="#c0f61c" />
@@ -260,12 +270,16 @@
           </linearGradient>
         </defs>
         <g class="spin-slow" style="transform-origin: 500px 500px;">
-          <circle cx="500" cy="500" r="480" stroke="url(#ringGrad)" stroke-width="2" fill="none" />
-          <circle cx="500" cy="500" r="450" stroke="url(#ringGrad)" stroke-width="10" fill="none" opacity="0.8" />
+          <!-- Thick main band — the visible "track" -->
+          <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" stroke-width="32" fill="none" opacity="0.55" />
+          <!-- Thin accent line on the outside -->
+          <circle cx="500" cy="500" r="488" stroke="url(#ringGrad)" stroke-width="1.5" fill="none" opacity="0.9" />
+          <!-- Thin accent line on the inside -->
+          <circle cx="500" cy="500" r="442" stroke="url(#ringGrad)" stroke-width="1.5" fill="none" opacity="0.9" />
         </g>
       </svg>
 
-      <div class="relative mx-auto max-w-3xl text-center">
+      <div class="relative z-10 mx-auto max-w-3xl text-center">
         <!-- Status pill -->
         <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
           <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-lime"></span>
