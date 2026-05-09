@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PROGRAM_ID } from "@tombola/sdk";
 import { AllRoundsTable } from "@/components/AllRoundsTable";
 import { BentoFooter } from "@/components/BentoFooter";
@@ -66,6 +67,22 @@ export default async function Home() {
           {pools.map((pool) => (
             <PoolCard key={pool.poolType} pool={pool} rpcUrl={RPC_URL} />
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-8 text-center">
+          <h3 className="font-display text-3xl uppercase">Host your own raffle</h3>
+          <p className="mt-2 text-sm text-neutral-400">
+            Mint invite codes and run a private pool. You set the price,
+            duration, and creator fee.
+          </p>
+          <Link
+            href="/create"
+            className="mt-6 inline-flex rounded bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-500"
+          >
+            Create a private pool →
+          </Link>
         </div>
       </section>
 

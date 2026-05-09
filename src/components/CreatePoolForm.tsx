@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Transaction } from "@solana/web3.js";
@@ -13,6 +14,10 @@ import {
 } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { findMyPrivatePools, type RedemptionMode } from "@/lib/private-pools";
+import {
+  saveCodesToStorage,
+  loadAllCodesForWallet,
+} from "@/lib/private-pool-storage";
 
 const MIN_DURATION_SECS = 3_600;
 const MAX_DURATION_SECS = 90 * 86_400;
@@ -43,6 +48,23 @@ export function CreatePoolForm({ onCreated }: Props) {
   const [mode, setMode] = useState<RedemptionMode>("Whitelist");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const [unsavedPools, setUnsavedPools] = useState<
+    Array<{ poolAddress: string; createdAt: number }>
+  >([]);
+
+  useEffect(() => {
+    if (!publicKey) {
+      setUnsavedPools([]);
+      return;
+    }
+    const all = loadAllCodesForWallet(publicKey.toBase58());
+    setUnsavedPools(
+      all
+        .map((p) => ({ poolAddress: p.poolAddress, createdAt: p.createdAt }))
+        .sort((a, b) => b.createdAt - a.createdAt),
+    );
+  }, [publicKey]);
 
   const errors = useMemo(
     () => validate({ priceSol, days, hours, feePct, codeCount }),
@@ -120,6 +142,26 @@ export function CreatePoolForm({ onCreated }: Props) {
       // proofs is already keyed by code string from buildCodeTree
       const proofMap: Record<string, Uint8Array[]> = { ...proofs };
 
+      // Persist codes locally so the creator can recover them after navigating
+      // away. Wraps in try/catch — if localStorage write fails (private mode /
+      // quota), surface a warning but don't fail the whole flow because the
+      // on-chain pool already exists at this point.
+      try {
+        saveCodesToStorage({
+          poolAddress,
+          creator: publicKey.toBase58(),
+          createdAt: Math.floor(Date.now() / 1000),
+          mode,
+          codes,
+          proofs,
+        });
+      } catch (storageErr) {
+        console.warn("saveCodesToStorage failed:", storageErr);
+        setErr(
+          "Couldn't save codes to browser storage — copy/download them now or they're lost.",
+        );
+      }
+
       onCreated({ poolAddress, codes, proofs: proofMap, mode });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -144,13 +186,38 @@ export function CreatePoolForm({ onCreated }: Props) {
   ]);
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-      className="flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6"
-    >
+    <>
+      {unsavedPools.length > 0 && (
+        <div className="mb-4 rounded-2xl border border-amber-700/40 bg-amber-900/20 p-4">
+          <p className="text-sm font-semibold text-amber-300">
+            You have {unsavedPools.length} pool
+            {unsavedPools.length === 1 ? "" : "s"} with redemption links saved
+            in this browser.
+          </p>
+          <ul className="mt-2 space-y-1 text-xs text-amber-200">
+            {unsavedPools.slice(0, 5).map((p) => (
+              <li key={p.poolAddress} className="flex items-center justify-between">
+                <code className="font-mono">
+                  {p.poolAddress.slice(0, 8)}…{p.poolAddress.slice(-4)}
+                </code>
+                <Link
+                  href={`/create/my-pools/${p.poolAddress}`}
+                  className="rounded bg-amber-800/50 px-2 py-1 hover:bg-amber-800"
+                >
+                  Open admin →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+        className="flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6"
+      >
       <FieldRow
         label="Ticket price (SOL)"
         htmlFor="priceSol"
@@ -260,7 +327,8 @@ export function CreatePoolForm({ onCreated }: Props) {
           {err}
         </p>
       )}
-    </form>
+      </form>
+    </>
   );
 }
 
