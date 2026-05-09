@@ -57,7 +57,7 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
             {ranked.map((p, i) => {
               const accent = HEX[p.kind];
               const tickets = Number(p.totalTickets);
-              const buyers = Math.max(1, Math.round(tickets / 3));
+              const buyers = tickets === 0 ? 0 : Math.max(1, Math.round(tickets / 3));
               const potSol = Number(p.totalPotLamports) / 1_000_000_000;
               const stateLabel =
                 p.state === "Open" ? "OPEN" : p.state === "AwaitingVrf" ? "DRAWING" : "RESOLVED";

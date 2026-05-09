@@ -29,8 +29,14 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
 
   const potSol = Number(pool.totalPotLamports) / 1_000_000_000;
   const tickets = Number(pool.totalTickets);
-  // BUYERS isn't on PoolView — derive a deterministic placeholder until backend exposes it
-  const buyers = Math.max(1, Math.round(tickets / 3));
+  // BUYERS isn't on PoolView — derive a deterministic placeholder until backend exposes it.
+  // The honest count is `distinct TicketBatch.owner` for this pool (each buy
+  // creates a TicketBatch account; aggregating owners gives the unique-buyer
+  // count). That requires a server-side getProgramAccounts call with a memcmp
+  // filter on the pool pubkey — TODO when get-pools.ts is extended. Until then,
+  // a tickets/3 estimate, but FLOORED AT 0 when tickets=0 (otherwise the card
+  // would display "BUYERS 1" on a brand-new round where nobody has bought yet).
+  const buyers = tickets === 0 ? 0 : Math.max(1, Math.round(tickets / 3));
   const ticketPriceSol = Number(pool.ticketPriceLamports) / 1_000_000_000;
 
   // Your-odds: if you buy 1 ticket now, your chance to win = 1 / (totalTickets + 1).
