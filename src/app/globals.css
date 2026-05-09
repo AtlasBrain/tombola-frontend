@@ -323,3 +323,23 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 /* chip-flip = the small arrow/icon chip at the right end of the pill;
    inverts colors on parent hover */
 .chip-flip { transition: background-color 0.3s ease, color 0.3s ease; }
+
+/* === Accessibility: reduce motion for users who request it === */
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow,
+  .spin-counter,
+  .spin-fast,
+  .orbit-tickets,
+  .ticker-track,
+  .pulse-soft,
+  .float-a,
+  .float-b,
+  .float-c,
+  .float-d,
+  .float-e,
+  .float-f {
+    animation: none !important;
+  }
+  section[id]:target { animation: none !important; }
+  html { scroll-behavior: auto !important; }
+}
