@@ -13,6 +13,7 @@ import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { BuyTicketPrivateButton } from "@/components/BuyTicketPrivateButton";
 import { DrawWinnerButton } from "@/components/DrawWinnerButton";
 import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
+import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol } from "@/lib/format";
@@ -31,6 +32,7 @@ interface PoolData {
   creator: string;
   creatorFeeBps: number;
   winner: string | null;
+  winningTicketId: bigint | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +53,17 @@ function unwrapWinner(w: any): string | null {
     return w.__option === "Some" ? String(w.value) : null;
   }
   return String(w);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function unwrapTicketId(v: any): bigint | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "object" && "__option" in v) {
+    return v.__option === "Some" && v.value !== undefined
+      ? BigInt(v.value as bigint | number | string)
+      : null;
+  }
+  return BigInt(v as bigint | number | string);
 }
 
 function shortAddr(addr: string): string {
@@ -97,6 +110,8 @@ export default function PrivatePoolPage({
           creator: String(acc.data.creator),
           creatorFeeBps: acc.data.creatorFeeBps,
           winner: unwrapWinner(acc.data.winner),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          winningTicketId: unwrapTicketId((acc.data as any).winningTicket),
         });
 
         // Fetch all TicketBatch accounts whose `pool` field == this pool PDA.
@@ -289,25 +304,15 @@ export default function PrivatePoolPage({
         </article>
 
         {/* === WINNER BANNER (only on resolved pools) =================== */}
-        {pool.state === 2 && pool.winner && (
-          <div
-            className="mt-8 rounded-2xl border p-6"
-            style={{
-              borderColor: `${PRIVATE_ACCENT}66`,
-              background: `${PRIVATE_ACCENT}14`,
-            }}
-          >
-            <p
-              className="font-mono text-[10px] uppercase tracking-widest"
-              style={{ color: PRIVATE_ACCENT }}
-            >
-              Winner
-            </p>
-            <p className="mt-1 font-mono text-sm text-neutral-200">
-              {pool.winner}
-            </p>
-          </div>
-        )}
+        <WinnerBanner
+          poolAddress={pubkey}
+          winner={pool.winner}
+          winningTicketId={pool.winningTicketId}
+          totalPotLamports={pool.totalPotLamports}
+          batches={batches}
+          state={pool.state}
+          accentColor={PRIVATE_ACCENT}
+        />
 
         {/* === DRAW (creator-only / public action) ===================== */}
         <DrawWinnerButton

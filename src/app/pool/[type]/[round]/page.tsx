@@ -5,6 +5,7 @@ import { Countdown } from "@/components/Countdown";
 import { FlashOnChange } from "@/components/FlashOnChange";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { RecentBuysTable } from "@/components/RecentBuysTable";
+import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, formatTickets } from "@/lib/format";
@@ -56,7 +57,7 @@ export default async function PoolDetailPage({
   const detail = await getPoolDetail(poolType, round);
   if (!detail) notFound();
 
-  const { pool, batches } = detail;
+  const { pool, batches, winner, winningTicketId } = detail;
   const badge = STATE_BADGE[pool.state];
   const closed = pool.state !== "Open";
   const ticketsForOneSol = (1_000_000_000n / pool.ticketPriceLamports).toString();
@@ -172,6 +173,22 @@ export default async function PoolDetailPage({
           )}
         </div>
       </section>
+
+      {pool.poolAddress && (
+        <WinnerBanner
+          poolAddress={pool.poolAddress}
+          winner={winner}
+          winningTicketId={winningTicketId}
+          totalPotLamports={pool.totalPotLamports}
+          batches={batches.map((b) => ({
+            batchAddress: b.batchAddress,
+            owner: b.owner,
+            firstTicketId: b.firstTicketId,
+            lastTicketId: b.lastTicketId,
+          }))}
+          state={pool.state}
+        />
+      )}
 
       <RecentBuysTable
         batches={batches.map((b) => ({

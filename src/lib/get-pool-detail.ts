@@ -48,6 +48,9 @@ export interface TicketBatchView {
 export interface PoolDetail {
   pool: PoolView;
   batches: TicketBatchView[];
+  /** Resolved-state metadata. Both fields are null until settle lands. */
+  winner: string | null;
+  winningTicketId: bigint | null;
 }
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + ...
@@ -138,5 +141,32 @@ export async function getPoolDetail(
           : 0,
     );
 
-  return { pool, batches };
+  // Codama Option<T> decodes as { __option: 'Some'|'None', value? }. Some
+  // SDK paths return raw values; handle both. Null = pre-settle.
+  const winner = unwrapOption<string>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (p as any).winner,
+    String,
+  );
+  const winningTicketId = unwrapOption<bigint>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (p as any).winningTicket,
+    (v) => BigInt(v as bigint | number | string),
+  );
+
+  return { pool, batches, winner, winningTicketId };
+}
+
+function unwrapOption<T>(
+  raw: unknown,
+  coerce: (v: unknown) => T,
+): T | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw === "object" && raw !== null && "__option" in raw) {
+    const opt = raw as { __option: "Some" | "None"; value?: unknown };
+    return opt.__option === "Some" && opt.value !== undefined
+      ? coerce(opt.value)
+      : null;
+  }
+  return coerce(raw);
 }
