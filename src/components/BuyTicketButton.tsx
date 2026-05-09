@@ -91,7 +91,8 @@ export function BuyTicketButton({
       <button
         type="button"
         disabled
-        className="mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+        style={{ ["--tear-bg" as never]: "#2a2a2f" }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-neutral-500 transition disabled:cursor-not-allowed"
       >
         Round closed
       </button>
@@ -103,7 +104,8 @@ export function BuyTicketButton({
       <button
         type="button"
         disabled
-        className="mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+        style={{ ["--tear-bg" as never]: "#2a2a2f" }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-neutral-500 transition disabled:cursor-not-allowed"
         title="Connect a wallet to buy"
       >
         Connect wallet to buy
