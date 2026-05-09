@@ -1,6 +1,6 @@
 # Session Handoff — Tombola Frontend
 
-**Last updated:** 2026-05-08, end of phase 5 polish wave — all 7 original phase 5 items done plus 5 surfaced ideas (live WS updates, MyTickets panel, NetworkPill, Explorer links, error/404 pages).
+**Last updated:** 2026-05-09, end of design-exploration phase (active palette selection in progress).
 **Read this file first when resuming.** Then `README.md` for the layout.
 
 **Live URL:** https://tombola-frontend-gamma.vercel.app/
@@ -9,125 +9,121 @@
 
 ---
 
+## TL;DR for resume
+
+The dapp is **fully functional on localnet** (live on-chain reads, buy-ticket via wallet, live WS updates, 47 unit/component tests, CI green on every PR). All 6 PRs from the implementation phase are merged to `main`.
+
+The current activity is **design exploration**: the user is evaluating four distinct visual directions to replace the existing dark-emerald aesthetic. The exploration lives as standalone HTML mockups on a feature branch — **not yet ported to React**. The next session's job is most likely:
+
+1. **Lock in a palette direction** (see "Active design decisions pending" below).
+2. **Port the chosen design to React components** in a couple of incremental PRs.
+3. *Optional:* tackle still-blocked items (Switchboard local cloning, devnet redeploy) when their gating conditions clear.
+
+---
+
 ## Where we are
 
-Web UI for the Tombola on-chain raffle protocol. **Phases 1, 2, 6 done; phase 3 + 4 logic verified on localnet; phase 5 polish complete.** The single remaining gap is the wallet-popup buy-ticket E2E loop, blocked by the wallet ecosystem (Phantom + Solflare dropped custom RPC support in 2026).
+Web UI for the Tombola on-chain raffle protocol. **Phases 1–5 complete + 5 surfaced ideas + dashboard infographics + pool detail page + 18 component tests + CI workflow shipped to main.** The wallet-popup buy-ticket E2E loop remains gated by the wallet ecosystem (Phantom + Solflare dropped custom-RPC support in 2026); the underlying instruction-encoding/sign/send logic is verified via `scripts/buy_test_ticket.mts`.
 
-| phase | what | status |
+### Merged PRs (all on `main`)
+
+| # | what | merge commit |
 |---|---|---|
-| 1 | visual shell with mocked pool data | ✅ commit `9babee1` |
-| 2 | wallet connect (Phantom/Solflare/Backpack via Wallet Standard) | ✅ commit `352de5a` |
-| theme fix | dropped `globals.css`'s body overrides | ✅ commit `000912f` |
-| 6 | production deploy via Vercel | ✅ live |
-| 3 | live on-chain reads via Tombola SDK | ✅ on localnet (commit `8762757`) |
-| 4 | buy-ticket flow (instruction + adapter) | ✅ on localnet (commits `7d86c36` + `5699504`) |
-| 4-UX | wallet popup → click → tx confirms | 🔒 blocked on wallet tooling (Phantom/Solflare dropped custom RPC) |
-| 5 | polish — all 7 items (hover, How-it-works, FAQ, mobile, error, footer, recent winners) | ✅ commits `1c677ef` through `9b388e7` |
-| 5+ | new ideas surfaced from pivot — explorer links, qty selector, WS updates, NetworkPill, MyTickets | ✅ commits `5b373e1`, `1cd411e`, `29e8a32`, `b4e51d1`, `584038b` |
-| prod | re-run on devnet when SOL faucet cooperates | ⏭ |
+| 1 | Phase 3+4 (localnet) + phase 5 polish wave (19 commits) | `fe202f1` |
+| 2 | feat+fix: buy-ticket UX — sign-only flow + tx toasts (4 commits) | `6639fc7` |
+| 3 | ci + ux polish: GitHub Actions, wallet balance, flash-on-update (3 commits) | `fc447e3` |
+| 4 | test: 18 component tests — NetworkPill / FlashOnChange / BuyTicketButton | `2f9256a` |
+| 5 | feat: pool detail page at `/pool/[type]/[round]` | merged via #6 (no separate merge commit) |
+| 6 | feat: dashboard infographics — stats bar, pot comparison, win odds | `17a7c99` |
 
-**Branch:** `claude/sad-davinci-1c0bfb` (worktree branch, **18 commits ahead of `origin/main`, not pushed**). Decide before adding more: merge locally vs push-and-PR. Recent commits (most recent first):
+`main` HEAD is **`17a7c99`**.
+
+### Open / in-progress: design exploration
+
+Branch **`feature/dashboard-infographics`** is **11 commits ahead of `main`** with HTML mockups only (no React code changes). The branch is pushed to origin; no PR is open. Vercel preview URL exists per the branch.
+
 ```
-584038b phase 5.9: MyTickets panel — show user's TicketBatch holdings
-b4e51d1 phase 5.12: NetworkPill — cluster indicator + insecure-RPC warning
-29e8a32 phase 5.10: live updates via accountSubscribe
-9b388e7 phase 5.7: Recent winners mock section
-1cd411e phase 5.8: quantity selector in BuyTicketButton (1–100, stepper)
-f4e3a02 phase 5.3: FAQ accordion grounded in the threat model
-3f559bd phase 5.5: app/error.tsx + app/not-found.tsx — crash hygiene
-5e4323d phase 5.6: footer cleanup — program ID is now an explorer link
-9fae40c phase 5.2: How it works — 3-step explainer above the pool grid
-5b373e1 phase 5.11: Solana Explorer link on each PoolCard
-9a8720a phase 5.4: mobile-responsive header — wallet button visible below sm
-fa957df docs: SESSION_HANDOFF for localnet pivot + add PLAN.md
-5699504 phase 4 verify: scripted buy-ticket smoke test on localnet
-7d86c36 phase 4: buy-ticket button via wallet adapter + kit→web3 adapter
-8762757 phase 3.2: live on-chain pool reads with mock fallback
-131c336 phase 3.1: pull Tombola SDK into frontend via path alias
-81179e6 chore(copy): drop stale "Phase 2" labels on PoolCard
-1c677ef feat: phase 5 — hover/focus states on PoolCard
+c007ae0 docs(design): slower JS smooth-scroll + 3 palette alternatives  ← HEAD
+59f6e4d docs(design): center nav on the page axis + smooth scroll + hover effect
+6ff4ab3 docs(design): smaller, livelier ring — 4 layers spinning at different speeds
+3510fed docs(design): visible ring, livelier icons, lighter background
+7f7be59 docs(design): big surrounding ring + chunkier icons + Solana logo / confetti
+eec2eb5 docs(design): floating hero icons + 4-zone tonal background
+5ce1758 docs(design): smaller hero ring, drop chip noise, tonal background
+c4fd059 docs(design): pools become focal section + infographic cards + reorder
+0b58930 docs(design): pastel palette — drop the neon, match Metadrop's track hues
+72a4255 docs(design): redesign v1 → Metadrop palette + typography
+e7f025d docs(design): redesign-v1 static mockup (Metadrop-inspired)
 ```
 
 ---
 
-## Bring it back up (localnet recipe)
+## Active design decisions pending
 
-The `solana-test-validator` ledger is at `~/.tombola-localnet/test-ledger`. State is **wiped each restart** because `--reset` is in the launch command. Re-run all four bootstrap steps from a fresh validator.
+The user wants the redesign to **escape the lime-green casino/lottery aesthetic** and is evaluating four palette directions. All four are live as standalone HTML files in `public/` (served by `npm run dev` and the Vercel preview).
 
-**Prereqs to ensure:**
-- Node 22.22.2 active (`source ~/.nvm/nvm.sh && nvm use 22`). Node 24 fails at SDK module-load due to ESM/CJS interop.
-- Solana CLI 3.1.14 + Anchor 1.0.2 (already on this machine).
-- The two SDK patches in `~/Desktop/Project Tombola/sdk/src/` are present (see "SDK patches" below).
+| URL | Palette | Vibe |
+|---|---|---|
+| `/redesign-v1.html` | dark + bright **lime green** primary, pastel lavender/peach/sky/rose accents | Metadrop-style; user said "too neon / too casino-like" |
+| `/palette-warm.html` | dark warm bg + **cream / burgundy / gold / olive / navy** | champagne raffle, philanthropic-gala, sophisticated |
+| `/palette-purple.html` | deep purple-black + **Solana brand purple #9945ff + aqua #14f195** + pink + orange | web3-native, Solana-ecosystem-aligned |
+| `/palette-light.html` | **warm cream paper bg** + ink + forest + terracotta + dusty blue + mustard | editorial, serene, completely opposite of dark-dapp default |
 
-**Step-by-step:**
+The shared structure across all four mockups: nav (3-col grid for true centering) + hero (status pill, headline, ring with 4 spinning layers and floating icons, CTAs) + 4 pool cards in a 2-col infographic-rich grid (POT / 3 mini-stats / progress bar / colored CTA) + recently-played list + footer.
+
+Source files mirror the public copies under `docs/design/`.
+
+**Next session's first task is most likely**: pick one (or hybrid), port it to the real React components in 2–3 PRs (header + hero, then pool cards + sections, then footer/bento).
+
+---
+
+## Bring the localnet dapp back up
+
+The `solana-test-validator` ledger is wiped each restart (--reset). Recipe to get from cold to a working dapp + 4 pools + funded Phantom address:
 
 ```bash
-# 1. Start the local validator (background)
-mkdir -p ~/.tombola-localnet
-cd ~/.tombola-localnet
-solana-test-validator --reset --rpc-port 8899 > validator.log 2>&1 &
-until solana cluster-version --url http://127.0.0.1:8899 >/dev/null 2>&1; do sleep 1; done
-until nc -z 127.0.0.1 8900; do sleep 1; done   # wait for WS too — scripts will hang otherwise
-sleep 2
-
-# 2. Configure CLI for localhost (this is global; flip back via `solana config set --url devnet` later)
-solana config set --url http://127.0.0.1:8899
-solana airdrop 100   # also pre-funded with ~500M SOL automatically
-
-# 3. Deploy the program (already-built .so is committed)
-solana program deploy --url http://127.0.0.1:8899 \
-  '/Users/marwanchahboun/Desktop/Project Tombola/target/deploy/raffle.so'
-# Expected program id: qWyk54XHmEaRhYCuuhoEPKSWRnucyiUiVJGZJFvZB1M
-
-# 4. Initialize ProtocolConfig (one-time)
-cd '/Users/marwanchahboun/Desktop/Project Tombola'
-DEPLOYER=$(solana address)
-RAFFLE_TREASURY=$DEPLOYER RAFFLE_VRF_ORACLE=$DEPLOYER \
-  ./node_modules/.bin/tsx scripts/deploy.ts localnet
-
-# 5. Initialize the four public pools.
-#    NOTE: scripts/init_public_pools.ts crashes mid-loop on local-validator WS race
-#    after Weekly succeeds. Solution: write a one-off init for the remaining 3
-#    that uses RPC polling instead of WS confirmations (see commit body of 5699504
-#    or the throwaway script we wrote at /tmp during the pivot — pattern is in
-#    scripts/buy_test_ticket.mts).
-./node_modules/.bin/tsx scripts/init_public_pools.ts localnet --day0 2026-05-11
-# (Will fail at Biweekly with WS error; Weekly will be initialized.
-# Init the rest manually via a similar polling script.)
-
-# 6. Frontend (in this repo)
-cd ~/Desktop/tombola-frontend       # or worktree path
-npm run dev                          # picks NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 from .env.local
+PHANTOM_ADDRESS=A9xZTBN7pwkw4bHdKV1yQ3KBgmUtvf9cV2U6PXVjCDWY \
+  ./scripts/reset-localnet.sh
 ```
 
-After step 6, hit `http://localhost:<port>` — pool cards render with **live — localnet** badge.
+That orchestrator does: kill any existing validator → wipe ledger → start fresh validator → wait for RPC + WS → deploy program → init protocol → init 4 pools with **test-friendly durations** (Weekly **10 min**, Biweekly 14 d, Triweekly 21 d, Monthly 30 d) → transfer 1M SOL to the Phantom address.
 
-**Smoke-test buy ticket (no wallet popup):**
+Then:
 ```bash
-npx tsx scripts/buy_test_ticket.mts                      # 1 Weekly ticket (default)
-npx tsx scripts/buy_test_ticket.mts --pool=2 --qty=3     # 3 Triweekly tickets
+npm run dev          # http://localhost:3000
 ```
-Refresh dapp → card shows updated tickets + pot.
+
+Connect Phantom (any cluster — sign-only flow means cluster mismatch doesn't matter; click "Approve" through the red sim warning). Click `Buy ticket — 0.01 SOL` and watch the WS subscription auto-update the card.
+
+For an unattended buy (script signs with `~/.config/solana/id.json` directly):
+```bash
+npx tsx scripts/buy_test_ticket.mts                      # 1 Weekly ticket
+npx tsx scripts/buy_test_ticket.mts --pool=2 --qty=3     # 3 Triweekly
+```
+
+Refresh the dapp; the affected card pulses amber via `<FlashOnChange>`.
 
 ---
 
 ## Wallet popup E2E status
 
-**Blocked**, not by us, by the wallet ecosystem.
+Still **blocked** by the wallet ecosystem regression. Phantom Chrome dropped custom RPC URL config in 2025; Solflare also restricts to Mainnet/Testnet/Devnet. Backpack untested.
 
-- **Phantom** Chrome extension dropped custom RPC URL config in 2025. Developer Settings has a Testnet Mode toggle but no override field — points at Solana's official devnet only.
-- **Solflare** also restricts network to Mainnet/Testnet/Devnet — no custom RPC.
-- **Backpack** is the remaining candidate worth trying; not validated yet.
+The wallet-adapter integration is correct: auto-discovery via Wallet Standard, kit→web3 adapter for sign-and-send. Hot-path verified by `scripts/buy_test_ticket.mts` (commit `5699504`). When devnet SOL flows again to the deployer keypair, the same flow runs unchanged on devnet and the wallet-popup loop works because Phantom/Solflare both speak devnet natively.
 
-The wallet adapter code is correct (auto-discovery via Wallet Standard, kit→web3 adapter for sign-and-send). Hot-path verified by the scripted smoke test (commit `5699504`). When devnet SOL becomes available, the same flow runs unchanged on devnet and the wallet popup loop works there because Phantom/Solflare both speak devnet natively.
+Three escape hatches when the user is ready:
+
+1. **Move to devnet** (~30 min once SOL is in `EaALFp4ZsPrP23UoSwmHzMdTM1Yc7pVyS1FfrSUFpLBt`) — `solana program deploy --final` + `tsx scripts/deploy.ts devnet` + `tsx scripts/init_public_pools.ts devnet`. Then the live URL (point at `https://api.devnet.solana.com`) talks to devnet, Phantom too; both sides agree on the cluster. **Best path.**
+2. **Mock Switchboard locally** (~4–8 h, real engineering) — stub program + test oracle daemon. Lets the draw cycle actually loop on local without touching the audited program. **Significant project.**
+3. **Try Backpack** — last wallet that *might* still allow custom RPC. ~5 min check if user wants to validate.
 
 ---
 
 ## SDK patches needed in companion repo
 
-Two real bugs surfaced when running the SDK outside vitest. Both are one-liners and live in `~/Desktop/Project Tombola/sdk/src/`. **Review and commit them in your audit-ready repo** (run the hygiene gate after).
+Two real bugs surfaced when running the SDK outside vitest. Both are uncommitted in `~/Desktop/Project Tombola/sdk/src/`. **Review and commit them in the program repo** (run hygiene gate after — `cargo test`, `vitest`, `prettier --check`).
 
-### 1. `merkle.ts:11`
+### `merkle.ts:11`
 
 ```diff
 -import { keccak_256 } from "js-sha3";
@@ -135,11 +131,9 @@ Two real bugs surfaced when running the SDK outside vitest. Both are one-liners 
 +const { keccak_256 } = sha3;
 ```
 
-**Why:** `js-sha3` is CJS with `module.exports = methods` (runtime assignment). Node 22+ ESM strict loader can't synthesize the `keccak_256` named export from that. Vitest's loader is looser, so unit tests pass — but `tsx scripts/deploy.ts` and any browser bundle hit it immediately.
+`js-sha3` is CJS with `module.exports = methods` (runtime assignment). Node 22+ ESM strict loader can't synthesize the named export. Vitest is looser, so unit tests pass — but `tsx scripts/deploy.ts` and any browser bundle hit it immediately.
 
-The matching test file `merkle.test.ts:2` has the same import; backport the fix.
-
-### 2. `codes.ts:10`
+### `codes.ts:10`
 
 ```diff
 -import { randomBytes } from "node:crypto";
@@ -154,13 +148,15 @@ The matching test file `merkle.test.ts:2` has the same import; backport the fix.
 +}
 ```
 
-**Why:** `node:crypto` isn't available in browser bundles. Web Crypto's `crypto.getRandomValues()` is a global in both Node 20+ and the browser, so the SDK becomes truly cross-platform with this change. Required for any web frontend (this repo) or mobile bundle to import the SDK.
+`node:crypto` isn't available in browser bundles. Web Crypto's `crypto.getRandomValues()` is global in Node 20+ and the browser, so the SDK becomes truly cross-platform. Required for any web frontend (this repo) or mobile bundle to import the SDK.
 
 ---
 
 ## Working state
 
-**Branch:** `claude/sad-davinci-1c0bfb` (worktree branch). Working tree should be clean — verify with `git status`.
+**Branch in this worktree:** `feature/dashboard-infographics` (commit `c007ae0`, 11 ahead of origin/main, **pushed to origin** as of 2026-05-09).
+**Production branch:** `main` (commit `17a7c99`, 6 PRs merged).
+**Worktree path:** `/Users/marwanchahboun/Desktop/tombola-frontend/.claude/worktrees/sad-davinci-1c0bfb`.
 
 **Stack:**
 - Next.js 15.5.18 (App Router, Webpack — Turbopack disabled at scaffold)
@@ -168,24 +164,27 @@ The matching test file `merkle.test.ts:2` has the same import; backport the fix.
 - TypeScript strict, target ES2020 (BigInt literals)
 - Tailwind CSS v4 (via `@import "tailwindcss"` in globals.css)
 - @solana/wallet-adapter 0.15 + @solana/web3.js 1.98 (existing wallet boundary)
-- @solana/kit 6.9 + @solana/web3-compat 0.0.21 + js-sha3 0.9 (added in phase 3.1)
+- @solana/kit 6.9 + @solana/web3-compat 0.0.21 + js-sha3 0.9
+- Vitest 4 + @testing-library/react + happy-dom + @vitejs/plugin-react (47 tests)
 - tsx 4.x (devDep, runs `.mts` scripts)
-- Hosted on Vercel free tier
+- GitHub Actions CI (`.github/workflows/ci.yml`) runs install + lint + test + build on every PR
+- Hosted on Vercel free tier; auto-deploys main → `tombola-frontend-gamma.vercel.app`, branches → preview URLs
 
 **Toolchain:**
 - **Node 22.22.2 via nvm** (Node 24 breaks SDK ESM imports). `source $HOME/.nvm/nvm.sh && nvm use 22` before running scripts.
-- npm (no yarn workspace; flat `package.json`)
-- gh CLI 2.92 at `~/.local/bin/gh` — already authed as `AtlasBrain`
+- npm
+- gh CLI 2.92 — already authed as `AtlasBrain`
 
 **Quickstart:**
 ```bash
 cd ~/Desktop/tombola-frontend
-npm run dev          # http://localhost:3000 (or auto-assigned)
+npm run dev          # http://localhost:3000
 npm run build        # production build sanity check
+npm run test         # vitest run, single-shot for CI
 npm run lint         # eslint
 ```
 
-If `npm run dev` shows `Cannot find module './XXX.js'`, run `rm -rf .next` and retry (production-build artifacts confuse the dev server). Hit this every time you `npm run build` then `npm run dev`.
+If `npm run dev` shows `Cannot find module './XXX.js'`, run `rm -rf .next` and retry (production-build artifacts confuse the dev server; happens any time you alternate `build` and `dev`).
 
 ---
 
@@ -195,128 +194,161 @@ If `npm run dev` shows `Cannot find module './XXX.js'`, run `rm -rf .next` and r
 src/
   app/
     layout.tsx        Root layout — html.dark, body wraps children in <WalletProviders>
-    page.tsx          Async server component. force-dynamic. Calls getLivePools() with
-                      MOCK_POOLS fallback. Composes the page sections in order: header
-                      (NetworkPill + ConnectWalletButton stacked) → HowItWorks → main
-                      pool grid → MyTickets → RecentWinners → FaqSection → footer.
+    page.tsx          Async server component. force-dynamic. Renders:
+                      header (NetworkPill + WalletBalance + ConnectWalletButton)
+                      → StatsBar → HowItWorks → PoolComparisonChart → main pool grid
+                      → MyTickets → RecentWinners → FaqSection → footer.
                       Mounts <LivePoolWatcher> when source === "live".
-    error.tsx         Client component (Next convention). Catches render errors with
-                      Retry + Back to home. Logs digest to console.
+    error.tsx         Client component (Next convention). Catches render errors
+                      with Retry + Back to home. Logs digest to console.
     not-found.tsx     Server 404 page; matches dark aesthetic.
+    pool/[type]/[round]/page.tsx
+                      Pool detail page. Validates slug → poolType, calls
+                      getPoolDetail (server). Stats card + buy card + ticket-
+                      batches table (every TicketBatch in the round, sorted
+                      by firstTicketId, buyer addresses link to explorer).
+                      Force-dynamic, has its own LivePoolWatcher.
     globals.css       Tailwind v4 import + @theme binding for Geist font
   components/
-    PoolCard.tsx      Server component. Group hover/focus states. "Round #N · explorer ↗"
-                      links to the pool's PDA on the cluster's explorer. Slots
-                      BuyTicketButton.
-    BuyTicketButton.tsx     Client. useWallet → buyTicketPublic ix → kit→web3 convert
-                            → wallet.sendTransaction. Quantity stepper [-] N [+] (1–100);
-                            cost label updates live ("Buy — 0.05 SOL"). No router.refresh
-                            here — LivePoolWatcher does it.
+    PoolCard.tsx      Server component. Group hover/focus states. "Round #N ·
+                      explorer ↗" links to the pool's PDA. Kind heading is a
+                      <Link> to /pool/<kind>/<round>. Slots BuyTicketButton +
+                      WinOdds + FlashOnChange wrappers around POT and Tickets.
+    BuyTicketButton.tsx     Client. useWallet + qty <input type=number> with
+                            live cost preview ("= 0.05 SOL"). signTransaction
+                            (sign-only) → connection.sendRawTransaction so
+                            wallet-cluster mismatch doesn't matter. Pushes
+                            success/error toasts.
     LivePoolWatcher.tsx     Client. Opens accountSubscribe per pool PDA via
                             createSolanaRpcSubscriptions. Debounces 300 ms then
-                            router.refresh(). httpToWs() handles Solana's port+1 quirk
-                            (8899 RPC → 8900 WS). Returns null.
-    NetworkPill.tsx   Server. Cluster pill (localnet/devnet/testnet/mainnet) above
-                      the wallet button. Rose "⚠ insecure RPC" if mainnet over plain
-                      http. Tooltip = full RPC URL.
-    HowItWorks.tsx    Server. Three numbered cards (Buy → Wait → Claim), grid-cols-1
-                      md:grid-cols-3.
-    FaqSection.tsx    Server. 5 questions in native <details>/<summary> — no JS,
-                      accessible, server-rendered. Plus icon rotates on open.
-    RecentWinners.tsx Server. Mock data; dual layout (cards on mobile, table on
-                      desktop). Tagged "mock — Phase 7" with the amber pill.
-    MyTickets.tsx     Client. useWallet → getProgramAccounts(PROGRAM_ID, [
-                      {dataSize: 89}, {memcmp: {offset: 40, bytes: owner}}]) →
-                      decode TicketBatch → aggregate by current-round pool. Renders
-                      nothing when wallet absent or no batches. Live-updates because
-                      pools prop changes when LivePoolWatcher fires.
-    Countdown.tsx     Client. useEffect+setInterval, re-renders every 1s.
+                            router.refresh(). httpToWs() handles Solana's
+                            port+1 quirk (8899 RPC → 8900 WS). Returns null.
+    NetworkPill.tsx   Server (accepts optional rpcUrl prop for testability).
+                      Cluster pill (localnet/devnet/testnet/mainnet). Rose
+                      "⚠ insecure RPC" if mainnet over plain http.
+    WalletBalance.tsx Client. 10s polling. formatSolCompact ("1.0 M SOL")
+                      so a 1M-SOL test wallet doesn't render as a 7-digit
+                      string.
+    HowItWorks.tsx    Server. 3 numbered cards (Buy → Wait → Claim).
+    FaqSection.tsx    Server. 5 questions in native <details>/<summary>.
+    RecentWinners.tsx Server. Mock data; cards on mobile, table on desktop.
+                      Currently displays mock-then-swap placeholder.
+    StatsBar.tsx      Server. Aggregates total pot / tickets / active rounds /
+                      next-close countdown across the 4 pools.
+    PoolComparisonChart.tsx
+                      Server. CSS-only column chart of the 4 pots; each
+                      column links to that pool's detail page.
+    WinOdds.tsx       Client. getProgramAccounts filtered by both pool +
+                      owner; computes (userTickets / totalTickets) %.
+                      Renders a thin emerald bar on each card when wallet
+                      holds tickets in that round.
+    MyTickets.tsx     Client. getProgramAccounts filtered by owner. Aggregates
+                      by current-round pool. Renders nothing when wallet
+                      absent or no batches.
+    FlashOnChange.tsx Client. 28-line wrapper. useRef holds previous value;
+                      changes flash text amber for 1.2 s, then fades back via
+                      Tailwind transition-colors duration-700.
+    Toast.tsx         Client. ToastProvider + useToast hook. Queue (max 4),
+                      TTL 3.5 s, dismiss button, ARIA aria-live=polite.
+    Countdown.tsx     Client. useEffect+setInterval, re-renders every 1 s.
     WalletProviders.tsx     ConnectionProvider + WalletProvider (wallets=[];
-                            Wallet-Standard auto-discovery) + WalletModalProvider.
-                            Cluster: NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl("devnet").
-    ConnectWalletButton.tsx Client. dynamic(ssr:false) WalletMultiButton, dark theme.
+                            Wallet-Standard auto-discovery) + WalletModalProvider
+                            + ToastProvider. Cluster from
+                            NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl("devnet").
+    ConnectWalletButton.tsx Client. dynamic(ssr:false) WalletMultiButton, dark
+                            theme.
   lib/
-    mock-pools.ts     PoolView type + 4 mock pools (offline fallback). poolAddress is
-                      optional — present on live data, undefined on mocks. Shape mirrors
-                      on-chain PublicPool (D-058).
-    mock-winners.ts   WinnerView type + 6 mock entries spanning all 4 pool kinds.
-    get-pools.ts      server-only. Reads PoolTypeCounter then PublicPool for each type.
-                      Computes pool PDA via client.publicPoolPda — surfaces it on
-                      PoolView so explorer links and MyTickets can use it without
-                      re-deriving.
-    kit-to-web3.ts    14-line client adapter. Maps kit AccountRole bits → web3.js
-                      {isSigner, isWritable}.
-    explorer-url.ts   Pure helpers. explorerAddressUrl(addr, rpcUrl) builds cluster-
-                      aware explorer URLs (localhost → cluster=custom + customUrl).
-                      clusterLabelFor(rpcUrl) returns "localnet"|"devnet"|"testnet"|
-                      "mainnet" for the NetworkPill.
-    format.ts         formatSol, formatCountdown, formatTickets.
+    mock-pools.ts     PoolView type + 4 mock pools (offline fallback).
+                      poolAddress optional; present on live data only.
+    mock-winners.ts   WinnerView type + 6 mock entries.
+    get-pools.ts      server-only. PoolTypeCounter → PublicPool for each type.
+                      Maps SDK fields → PoolView, includes poolAddress for
+                      explorer links + WinOdds query.
+    get-pool-detail.ts server-only. Single-pool fetch + all batches
+                      (getProgramAccounts memcmp on TicketBatch pool offset).
+    kit-to-web3.ts    14-line client adapter. Maps kit AccountRole bits →
+                      web3.js {isSigner, isWritable}.
+    explorer-url.ts   Pure helpers. explorerAddressUrl + clusterLabelFor.
+    format.ts         formatSol, formatSolCompact, formatCountdown,
+                      formatTickets.
+    *.test.ts(x)      Vitest unit + component tests (47 total).
+  test-setup.ts       Registers @testing-library/jest-dom matchers + cleanup
+                      between tests.
 scripts/
-  buy_test_ticket.mts     tsx-runnable smoke test. Signs with ~/.config/solana/id.json
-                          and sends a buy_ticket_public tx straight at localnet. Used
-                          to verify phases 3+4 without depending on wallet popup UX.
-next.config.ts        webpack alias `@tombola/sdk` → ../../../../Project Tombola/sdk/src;
-                      extensionAlias `.js → .ts` so TS-ESM imports resolve.
-tsconfig.json         paths alias matches webpack alias for type checking.
-.env.local            NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899 (gitignored by Next).
-PLAN.md               Implementation plan that drove this pivot (kept for reference;
-                      can be archived/deleted now).
+  reset-localnet.sh        Full-reset orchestrator (kill validator → wipe →
+                           restart → deploy → init protocol → init pools w/
+                           test durations → optional 1M SOL transfer).
+  init_pools_local.mts     Initializes 4 pools with test-friendly durations
+                           (Weekly 10 min, Biweekly 14 d, etc). Imports SDK
+                           by absolute path because tsx doesn't apply the
+                           @tombola/sdk webpack alias.
+  buy_test_ticket.mts      Sign with ~/.config/solana/id.json + send to
+                           localnet — verifies phase 3+4 without wallet popup.
+docs/design/
+  redesign-v1.html         Metadrop-inspired mockup, lime green primary.
+  palette-warm.html        Cream/burgundy/gold dark editorial palette.
+  palette-purple.html      Solana-brand purple + aqua palette.
+  palette-light.html       Cream paper bg + forest/terracotta editorial.
+public/
+  redesign-v1.html         Same files mirrored here so dev server (and Vercel)
+  palette-warm.html        serves them at /redesign-v1.html etc.
+  palette-purple.html
+  palette-light.html
+vendor/sdk/                Snapshot of ~/Desktop/Project Tombola/sdk/src for
+                           Vercel builds. Re-sync via the recipe in
+                           vendor/sdk/SNAPSHOT.md.
+.github/workflows/ci.yml   GitHub Actions: install + lint + test + build on
+                           every PR + push to main.
+next.config.ts             webpack alias `@tombola/sdk` → vendor/sdk;
+                           extensionAlias `.js → .ts`.
+tsconfig.json              paths alias matches webpack alias.
+vitest.config.ts           Vitest config: include *.test.ts(x), env happy-dom,
+                           react plugin, @ + @tombola/sdk aliases, setupFiles.
+.env.local                 NEXT_PUBLIC_SOLANA_RPC_URL=http://127.0.0.1:8899
+                           (gitignored by Next).
+PLAN.md                    Implementation plan from the original localnet
+                           pivot. Reference; archive when stable.
 ```
 
 **Conventions:**
 - Server components by default; `"use client"` only for state/effects/wallet adapter.
-- `@/*` import alias resolves to `src/*`. `@tombola/sdk` resolves to the companion repo's SDK source.
-- BigInt for all on-chain numeric types (`totalPotLamports`, `round`, etc.). Never `number`.
-- Mock data shape MUST match on-chain shape — `getLivePools` decodes SDK output into the same `PoolView` interface so the cards don't care which source is feeding them.
-- All colours via Tailwind utilities; the body's `bg-neutral-950 text-neutral-100` owns the global theme. Don't add a `body { background: ... }` rule in `globals.css` — that's the trap from commit `000912f`.
+- `@/*` import alias resolves to `src/*`. `@tombola/sdk` resolves to `vendor/sdk/index.ts`.
+- BigInt for all on-chain numeric types. Never `number` for lamports/tickets/round.
+- Mock data shape matches on-chain shape (`PoolView` interface).
+- All colours via Tailwind utilities; the body's `bg-neutral-950 text-neutral-100` owns the global theme.
 
 ---
 
-## What's left to do
+## Optional follow-ups (none gating)
 
-**Branch hygiene (do first):**
-- Decide merge path for `claude/sad-davinci-1c0bfb` — 18 commits ahead of main. Either `git merge` locally or push and open a PR. Don't keep accumulating without choosing.
-- **Companion repo SDK patches** are uncommitted on `~/Desktop/Project Tombola/sdk/src/{merkle,codes}.ts`. Run the program-repo hygiene gate (`cargo test`, `vitest`, `prettier --check`) and commit those before any other SDK consumer (mobile, etc.) hits the same bug.
-
-**Wallet popup E2E (blocked):**
-- Test buy-ticket via Phantom/Solflare/Backpack popup once a wallet supports custom RPC again **OR** when devnet SOL is back in the deployer keypair (then re-run the localnet recipe pointed at devnet — see "Bring it back up" but swap `NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com` and `solana config set --url devnet`). All UI/UX is wired; this is purely a validation pass.
-
-**Optional next features (none gating):**
-- **#13 Toast on tx confirm** (~30m) — when LivePoolWatcher fires after the user's own buy, surface "1 ticket landed" instead of silently updating.
-- **#14 Real recent-winners** (~60m) — replace `MOCK_WINNERS` with on-chain Resolved-state pools. Same mock-then-swap pattern. Requires actual draw cycles to have run, which means Switchboard cloning on local OR running on devnet with VRF.
-- **Vitest setup + first unit tests** — CLAUDE.md says "vitest goes in when phase 3 lands" — phase 3 has landed. Candidates for unit tests: `lib/explorer-url.ts` (pure), `lib/format.ts` (pure), `lib/kit-to-web3.ts` (role-bit mapping), `lib/get-pools.ts` (mock RPC).
-- **Decide on PLAN.md** — was the implementation plan for the localnet pivot. Could be moved to a `docs/` archive or deleted; it's not load-bearing.
+- **Real recent-winners** (~60 m) — replace `MOCK_WINNERS` with on-chain Resolved-state pools. Same mock-then-swap pattern. Requires actual draw cycles to have run (= Switchboard cloning OR devnet).
+- **Vitest expansion** — component tests for `BuyTicketButton`'s click handler (full RaffleClient + connection mock), `LivePoolWatcher`'s WS lifecycle, integration tests for `get-pools.ts`.
+- **Toast progress bar** — visual countdown on each toast tile.
+- **Activity ticker on the home page** — animated marquee of recent buys (data already available via `getProgramAccounts`).
+- **PLAN.md cleanup** — archive once design exploration concludes.
 
 ---
 
 ## Stop the validator (cleanup)
 
 ```bash
-# Find PID
 ps aux | grep solana-test-validator | grep -v grep
-# Then:
 kill <PID>
-# Or to wipe state without restart:
-rm -rf ~/.tombola-localnet/test-ledger
-```
-
-The CLI's `solana config` is still pointed at localhost — flip back when done:
-```bash
-solana config set --url devnet
+solana config set --url devnet   # flip CLI back from localhost when done
 ```
 
 ---
 
-## Suggested first message in the next session
+## Suggested first messages for the next session
 
-If branch is still unmerged (most likely):
+**Most likely path** — design exploration is in flight, palette decision pending:
 
-> Resume from `SESSION_HANDOFF.md`. Phase 5 polish wave is done (18 commits on `claude/sad-davinci-1c0bfb`). Decide merge path: local merge to `main` or push + PR. Then do the companion-repo SDK patch commits.
+> Resume from `SESSION_HANDOFF.md`. We're picking between four palette mockups in `public/palette-*.html` + `redesign-v1.html`. I want to lock in [palette-warm / palette-purple / palette-light / lime] and have you port it to the real React components in 2–3 PRs.
 
-Once branch is merged and you have devnet SOL:
+**If devnet SOL came through** (independent of design exploration):
 
-> Resume from `SESSION_HANDOFF.md`. Set `NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com` and run `solana config set --url devnet`. Redeploy program + reinit pools on devnet (recipe in this file but swap the cluster arg). Then test wallet popup buy-ticket end-to-end via Phantom.
+> Resume from `SESSION_HANDOFF.md`. Devnet SOL is in the deployer keypair. Redeploy program to devnet + reinit protocol + init pools, then test wallet popup buy-ticket end-to-end via Phantom. Recipe is in this file under "wallet popup E2E status, escape hatch #1."
 
-If you want to keep building features without merging:
+**If continuing optional polish**:
 
-> Resume from `SESSION_HANDOFF.md`. Pick from "Optional next features" — toast on tx confirm, vitest setup, or real recent-winners.
+> Resume from `SESSION_HANDOFF.md`. Pick from "Optional follow-ups" — real winners swap, vitest expansion, or activity ticker.
