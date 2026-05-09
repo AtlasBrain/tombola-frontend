@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Transaction } from "@solana/web3.js";
 import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import { RaffleClient, type PoolTypeValue } from "@tombola/sdk";
@@ -13,6 +14,8 @@ interface Props {
   round: bigint;
   ticketPriceLamports: bigint;
   closed: boolean;
+  accentColor?: string;
+  ticketPriceSol?: number;
 }
 
 const MIN_QTY = 1;
@@ -23,9 +26,12 @@ export function BuyTicketButton({
   round,
   ticketPriceLamports,
   closed,
+  accentColor = "var(--lavender)",
+  ticketPriceSol = 0.01,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
   const { push: pushToast } = useToast();
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -87,7 +93,8 @@ export function BuyTicketButton({
       <button
         type="button"
         disabled
-        className="mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+        style={{ ["--tear-bg" as never]: "#2a2a2f" }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-neutral-500 transition disabled:cursor-not-allowed"
       >
         Round closed
       </button>
@@ -98,11 +105,12 @@ export function BuyTicketButton({
     return (
       <button
         type="button"
-        disabled
-        className="mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+        onClick={() => setWalletModalVisible(true)}
+        style={{ ["--tear-bg" as never]: accentColor }}
+        className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110"
         title="Connect a wallet to buy"
       >
-        Connect wallet to buy
+        BUY 1 TICKET <span className="font-mono opacity-70">· {ticketPriceSol.toFixed(2)} SOL</span>
       </button>
     );
   }
@@ -153,12 +161,20 @@ export function BuyTicketButton({
         type="button"
         disabled={busy || !qtyValid}
         onClick={onClick}
-        className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+        aria-label={
+          busy
+            ? "Buying…"
+            : qtyValid
+              ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} — ${formatSol(total)}`
+              : "Enter a quantity"
+        }
+        style={{ ["--tear-bg" as never]: accentColor }}
+        className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {busy
           ? "Buying…"
           : qtyValid
-            ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} — ${formatSol(total)}`
+            ? <>BUY {qty} TICKET{qty === 1 ? "" : "S"} <span className="font-mono opacity-70">· {ticketPriceSol.toFixed(2)} SOL</span></>
             : "Enter a quantity"}
       </button>
       {err && (

@@ -9,6 +9,369 @@
  * we only register Geist as the variable font for `font-sans`. */
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
+}
+
+:root {
+  /* Surface tokens */
+  --bg: #17171b;
+  --bg-elevated: #1f1f24;
+  --bg-warm: #1c1a16;
+  --ink: #f5f5f5;
+  --line: rgba(255, 255, 255, 0.08);
+
+  /* Accent palette (no lime — see chat1.md design history) */
+  --lavender: #c9b5dc;
+  --lavender-dim: #c9b5dc33;
+  --mint: #88cfc4;
+  --yellow: #e8d89e;
+  --pink: #e8a5c0;
+
+  /* Aliases (prototype calls lavender "lime" — keep the alias so direct
+     copy-paste from public/redesign-v1-recolored.html keeps working
+     while we migrate. Kill these aliases after Stage 6.) */
+  --lime: var(--lavender);
+  --lime-dim: var(--lavender-dim);
+}
+
+html,
+body {
+  background:
+    radial-gradient(35% 30% at 12% 18%, rgba(201, 181, 220, 0.12) 0%, transparent 70%),
+    radial-gradient(35% 30% at 88% 22%, rgba(184, 165, 212, 0.12) 0%, transparent 70%),
+    radial-gradient(35% 30% at 8%  72%, rgba(232, 216, 158, 0.12) 0%, transparent 70%),
+    radial-gradient(35% 30% at 92% 78%, rgba(136, 207, 196, 0.12) 0%, transparent 70%),
+    radial-gradient(60% 50% at 50% 35%, #232328 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-feature-settings: "ss01", "ss02";
+}
+
+.font-display {
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.font-mono {
+  font-family: var(--font-space-mono), ui-monospace, monospace;
+}
+
+/* === Animation keyframes (ported from public/redesign-v1-recolored.html) === */
+
+/* Hero rotating ring — 4 layers spinning at different speeds */
+@keyframes spin-slow    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes spin-counter { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+@keyframes spin-fast    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.spin-slow    { animation: spin-slow 50s linear infinite; transform-origin: center; }
+.spin-counter { animation: spin-counter 35s linear infinite; transform-origin: center; }
+.spin-fast    { animation: spin-fast 20s linear infinite; transform-origin: center; }
+
+/* Orbital tickets (test1 variant — keep available even if unused on v1) */
+@keyframes orbit-tickets { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.orbit-tickets { animation: orbit-tickets 72s linear infinite; transform-origin: center; }
+
+/* Ticker marquee */
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-track { animation: ticker 60s linear infinite; width: max-content; }
+
+/* Pulse — used by the "LIVE" indicator dot */
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* Section :target highlight pulse */
+@keyframes target-pulse {
+  0%   { box-shadow: 0 0 0 0    rgba(201, 181, 220, 0); }
+  25%  { box-shadow: 0 0 0 8px  rgba(201, 181, 220, 0.18); }
+  100% { box-shadow: 0 0 0 0    rgba(201, 181, 220, 0); }
+}
+section[id] { scroll-margin-top: 32px; }
+section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 1; }
+
+/* Hero floating icons — 6 unique 3-keyframe loops (verbatim from mockup) */
+@keyframes float-a {
+  0%,100% { transform: translate(0, 0)         rotate(-8deg)  scale(1);    }
+  33%     { transform: translate(-6px, -32px)  rotate(6deg)   scale(1.04); }
+  66%     { transform: translate(8px, -10px)   rotate(-3deg)  scale(0.98); }
+}
+@keyframes float-b {
+  0%,100% { transform: translate(0, -8px)      rotate(10deg)  scale(1);    }
+  33%     { transform: translate(10px, 22px)   rotate(-8deg)  scale(1.05); }
+  66%     { transform: translate(-4px, 8px)    rotate(4deg)   scale(0.97); }
+}
+@keyframes float-c {
+  0%,100% { transform: translate(0, 0)         rotate(-15deg) scale(1);    }
+  33%     { transform: translate(-8px, -38px)  rotate(8deg)   scale(1.08); }
+  66%     { transform: translate(6px, -16px)   rotate(-2deg)  scale(0.95); }
+}
+@keyframes float-d {
+  0%,100% { transform: translate(0, -4px)      rotate(12deg)  scale(1);    }
+  33%     { transform: translate(8px, 28px)    rotate(-6deg)  scale(1.06); }
+  66%     { transform: translate(-6px, 14px)   rotate(2deg)   scale(0.97); }
+}
+@keyframes float-e {
+  0%,100% { transform: translate(0, 0)         rotate(4deg)   scale(1);    }
+  33%     { transform: translate(-10px, -28px) rotate(-12deg) scale(1.05); }
+  66%     { transform: translate(4px, -8px)    rotate(8deg)   scale(0.98); }
+}
+@keyframes float-f {
+  0%,100% { transform: translate(0, 0)         rotate(-5deg)  scale(1);    }
+  33%     { transform: translate(8px, 36px)    rotate(12deg)  scale(1.07); }
+  66%     { transform: translate(-4px, 18px)   rotate(-2deg)  scale(0.96); }
+}
+.float-a { animation: float-a 5.2s ease-in-out infinite;       transform-origin: center; }
+.float-b { animation: float-b 6.4s ease-in-out infinite -1.2s; transform-origin: center; }
+.float-c { animation: float-c 4.8s ease-in-out infinite -2.4s; transform-origin: center; }
+.float-d { animation: float-d 7.0s ease-in-out infinite -0.8s; transform-origin: center; }
+.float-e { animation: float-e 5.6s ease-in-out infinite -3.2s; transform-origin: center; }
+.float-f { animation: float-f 6.0s ease-in-out infinite -1.6s; transform-origin: center; }
+
+/* Subtle dot grid — used as a hero background hatch */
+.bg-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* === .nav-link — pill hover + lavender underline sweep === */
+.nav-link {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 0.85rem;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a3a3a3;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.25s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.25rem;
+  height: 1.5px;
+  background: var(--lavender);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nav-link:hover { color: #fff; background-color: rgba(255, 255, 255, 0.04); }
+.nav-link:hover::after { transform: scaleX(1); }
+.nav-link:active { background-color: rgba(201, 181, 220, 0.08); color: var(--lavender); }
+
+/* === Color utility classes (mockup uses .bg-lime, etc. — alias to lavender) === */
+.text-lime    { color: var(--lavender); }
+.bg-lime      { background: var(--lavender); }
+.ring-lime    { --tw-ring-color: var(--lavender); }
+.border-lime  { border-color: var(--lavender); }
+.bg-lime-soft { background: var(--lavender-dim); }
+
+/* === Per-pool gradient cards (mockup uses .grad-weekly etc. on PoolCard) ===
+ *  Use `background-image` (not shorthand `background`) so Tailwind's
+ *  `bg-neutral-950` (background-color: #0a0a0a) stays as the dark base.
+ *  The mockup uses shorthand here but Tailwind v3 CDN injects utilities
+ *  AFTER inline <style>, winning the cascade tie. Tailwind v4 is built
+ *  before custom rules, so the shorthand would erase the dark base color
+ *  and the cards would render lighter than the mockup. */
+.grad-weekly    { background-image: radial-gradient(120% 100% at 0% 0%,     #c9b5dc33 0%, transparent 60%); }
+.grad-biweekly  { background-image: radial-gradient(120% 100% at 100% 0%,   #E8999933 0%, transparent 60%); }
+.grad-triweekly { background-image: radial-gradient(120% 100% at 0% 100%,   #88cfc433 0%, transparent 60%); }
+.grad-monthly   { background-image: radial-gradient(120% 100% at 100% 100%, #e8d89e33 0%, transparent 60%); }
+
+/* === Mockup-named button effects — verbatim from redesign-v1-recolored.html === */
+.btn-fx { position: relative; overflow: hidden; isolation: isolate; will-change: transform, clip-path; }
+
+/* ---- INSET FILL ---- */
+/* A coloured panel slides in from the left behind the label. The
+   pseudo-element sits below the button content (z-index:-1 inside
+   an `isolation: isolate` parent). */
+.fx-inset::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  z-index: -1;
+  background: var(--lime);            /* lavender wash by default */
+  transform: translateX(-101%);
+  transition: transform 0.5s cubic-bezier(.7,0,.2,1);
+}
+.fx-inset:hover::before { transform: translateX(0); }
+
+/* Variant: dark wash for buttons that already sit on light fills. */
+.fx-inset-ink {
+  background-image: linear-gradient(to right, #0b0b0d 50%, #ffffff 50%) !important;
+  background-size: 200% 100% !important;
+  background-position: 100% 0 !important;
+  background-repeat: no-repeat !important;
+  transition: background-position 0.5s cubic-bezier(.7,0,.2,1), color 0.25s ease !important;
+}
+.fx-inset-ink::before { display: none; }   /* disable the wash pseudo for this variant */
+.fx-inset-ink:hover   { background-position: 0 0 !important; color: #ffffff !important; }
+.fx-inset-ink:hover .chip-flip { background: var(--lime) !important; color: #0b0b0d !important; }
+
+/* ---- STACK REVEAL ---- */
+/* A 1-line viewport that holds two stacked labels; on hover both
+   slide up by 100% so the secondary label takes the visible row. */
+.fx-stack .stack {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: -0.05em;
+}
+.fx-stack .stack > span {
+  display: block;
+  transition: transform 0.45s cubic-bezier(.2,.8,.2,1);
+}
+.fx-stack:hover .stack > span { transform: translateY(-100%); }
+
+/* ---- TICKET TEAR ---- */
+/* Notched corners — like a real raffle ticket. The clip-path lives
+   on a ::before background layer (NOT the button itself) so the
+   button's text is not inside a clipped element. Each fx-tear button
+   sets `--tear-bg` inline to the colour it should paint. */
+.fx-tear {
+  background: transparent !important;
+  position: relative;
+  isolation: isolate;
+}
+.fx-tear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--tear-bg, var(--lime));
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0,
+    100% 8px, 100% calc(100% - 8px),
+    calc(100% - 8px) 100%, 8px 100%,
+    0 calc(100% - 8px), 0 8px
+  );
+  transition: clip-path 0.4s cubic-bezier(.2,.8,.2,1),
+              background-color 0.25s ease;
+}
+.fx-tear:hover::before {
+  clip-path: polygon(
+    0 14px, 14px 0,
+    calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 0 calc(100% - 14px)
+  );
+}
+.fx-tear .chip-flip {
+  transition: transform 0.4s cubic-bezier(.2,.8,.2,1), background-color 0.25s, color 0.25s;
+}
+.fx-tear:hover .chip-flip { transform: rotate(45deg); }
+
+/* Block-tear variant for big rectangular CTAs — deeper notches scaled
+   to the larger surface, same ::before technique. */
+.fx-tear-lg {
+  background: transparent !important;
+  position: relative;
+  isolation: isolate;
+}
+.fx-tear-lg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--tear-bg, var(--lime));
+  clip-path: polygon(
+    14px 0, calc(100% - 14px) 0,
+    100% 14px, 100% calc(100% - 14px),
+    calc(100% - 14px) 100%, 14px 100%,
+    0 calc(100% - 14px), 0 14px
+  );
+  transition: clip-path 0.45s cubic-bezier(.2,.8,.2,1);
+}
+.fx-tear-lg:hover::before {
+  clip-path: polygon(
+    0 24px, 24px 0,
+    calc(100% - 24px) 0, 100% 24px,
+    100% calc(100% - 24px), calc(100% - 24px) 100%,
+    24px 100%, 0 calc(100% - 24px)
+  );
+}
+
+/* chip-flip = the small arrow/icon chip at the right end of the pill */
+.chip-flip { transition: background-color 0.3s ease, color 0.3s ease; }
+
+/* === Accessibility: reduce motion for users who request it === */
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow,
+  .spin-counter,
+  .spin-fast,
+  .orbit-tickets,
+  .ticker-track,
+  .pulse-soft,
+  .float-a,
+  .float-b,
+  .float-c,
+  .float-d,
+  .float-e,
+  .float-f {
+    animation: none !important;
+  }
+  section[id]:target { animation: none !important; }
+  html { scroll-behavior: auto !important; }
+}
+
+/* === wallet-adapter CONNECT button → match mockup .fx-inset-ink ===
+   Wallet-adapter's WalletMultiButton renders a `.wallet-adapter-button-trigger`
+   when no wallet is connected. Force its base style + hover effect to match
+   the mockup's CONNECT pill (white bg + dark wash sweep + lavender chip). */
+.wallet-adapter-button-trigger {
+  background-image: linear-gradient(to right, #0b0b0d 50%, #ffffff 50%) !important;
+  background-size: 200% 100% !important;
+  background-position: 100% 0 !important;
+  background-repeat: no-repeat !important;
+  color: #000 !important;
+  border-radius: 9999px !important;
+  height: 40px !important;
+  padding: 6px 6px 6px 16px !important;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  border: none !important;
+  transition: background-position 0.5s cubic-bezier(.7,0,.2,1), color 0.25s ease !important;
+}
+.wallet-adapter-button-trigger:hover {
+  background-position: 0 0 !important;
+  color: #fff !important;
+}
+/* Insert a lavender chip via ::after carrying the right arrow */
+.wallet-adapter-button-trigger::after {
+  content: "→";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--lavender);
+  color: #000;
+  font-weight: 700;
+  font-size: 10px;
+  margin-left: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.wallet-adapter-button-trigger:hover::after {
+  background: var(--lavender);
+  color: #000;
+}
+/* Hide wallet-adapter's icon (looks like a wallet sprite that shouldn't appear in our pill) */
+.wallet-adapter-button-trigger .wallet-adapter-button-start-icon,
+.wallet-adapter-button-trigger .wallet-adapter-button-end-icon {
+  display: none !important;
 }

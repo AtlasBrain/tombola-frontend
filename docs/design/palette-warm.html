@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tombola — Palette: Warm Editorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #1a1410;          /* warm dark base */
+        --bg-elev: #221a14;
+        --cream: #f5ebd5;
+        --burgundy: #a83f5b;
+        --gold: #c9a64d;
+        --olive: #8a9540;
+        --navy: #4a6580;
+        --ink: #0e0a08;
+      }
+      html, body {
+        background:
+          radial-gradient(40% 35% at 15% 20%, #a83f5b1a 0%, transparent 70%),
+          radial-gradient(40% 35% at 85% 25%, #c9a64d1a 0%, transparent 70%),
+          radial-gradient(40% 35% at 10% 75%, #8a95401a 0%, transparent 70%),
+          radial-gradient(40% 35% at 90% 80%, #4a65801a 0%, transparent 70%),
+          var(--bg);
+        background-attachment: fixed;
+        color: var(--cream);
+        font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+      }
+      .font-mono { font-family: "Space Mono", ui-monospace, monospace; }
+      .font-display { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; letter-spacing: -0.04em; }
+      @keyframes spin-slow    { to { transform: rotate(360deg);  } }
+      @keyframes spin-counter { to { transform: rotate(-360deg); } }
+      .spin-slow    { animation: spin-slow    50s linear infinite; transform-origin: center; }
+      .spin-counter { animation: spin-counter 35s linear infinite; transform-origin: center; }
+      @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.4} }
+      .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+    </style>
+  </head>
+  <body class="min-h-screen overflow-x-hidden">
+    <!-- Top ticker -->
+    <div class="border-b border-[#2a1f17] bg-[#0e0a08]/95">
+      <div class="mx-auto max-w-7xl overflow-hidden px-6 py-2.5 text-[11px] font-mono uppercase tracking-wider text-[#a89578]">
+        <span class="text-[#c9a64d]">●</span> WARM EDITORIAL PALETTE · Cream + Burgundy + Gold · Olive + Navy
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <header class="mx-auto max-w-7xl px-6 py-5">
+      <div class="grid grid-cols-3 items-center gap-4">
+        <a href="#" class="flex items-center gap-2.5 justify-self-start">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-[var(--cream)]">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" />
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <span class="font-display text-lg uppercase">TOMBOLA</span>
+        </a>
+        <nav class="hidden items-center gap-2 justify-self-center text-xs uppercase tracking-wider text-[#a89578] sm:flex">
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">POOLS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">HOW IT WORKS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">STATS</a>
+          <a href="#" class="px-3 py-2 transition-colors hover:text-[var(--cream)]">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2 justify-self-end">
+          <span class="hidden items-center gap-1.5 rounded-full border border-[#2a1f17] px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-[#a89578] sm:inline-flex">
+            <span class="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-[var(--gold)]"></span>
+            LOCALNET
+          </span>
+          <button class="flex items-center gap-2 rounded-full bg-[var(--cream)] px-1.5 py-1.5 pl-4 text-xs font-medium uppercase tracking-wider text-[var(--ink)] transition hover:brightness-95">
+            CONNECT
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--burgundy)] text-[10px] font-bold text-[var(--cream)]">→</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative mx-auto max-w-7xl overflow-hidden px-6 pt-20 pb-32">
+      <svg viewBox="0 0 1000 1000" class="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 sm:h-[600px] sm:w-[600px] lg:h-[680px] lg:w-[680px]">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#c9a64d" />
+            <stop offset="33%"  stop-color="#a83f5b" />
+            <stop offset="66%"  stop-color="#8a9540" />
+            <stop offset="100%" stop-color="#4a6580" />
+          </linearGradient>
+        </defs>
+        <g class="spin-slow" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="490" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.5" />
+        </g>
+        <g class="spin-counter" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="465" stroke="url(#ringGrad)" stroke-width="6" fill="none" opacity="0.5" />
+          <circle cx="500" cy="35"  r="6" fill="#c9a64d" />
+          <circle cx="965" cy="500" r="6" fill="#a83f5b" />
+          <circle cx="500" cy="965" r="6" fill="#8a9540" />
+          <circle cx="35"  cy="500" r="6" fill="#4a6580" />
+        </g>
+        <g class="spin-slow" style="transform-origin: 500px 500px;">
+          <circle cx="500" cy="500" r="448" stroke="url(#ringGrad)" stroke-width="1" fill="none" opacity="0.4" />
+        </g>
+      </svg>
+
+      <div class="relative z-10 mx-auto max-w-3xl text-center">
+        <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2a1f17] bg-[#0e0a08] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[#a89578]">
+          <span class="pulse-soft h-1.5 w-1.5 rounded-full bg-[var(--gold)]"></span>
+          LIVE · 4 POOLS RUNNING
+        </span>
+        <h1 class="font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
+          Where SOL<br />wins big.
+        </h1>
+        <p class="mx-auto mt-6 max-w-md text-sm text-[#a89578] sm:text-base">
+          Trustless on-chain raffles. Buy tickets, win the pot, repeat — verifiable randomness via Switchboard.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button class="flex items-center gap-2 rounded-full bg-[var(--cream)] px-2 py-2 pl-5 text-xs font-medium uppercase tracking-widest text-[var(--ink)] transition hover:brightness-95">
+            LEARN MORE
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--cream)]">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9" /></svg>
+            </span>
+          </button>
+          <button class="flex items-center gap-2 rounded-full bg-[var(--burgundy)] px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-[var(--cream)] transition hover:brightness-110">
+            BUY A TICKET
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--burgundy)]">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pool grid -->
+    <section class="mx-auto max-w-7xl px-6 pb-20">
+      <div class="mb-10">
+        <h2 class="font-display text-4xl uppercase sm:text-6xl">Public pools</h2>
+        <p class="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#a89578]">4 ROUNDS · 0.01 SOL PER TICKET</p>
+      </div>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <!-- Weekly -->
+        <div class="rounded-3xl border border-[#2a1f17] bg-[#221a14] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase text-[var(--cream)]">WEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#a89578]">ROUND #1</div></div>
+            <span class="rounded-full border border-[#a83f5b]/40 bg-[#a83f5b]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--burgundy)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#2a1f17] bg-[#a83f5b1a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#a89578]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--burgundy)]">1.38</span><span class="font-display text-2xl uppercase text-[#a89578]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--burgundy)] px-4 py-3 font-display text-sm uppercase text-[var(--cream)] transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+        <!-- Biweekly -->
+        <div class="rounded-3xl border border-[#2a1f17] bg-[#221a14] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase text-[var(--cream)]">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#a89578]">ROUND #1</div></div>
+            <span class="rounded-full border border-[#8a9540]/40 bg-[#8a9540]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--olive)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#2a1f17] bg-[#8a95401a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#a89578]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--olive)]">3.12</span><span class="font-display text-2xl uppercase text-[#a89578]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--olive)] px-4 py-3 font-display text-sm uppercase text-[var(--ink)] transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+        <!-- Triweekly -->
+        <div class="rounded-3xl border border-[#2a1f17] bg-[#221a14] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase text-[var(--cream)]">TRIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#a89578]">ROUND #1</div></div>
+            <span class="rounded-full border border-[#4a6580]/40 bg-[#4a6580]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--navy)]">◷ DRAWING</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#2a1f17] bg-[#4a65801a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#a89578]">POT · FINAL</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--navy)]">4.87</span><span class="font-display text-2xl uppercase text-[#a89578]">SOL</span></div>
+          </div>
+          <button disabled class="mt-6 w-full cursor-not-allowed rounded-full bg-[#2a1f17] px-4 py-3 font-display text-sm uppercase text-[#a89578]">ROUND CLOSED</button>
+        </div>
+        <!-- Monthly -->
+        <div class="rounded-3xl border border-[#2a1f17] bg-[#221a14] p-7">
+          <div class="flex items-start justify-between">
+            <div><div class="font-display text-3xl uppercase text-[var(--cream)]">MONTHLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#a89578]">ROUND #1</div></div>
+            <span class="rounded-full border border-[#c9a64d]/40 bg-[#c9a64d]/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-[var(--gold)]">▲ OPEN</span>
+          </div>
+          <div class="mt-6 rounded-2xl border border-[#2a1f17] bg-[#c9a64d1a] p-5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-[#a89578]">POT</div>
+            <div class="mt-1 flex items-baseline gap-2"><span class="font-display text-6xl uppercase leading-none text-[var(--gold)]">10.24</span><span class="font-display text-2xl uppercase text-[#a89578]">SOL</span></div>
+          </div>
+          <button class="mt-6 w-full rounded-full bg-[var(--gold)] px-4 py-3 font-display text-sm uppercase text-[var(--ink)] transition hover:brightness-110">BUY 1 TICKET · 0.01 SOL</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="border-t border-[#2a1f17] py-6 text-center font-mono text-[10px] uppercase tracking-widest text-[#a89578]">
+      WARM EDITORIAL · cream + burgundy + olive + navy + gold · <a href="/redesign-v1.html" class="text-[var(--gold)] hover:brightness-110">← back to v1 (lime)</a>
+    </footer>
+  </body>
+</html>

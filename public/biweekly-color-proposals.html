@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tombola — Biweekly accent color proposals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #17171b;
+        --weekly: #c9b5dc;
+        --triweekly: #88cfc4;
+        --monthly: #e8d89e;
+      }
+      html, body {
+        background:
+          radial-gradient(35% 30% at 12% 18%,  #c9b5dc1f 0%, transparent 70%),
+          radial-gradient(35% 30% at 88% 22%,  #b8a5d41f 0%, transparent 70%),
+          radial-gradient(35% 30% at 8%  72%,  #e8d89e1f 0%, transparent 70%),
+          radial-gradient(35% 30% at 92% 78%,  #88cfc41f 0%, transparent 70%),
+          radial-gradient(60% 50% at 50% 35%,  #232328 0%, transparent 60%),
+          var(--bg);
+        background-attachment: fixed;
+        color: #f5f5f5;
+        font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+      }
+      .font-mono { font-family: "Space Mono", ui-monospace, monospace; }
+      .font-display { font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: -0.04em; }
+
+      /* ticket-tear button */
+      .btn-fx { position: relative; isolation: isolate; }
+      .fx-tear { background: transparent; }
+      .fx-tear::before {
+        content: ""; position: absolute; inset: 0; z-index: -1;
+        background-color: var(--tear-bg, var(--weekly));
+        clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+        transition: clip-path 0.4s cubic-bezier(.2,.8,.2,1);
+      }
+      .fx-tear:hover::before {
+        clip-path: polygon(0 14px, 14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px));
+      }
+    </style>
+  </head>
+  <body class="min-h-screen px-6 py-10 sm:px-10 sm:py-14">
+    <header class="mx-auto mb-10 max-w-7xl">
+      <h1 class="font-display text-4xl uppercase sm:text-5xl">Biweekly accent — 4 proposals</h1>
+      <p class="mt-3 max-w-2xl text-sm text-neutral-400">
+        Current Biweekly (<code class="font-mono text-[#b8a5d4]">#b8a5d4</code>) is too close to Weekly
+        (<code class="font-mono text-[#c9b5dc]">#c9b5dc</code>). Pick one of the four below — each is distinct
+        from Weekly, Triweekly's mint <code class="font-mono text-[#88cfc4]">#88cfc4</code>, and Monthly's
+        yellow <code class="font-mono text-[#e8d89e]">#e8d89e</code>. Each card is a real Biweekly pool card so
+        you can judge contrast in context.
+      </p>
+
+      <div class="mt-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-neutral-300">
+        <span class="h-1.5 w-1.5 rounded-full bg-[var(--weekly)]"></span>
+        Weekly · <span class="font-mono text-[#c9b5dc]">#c9b5dc</span>
+        <span class="text-neutral-700">|</span>
+        <span class="h-1.5 w-1.5 rounded-full bg-[var(--triweekly)]"></span>
+        Triweekly · <span class="font-mono text-[#88cfc4]">#88cfc4</span>
+        <span class="text-neutral-700">|</span>
+        <span class="h-1.5 w-1.5 rounded-full bg-[var(--monthly)]"></span>
+        Monthly · <span class="font-mono text-[#e8d89e]">#e8d89e</span>
+      </div>
+    </header>
+
+    <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-2">
+      <!-- ============================ Proposal 1 ============================ -->
+      <div>
+        <div class="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+          <span class="text-white">Proposal 1 · Saturated lavender</span>
+          <span class="font-mono text-[#A88BC4]">#A88BC4</span>
+        </div>
+        <article class="group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-7 transition-all hover:-translate-y-0.5"
+                style="background-image: radial-gradient(120% 100% at 100% 0%, #A88BC433 0%, transparent 60%);">
+          <header class="flex items-start justify-between">
+            <div>
+              <div class="font-display text-3xl uppercase">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">ROUND #1 · EXPLORER ↗</div>
+            </div>
+            <span class="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest" style="border-color:#A88BC44d;background:#A88BC41a;color:#A88BC4;">▲ OPEN</span>
+          </header>
+          <div class="mt-6 rounded-2xl border border-neutral-900 p-5" style="background:linear-gradient(135deg, #A88BC414, transparent 70%)">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="font-display text-6xl uppercase leading-none tabular-nums" style="color:#A88BC4">3.12</span>
+              <span class="font-display text-2xl uppercase text-neutral-500">SOL</span>
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">312</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">68</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">13D 23H</div>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span class="text-neutral-500">YOUR ODDS</span>
+              <span class="text-neutral-300">1 IN 313 (0.32%)</span>
+            </div>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+              <div class="h-full rounded-full" style="width: 0.32%; background:#A88BC4;"></div>
+            </div>
+          </div>
+          <button style="--tear-bg:#A88BC4" class="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110">
+            BUY 1 TICKET <span class="font-mono opacity-70">· 0.01 SOL</span>
+          </button>
+        </article>
+      </div>
+
+      <!-- ============================ Proposal 2 ============================ -->
+      <div>
+        <div class="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+          <span class="text-white">Proposal 2 · Dusty rose</span>
+          <span class="font-mono text-[#D89BC0]">#D89BC0</span>
+        </div>
+        <article class="group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-7 transition-all hover:-translate-y-0.5"
+                style="background-image: radial-gradient(120% 100% at 100% 0%, #D89BC033 0%, transparent 60%);">
+          <header class="flex items-start justify-between">
+            <div>
+              <div class="font-display text-3xl uppercase">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">ROUND #1 · EXPLORER ↗</div>
+            </div>
+            <span class="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest" style="border-color:#D89BC04d;background:#D89BC01a;color:#D89BC0;">▲ OPEN</span>
+          </header>
+          <div class="mt-6 rounded-2xl border border-neutral-900 p-5" style="background:linear-gradient(135deg, #D89BC014, transparent 70%)">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="font-display text-6xl uppercase leading-none tabular-nums" style="color:#D89BC0">3.12</span>
+              <span class="font-display text-2xl uppercase text-neutral-500">SOL</span>
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">312</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">68</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">13D 23H</div>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span class="text-neutral-500">YOUR ODDS</span>
+              <span class="text-neutral-300">1 IN 313 (0.32%)</span>
+            </div>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+              <div class="h-full rounded-full" style="width: 0.32%; background:#D89BC0;"></div>
+            </div>
+          </div>
+          <button style="--tear-bg:#D89BC0" class="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110">
+            BUY 1 TICKET <span class="font-mono opacity-70">· 0.01 SOL</span>
+          </button>
+        </article>
+      </div>
+
+      <!-- ============================ Proposal 3 ============================ -->
+      <div>
+        <div class="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+          <span class="text-white">Proposal 3 · Coral</span>
+          <span class="font-mono text-[#E89999]">#E89999</span>
+        </div>
+        <article class="group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-7 transition-all hover:-translate-y-0.5"
+                style="background-image: radial-gradient(120% 100% at 100% 0%, #E8999933 0%, transparent 60%);">
+          <header class="flex items-start justify-between">
+            <div>
+              <div class="font-display text-3xl uppercase">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">ROUND #1 · EXPLORER ↗</div>
+            </div>
+            <span class="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest" style="border-color:#E899994d;background:#E899991a;color:#E89999;">▲ OPEN</span>
+          </header>
+          <div class="mt-6 rounded-2xl border border-neutral-900 p-5" style="background:linear-gradient(135deg, #E8999914, transparent 70%)">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="font-display text-6xl uppercase leading-none tabular-nums" style="color:#E89999">3.12</span>
+              <span class="font-display text-2xl uppercase text-neutral-500">SOL</span>
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">312</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">68</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">13D 23H</div>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span class="text-neutral-500">YOUR ODDS</span>
+              <span class="text-neutral-300">1 IN 313 (0.32%)</span>
+            </div>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+              <div class="h-full rounded-full" style="width: 0.32%; background:#E89999;"></div>
+            </div>
+          </div>
+          <button style="--tear-bg:#E89999" class="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110">
+            BUY 1 TICKET <span class="font-mono opacity-70">· 0.01 SOL</span>
+          </button>
+        </article>
+      </div>
+
+      <!-- ============================ Proposal 4 ============================ -->
+      <div>
+        <div class="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+          <span class="text-white">Proposal 4 · Deep teal</span>
+          <span class="font-mono text-[#5BA89E]">#5BA89E</span>
+        </div>
+        <article class="group relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-7 transition-all hover:-translate-y-0.5"
+                style="background-image: radial-gradient(120% 100% at 100% 0%, #5BA89E33 0%, transparent 60%);">
+          <header class="flex items-start justify-between">
+            <div>
+              <div class="font-display text-3xl uppercase">BIWEEKLY</div>
+              <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">ROUND #1 · EXPLORER ↗</div>
+            </div>
+            <span class="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest" style="border-color:#5BA89E4d;background:#5BA89E1a;color:#5BA89E;">▲ OPEN</span>
+          </header>
+          <div class="mt-6 rounded-2xl border border-neutral-900 p-5" style="background:linear-gradient(135deg, #5BA89E14, transparent 70%)">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="font-display text-6xl uppercase leading-none tabular-nums" style="color:#5BA89E">3.12</span>
+              <span class="font-display text-2xl uppercase text-neutral-500">SOL</span>
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">312</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">68</div>
+            </div>
+            <div class="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
+              <div class="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+              <div class="mt-1 font-display text-xl uppercase tabular-nums">13D 23H</div>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span class="text-neutral-500">YOUR ODDS</span>
+              <span class="text-neutral-300">1 IN 313 (0.32%)</span>
+            </div>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+              <div class="h-full rounded-full" style="width: 0.32%; background:#5BA89E;"></div>
+            </div>
+          </div>
+          <button style="--tear-bg:#5BA89E" class="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110">
+            BUY 1 TICKET <span class="font-mono opacity-70">· 0.01 SOL</span>
+          </button>
+        </article>
+      </div>
+    </div>
+
+    <!-- 4-card row: all four pools side-by-side with each Biweekly proposal -->
+    <section class="mx-auto mt-16 max-w-7xl">
+      <h2 class="mb-6 font-display text-2xl uppercase">In context · all 4 pools side-by-side</h2>
+      <p class="mb-6 max-w-2xl text-sm text-neutral-400">
+        Compact rows showing how each Biweekly proposal sits next to Weekly · Triweekly · Monthly. Compare contrast at a glance.
+      </p>
+
+      <div class="space-y-3">
+        <!-- Row 1: Proposal 1 -->
+        <div class="rounded-2xl border border-neutral-900 bg-neutral-950 p-4">
+          <div class="mb-3 flex items-center gap-3">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-white">Proposal 1 · #A88BC4</span>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 0%, #c9b5dc33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">WEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#c9b5dc">1.38<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 0%, #A88BC433 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">BIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#A88BC4">3.12<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 100%, #88cfc433 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">TRIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#88cfc4">4.87<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 100%, #e8d89e33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">MONTHLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#e8d89e">10.24<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Proposal 2 -->
+        <div class="rounded-2xl border border-neutral-900 bg-neutral-950 p-4">
+          <div class="mb-3 flex items-center gap-3">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-white">Proposal 2 · #D89BC0</span>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 0%, #c9b5dc33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">WEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#c9b5dc">1.38<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 0%, #D89BC033 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">BIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#D89BC0">3.12<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 100%, #88cfc433 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">TRIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#88cfc4">4.87<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 100%, #e8d89e33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">MONTHLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#e8d89e">10.24<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Proposal 3 -->
+        <div class="rounded-2xl border border-neutral-900 bg-neutral-950 p-4">
+          <div class="mb-3 flex items-center gap-3">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-white">Proposal 3 · #E89999</span>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 0%, #c9b5dc33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">WEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#c9b5dc">1.38<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 0%, #E8999933 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">BIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#E89999">3.12<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 100%, #88cfc433 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">TRIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#88cfc4">4.87<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 100%, #e8d89e33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">MONTHLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#e8d89e">10.24<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Proposal 4 -->
+        <div class="rounded-2xl border border-neutral-900 bg-neutral-950 p-4">
+          <div class="mb-3 flex items-center gap-3">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-white">Proposal 4 · #5BA89E</span>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 0%, #c9b5dc33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">WEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#c9b5dc">1.38<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 0%, #5BA89E33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">BIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#5BA89E">3.12<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 0% 100%, #88cfc433 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">TRIWEEKLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#88cfc4">4.87<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+            <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3" style="background-image: radial-gradient(100% 100% at 100% 100%, #e8d89e33 0%, transparent 60%);">
+              <div class="font-display text-base uppercase">MONTHLY</div>
+              <div class="mt-2 font-display text-2xl tabular-nums" style="color:#e8d89e">10.24<span class="ml-1 text-base text-neutral-500">SOL</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-8 text-sm text-neutral-500">
+        Tell me which one (1, 2, 3, or 4) and I'll wire it into the React app — replaces every <code class="font-mono">#b8a5d4</code> reference across PoolCard, AllRoundsTable, RecentWinners, BentoFooter, and globals.css.
+      </p>
+    </section>
+  </body>
+</html>

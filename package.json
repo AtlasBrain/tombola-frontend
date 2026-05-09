@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "init:local": "tsx scripts/init_pools_local.mts",
+    "init:devnet": "tsx scripts/init_pools_devnet.mts"
   },
   "dependencies": {
     "@solana/kit": "^6.9.0",
