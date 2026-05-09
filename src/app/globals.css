@@ -171,11 +171,17 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .border-lime  { border-color: var(--lavender); }
 .bg-lime-soft { background: var(--lavender-dim); }
 
-/* === Per-pool gradient cards (mockup uses .grad-weekly etc. on PoolCard) === */
-.grad-weekly    { background: radial-gradient(120% 100% at 0% 0%,     #c9b5dc33 0%, transparent 60%); }
-.grad-biweekly  { background: radial-gradient(120% 100% at 100% 0%,   #b8a5d433 0%, transparent 60%); }
-.grad-triweekly { background: radial-gradient(120% 100% at 0% 100%,   #88cfc433 0%, transparent 60%); }
-.grad-monthly   { background: radial-gradient(120% 100% at 100% 100%, #e8d89e33 0%, transparent 60%); }
+/* === Per-pool gradient cards (mockup uses .grad-weekly etc. on PoolCard) ===
+ *  Use `background-image` (not shorthand `background`) so Tailwind's
+ *  `bg-neutral-950` (background-color: #0a0a0a) stays as the dark base.
+ *  The mockup uses shorthand here but Tailwind v3 CDN injects utilities
+ *  AFTER inline <style>, winning the cascade tie. Tailwind v4 is built
+ *  before custom rules, so the shorthand would erase the dark base color
+ *  and the cards would render lighter than the mockup. */
+.grad-weekly    { background-image: radial-gradient(120% 100% at 0% 0%,     #c9b5dc33 0%, transparent 60%); }
+.grad-biweekly  { background-image: radial-gradient(120% 100% at 100% 0%,   #b8a5d433 0%, transparent 60%); }
+.grad-triweekly { background-image: radial-gradient(120% 100% at 0% 100%,   #88cfc433 0%, transparent 60%); }
+.grad-monthly   { background-image: radial-gradient(120% 100% at 100% 100%, #e8d89e33 0%, transparent 60%); }
 
 /* === Mockup-named button effects — verbatim from redesign-v1-recolored.html === */
 .btn-fx { position: relative; overflow: hidden; isolation: isolate; will-change: transform, clip-path; }
