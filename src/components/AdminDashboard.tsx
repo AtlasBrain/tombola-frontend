@@ -166,9 +166,13 @@ export function AdminDashboard({ poolAddress }: Props) {
         <button
           type="button"
           onClick={() => setWalletModalVisible(true)}
-          className="mt-6 rounded bg-emerald-600 px-6 py-3 font-semibold text-white"
+          style={{ ["--tear-bg" as never]: "#88cfc4" }}
+          className="btn-fx fx-tear mt-6 inline-flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
         >
           Connect wallet
+          <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px] text-[#88cfc4]">
+            →
+          </span>
         </button>
       </main>
     );

@@ -220,11 +220,16 @@ export function AdminRedemptionStatus({
             type="button"
             onClick={onCopyAllUnredeemed}
             disabled={isClosed}
+            style={
+              copiedKey === "all" && !isClosed
+                ? { background: "#88cfc4", color: "#000" }
+                : undefined
+            }
             className={`rounded px-3 py-1.5 text-xs transition ${
               isClosed
                 ? "cursor-not-allowed bg-neutral-900 text-neutral-600"
                 : copiedKey === "all"
-                  ? "bg-emerald-600 text-white"
+                  ? ""
                   : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
             }`}
           >
@@ -233,9 +238,14 @@ export function AdminRedemptionStatus({
           <button
             type="button"
             onClick={onDownloadCsv}
+            style={
+              copiedKey === "csv"
+                ? { background: "#88cfc4", color: "#000" }
+                : undefined
+            }
             className={`rounded px-3 py-1.5 text-xs transition ${
               copiedKey === "csv"
-                ? "bg-emerald-600 text-white"
+                ? ""
                 : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
             }`}
           >
@@ -246,8 +256,8 @@ export function AdminRedemptionStatus({
 
       <div className="mb-4 h-2 overflow-hidden rounded-full bg-neutral-800">
         <div
-          className="h-full bg-emerald-500"
-          style={{ width: `${ratioPct}%` }}
+          className="h-full"
+          style={{ width: `${ratioPct}%`, background: "#88cfc4" }}
         />
       </div>
 
@@ -286,9 +296,18 @@ export function AdminRedemptionStatus({
                     type="button"
                     onClick={() => onCopyOne(linkFor(r), r.code)}
                     aria-label={`Copy redemption link ${i + 1}`}
+                    style={
+                      copied
+                        ? {
+                            background: "#88cfc4",
+                            color: "#000",
+                            boxShadow: "0 0 0 3px rgba(136,207,196,0.25)",
+                          }
+                        : undefined
+                    }
                     className={`shrink-0 rounded px-2 py-1 text-xs transition ${
                       copied
-                        ? "scale-105 bg-emerald-600 text-white shadow-[0_0_0_3px_rgba(16,185,129,0.2)]"
+                        ? "scale-105"
                         : "bg-neutral-800 text-neutral-100 hover:bg-neutral-700"
                     }`}
                   >
