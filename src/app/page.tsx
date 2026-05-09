@@ -79,8 +79,6 @@ export default async function Home() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 font-mono text-[10px] uppercase tracking-widest text-neutral-600 sm:flex-row">
           <span>© 2026 TOMBOLA · OPEN SOURCE</span>
           <div className="flex items-center gap-4">
-            <a href="#" className="transition-colors hover:text-lime">TERMS</a>
-            <a href="#" className="transition-colors hover:text-lime">PRIVACY</a>
             <a href="https://github.com/AtlasBrain/Project-Tombola" target="_blank" rel="noreferrer" className="transition-colors hover:text-lime">GITHUB</a>
           </div>
         </div>

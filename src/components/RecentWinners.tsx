@@ -39,33 +39,31 @@ export function RecentWinners() {
       </h2>
       <ul className="space-y-2">
         {EVENTS.map((ev, i) => (
-          <li key={i}>
-            <a
-              href="#"
-              className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80"
-            >
-              <span className="flex items-center gap-4">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: ev.accent }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10" /></svg>
-                </span>
-                <span className="flex items-center gap-3 font-mono text-sm uppercase">
-                  <span style={{ color: ev.accent }}>{SHORT[ev.kind]}</span>
-                  <span className="text-white normal-case">{ev.kind} Round #{ev.round}</span>
-                  <span className="text-neutral-500 normal-case">{ev.summary}</span>
-                </span>
+          <li
+            key={i}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-900 bg-neutral-950 px-5 py-3.5 transition-colors hover:bg-neutral-900/80"
+          >
+            <span className="flex items-center gap-4">
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-full"
+                style={{ background: ev.accent }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10" /></svg>
               </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-600">{ev.age} ›</span>
-            </a>
+              <span className="flex items-center gap-3 font-mono text-sm uppercase">
+                <span style={{ color: ev.accent }}>{SHORT[ev.kind]}</span>
+                <span className="text-white normal-case">{ev.kind} Round #{ev.round}</span>
+                <span className="text-neutral-500 normal-case">{ev.summary}</span>
+              </span>
+            </span>
+            <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-600">{ev.age} ›</span>
           </li>
         ))}
       </ul>
       <div className="mt-6 flex justify-center">
-        <button className="btn-fx fx-inset flex items-center gap-2 rounded-full border border-neutral-800 px-5 py-2 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:text-black hover:border-transparent">
+        <a href="#stats" className="btn-fx fx-inset flex items-center gap-2 rounded-full border border-neutral-800 px-5 py-2 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:text-black hover:border-transparent">
           VIEW ALL <span className="chip-flip text-lime">›</span>
-        </button>
+        </a>
       </div>
     </section>
   );

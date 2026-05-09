@@ -39,7 +39,7 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
   return (
     <section id="stats" className="mx-auto max-w-7xl px-6 pb-20">
       <h2 className="mb-6 font-display text-xl uppercase sm:text-2xl">All rounds</h2>
-      <div className="overflow-hidden rounded-2xl border border-neutral-900 bg-neutral-950">
+      <div className="overflow-x-auto rounded-2xl border border-neutral-900 bg-neutral-950">
         <table className="w-full text-base">
           <thead className="border-b border-neutral-900">
             <tr className="text-left font-mono text-[11px] uppercase tracking-widest text-neutral-500">
