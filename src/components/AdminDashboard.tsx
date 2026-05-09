@@ -6,6 +6,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { createSolanaRpc, type Address } from "@solana/kit";
 import { LivePoolWatcher } from "./LivePoolWatcher";
 import { AdminDashboardStats } from "./AdminDashboardStats";
+import { AdminRedemptionStatus } from "./AdminRedemptionStatus";
 
 interface Props {
   poolAddress: string;
@@ -147,11 +148,13 @@ export function AdminDashboard({ poolAddress }: Props) {
           />
         </div>
 
-        {/* Section 5 + 6 land in subsequent tasks. Stub: */}
-        <div className="mt-8 rounded-2xl border border-dashed border-neutral-800 p-6 text-sm text-neutral-500">
-          Redemption status, top buyers, and participant list — coming in
-          Tasks 5–6.
+        <div className="mt-8">
+          <AdminRedemptionStatus
+            poolAddress={poolAddress}
+            walletAddress={publicKey.toBase58()}
+          />
         </div>
+        {/* Section 6 (TopBuyersBar + ParticipantList) lands in Task 6 */}
       </main>
     </>
   );
