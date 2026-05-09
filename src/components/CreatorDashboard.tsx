@@ -164,9 +164,10 @@ export function CreatorDashboard() {
         }
 
         // Trickle in participant counts (every pool) + redemption metrics
-        // (live pools only — Resolved doesn't change anymore).
+        // (only for pools still accepting redemptions: Open + before close).
+        const nowMs = Date.now();
         const livePoolAddrs = baseRows
-          .filter((r) => r.state !== 2)
+          .filter((r) => r.state === 0 && r.closeTimeUnix * 1000 > nowMs)
           .map((r) => r.poolAddress);
 
         const decoder = generated.getTicketBatchDecoder();
@@ -293,8 +294,13 @@ export function CreatorDashboard() {
     };
   }, [pools]);
 
-  const live = pools?.filter((p) => p.state !== 2) ?? [];
-  const history = pools?.filter((p) => p.state === 2) ?? [];
+  // Live = currently accepting tickets. State 0 (Open) + close_time in the
+  // future. Open+past-close, AwaitingVrf, and Resolved all fall into history
+  // — nobody can buy into them anymore.
+  const isLive = (p: PoolRow) =>
+    p.state === 0 && p.closeTimeUnix * 1000 > Date.now();
+  const live = pools?.filter(isLive) ?? [];
+  const history = pools?.filter((p) => !isLive(p)) ?? [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -463,7 +469,11 @@ function PoolsSection({
 
 function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
   const status = statusLabel(pool.state, pool.closeTimeUnix);
-  const isLive = pool.state !== 2;
+  // Truly live = still accepting tickets (Open AND not past close). Closed-
+  // but-not-resolved pools don't show a redemption-ratio cell because no new
+  // redemptions can land — they're waiting for the keeper to commit.
+  const trulyLive =
+    pool.state === 0 && pool.closeTimeUnix * 1000 > Date.now();
   const earned = pool.state === 2;
 
   return (
@@ -540,17 +550,21 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
           sub={earned ? "paid at settle" : "pending"}
           valueColor={earned ? MINT : undefined}
         />
-        {isLive ? (
+        {trulyLive ? (
           <RedemptionMetricCell
             metric={pool.redemption}
             poolAddress={pool.poolAddress}
           />
-        ) : (
+        ) : pool.state === 2 ? (
           <Metric
             label="Resolved"
             value="✓"
             sub={`${pool.totalTickets.toString()} tickets sold`}
           />
+        ) : pool.state === 1 ? (
+          <Metric label="Drawing" value="◷" sub="winner being picked" />
+        ) : (
+          <Metric label="Closed" value="—" sub="awaiting keeper draw" />
         )}
       </dl>
     </article>

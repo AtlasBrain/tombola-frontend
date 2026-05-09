@@ -86,13 +86,17 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
     <dialog
       ref={dialogRef}
       onClick={onBackdropClick}
-      className="bg-transparent backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      // Native <dialog> in modal mode auto-centers via UA styles, but Tailwind
+      // preflight resets some of that — pin position + auto margins + max-h
+      // for tall content explicitly so the panel sits dead center on every
+      // browser, scrolls within itself if it overflows.
+      className="fixed inset-0 m-auto max-h-[92vh] max-w-[min(92vw,640px)] overflow-y-auto bg-transparent p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
     >
       <div
         // Stop propagation so clicks INSIDE the panel don't bubble to the
         // backdrop handler (which would close the modal).
         onClick={(e) => e.stopPropagation()}
-        className="grad-private mx-auto my-8 w-[min(92vw,640px)] rounded-3xl border border-neutral-800 bg-neutral-950 p-7 shadow-2xl shadow-black/60"
+        className="grad-private rounded-3xl border border-neutral-800 bg-neutral-950 p-7 shadow-2xl shadow-black/60"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -102,7 +106,7 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
             >
               {created ? "Pool created" : "New private pool"}
             </p>
-            <h2 className="mt-1 font-display text-2xl uppercase">
+            <h2 className="mt-1 font-display text-3xl uppercase">
               {created ? "You're live" : "Parameters"}
             </h2>
           </div>

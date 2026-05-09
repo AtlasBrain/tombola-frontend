@@ -45,14 +45,16 @@ describe("<CreatePoolForm />", () => {
 
   it("rejects code count > 5000", () => {
     render(<CreatePoolForm onCreated={() => {}} />);
-    const count = screen.getByLabelText(/number of codes/i);
+    // Mini-stat label is "Codes" in the redesigned form.
+    const count = screen.getByLabelText(/^codes$/i);
     fireEvent.change(count, { target: { value: "5001" } });
     expect(screen.getByText(/at most 5000/i)).toBeInTheDocument();
   });
 
   it("rejects creator fee > 5%", () => {
     render(<CreatePoolForm onCreated={() => {}} />);
-    const fee = screen.getByLabelText(/creator fee/i);
+    // Mini-stat label is "Fee %".
+    const fee = screen.getByLabelText(/^fee %/i);
     fireEvent.change(fee, { target: { value: "5.1" } });
     expect(screen.getByText(/at most 5/i)).toBeInTheDocument();
   });
