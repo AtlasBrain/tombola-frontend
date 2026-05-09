@@ -33,9 +33,11 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
   const buyers = Math.max(1, Math.round(tickets / 3));
   const ticketPriceSol = Number(pool.ticketPriceLamports) / 1_000_000_000;
 
-  // Tickets-sold progress: % of a "typical round" (use 300 as the soft target)
-  const TYPICAL_ROUND = 300;
-  const pct = Math.min(100, Math.round((tickets / TYPICAL_ROUND) * 100));
+  // Your-odds: if you buy 1 ticket now, your chance to win = 1 / (totalTickets + 1).
+  // Bar shrinks as tickets sell (your slice of the pie gets smaller).
+  const oddsPct = 100 / (tickets + 1);
+  const oddsBarPct = Math.min(100, oddsPct);
+  const oddsLabel = `1 IN ${(tickets + 1).toLocaleString()}`;
 
   const isOpen = pool.state === "Open";
   const isDrawing = pool.state === "AwaitingVrf";
@@ -122,14 +124,14 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
         </div>
       </div>
 
-      {/* Progress */}
+      {/* Your odds — chance to win if you buy 1 ticket right now */}
       <div className="mt-5">
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-          <span className="text-neutral-500">TICKETS SOLD</span>
-          <span className="text-neutral-300">{pct}% OF TYPICAL ROUND</span>
+          <span className="text-neutral-500">YOUR ODDS</span>
+          <span className="text-neutral-300">{oddsLabel} ({oddsPct.toFixed(oddsPct < 10 ? 2 : 1)}%)</span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: accent }} />
+          <div className="h-full rounded-full" style={{ width: `${oddsBarPct}%`, background: accent }} />
         </div>
       </div>
 

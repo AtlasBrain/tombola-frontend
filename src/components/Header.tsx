@@ -25,7 +25,7 @@ export function Header() {
       <div className="grid grid-cols-3 items-center gap-4">
         {/* LEFT: logo */}
         <Link href="/" className="flex items-center gap-2.5 justify-self-start">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" className="text-white">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" className="text-white">
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
             <line x1="12" y1="3"  x2="12" y2="6"  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
