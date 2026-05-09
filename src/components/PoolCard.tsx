@@ -48,11 +48,18 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
     : "#";
 
   const stateLabel = isOpen ? "▲ OPEN" : isDrawing ? "◷ DRAWING" : "✓ RESOLVED";
-  const stateClass = isOpen
-    ? "border-lime/30 bg-lime/10 text-lime"
+  // OPEN pill uses the pool's accent color so each card's pill matches its
+  // gradient/POT/button color. DRAWING uses Monthly's yellow per mockup
+  // convention (drawing-state pools all share that warning hue). RESOLVED
+  // is greyed.
+  const stateStyle = isOpen
+    ? { borderColor: `${accent}4d`, backgroundColor: `${accent}1a`, color: accent }
     : isDrawing
-      ? "border-[#e8d89e]/30 bg-[#e8d89e]/10 text-[#e8d89e]"
-      : "border-neutral-800 bg-neutral-900/50 text-neutral-400";
+      ? { borderColor: "#e8d89e4d", backgroundColor: "#e8d89e1a", color: "#e8d89e" }
+      : undefined;
+  const stateClass = isOpen || isDrawing
+    ? "border"
+    : "border border-neutral-800 bg-neutral-900/50 text-neutral-400";
 
   const hoverBorderClass =
     pool.kind === "Weekly"    ? "hover:border-lime/40" :
@@ -76,7 +83,8 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
           </div>
         </div>
         <span
-          className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${stateClass}`}
+          className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${stateClass}`}
+          style={stateStyle}
         >
           {stateLabel}
         </span>
