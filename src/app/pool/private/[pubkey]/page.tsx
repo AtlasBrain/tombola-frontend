@@ -1,13 +1,23 @@
 "use client";
 import { use, useEffect, useState } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
-import { createSolanaRpc, type Address } from "@solana/kit";
+import {
+  address as toAddress,
+  createSolanaRpc,
+  type Address,
+} from "@solana/kit";
+import { PROGRAM_ID, generated } from "@tombola/sdk";
 import { Header } from "@/components/Header";
 import { Countdown } from "@/components/Countdown";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { BuyTicketPrivateButton } from "@/components/BuyTicketPrivateButton";
 import { DrawWinnerButton } from "@/components/DrawWinnerButton";
+import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
+import { WinOdds } from "@/components/WinOdds";
 import { formatSol, formatTickets } from "@/lib/format";
+
+const TICKET_BATCH_SIZE = 89n;
+const POOL_OFFSET = 8n;
 
 interface PoolData {
   ticketPriceLamports: bigint;
@@ -49,6 +59,7 @@ export default function PrivatePoolPage({
   const { pubkey } = use(params);
   const { connection } = useConnection();
   const [pool, setPool] = useState<PoolData | null>(null);
+  const [batches, setBatches] = useState<BatchRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,8 +70,9 @@ export default function PrivatePoolPage({
         const { fetchPrivatePool } = await import("@tombola/sdk/generated");
         const acc = await fetchPrivatePool(rpc, pubkey as Address);
         if (cancelled) return;
+        const ticketPrice = acc.data.ticketPrice;
         setPool({
-          ticketPriceLamports: acc.data.ticketPrice,
+          ticketPriceLamports: ticketPrice,
           totalTickets: acc.data.totalTickets,
           totalPotLamports: acc.data.totalPot,
           closeTimeUnix: Number(acc.data.closeTime),
@@ -70,6 +82,46 @@ export default function PrivatePoolPage({
           creatorFeeBps: acc.data.creatorFeeBps,
           winner: unwrapWinner(acc.data.winner),
         });
+
+        // Fetch all TicketBatch accounts whose `pool` field == this pool PDA.
+        // Same memcmp filter as the public-pool detail server fetch. Cast
+        // through unknown — Kit's getProgramAccounts return type varies by
+        // overload (with/without withContext).
+        const result = (await rpc
+          .getProgramAccounts(toAddress(PROGRAM_ID), {
+            encoding: "base64",
+            filters: [
+              { dataSize: TICKET_BATCH_SIZE },
+              {
+                memcmp: {
+                  offset: POOL_OFFSET,
+                  bytes: pubkey as never,
+                  encoding: "base58",
+                },
+              },
+            ],
+          })
+          .send()) as unknown as readonly {
+          pubkey: string;
+          account: { data: readonly [string, "base64"] };
+        }[];
+
+        const decoder = generated.getTicketBatchDecoder();
+        const rows: BatchRow[] = result.map((accInfo) => {
+          const [b64] = accInfo.account.data;
+          const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+          const b = decoder.decode(bytes);
+          const quantity = b.lastTicketId - b.firstTicketId + 1n;
+          return {
+            batchAddress: String(accInfo.pubkey),
+            owner: String(b.owner),
+            firstTicketId: b.firstTicketId,
+            lastTicketId: b.lastTicketId,
+            quantity,
+            spentLamports: quantity * ticketPrice,
+          };
+        });
+        if (!cancelled) setBatches(rows);
       } catch (e) {
         if (!cancelled) {
           setErr(e instanceof Error ? e.message : "Failed to load pool");
@@ -168,6 +220,10 @@ export default function PrivatePoolPage({
           />
         )}
 
+        <div className="mt-6">
+          <WinOdds poolAddress={pubkey} totalTickets={pool.totalTickets} />
+        </div>
+
         <DrawWinnerButton
           poolAddress={pubkey}
           state={pool.state}
@@ -175,6 +231,13 @@ export default function PrivatePoolPage({
           totalTickets={pool.totalTickets}
           creator={pool.creator}
         />
+
+        <div className="mt-10">
+          <RecentBuysTable
+            batches={batches}
+            totalTickets={pool.totalTickets}
+          />
+        </div>
       </main>
     </>
   );
