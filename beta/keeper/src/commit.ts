@@ -11,7 +11,7 @@ import {
 import { address, createKeyPairSignerFromBytes, createSolanaRpc, type Address } from "@solana/kit";
 import { RaffleClient } from "@tombola/sdk";
 import { kitIxToWeb3, sendAndConfirm } from "./tx.js";
-import { log } from "./logger.js";
+import { log, logError } from "./logger.js";
 import type { ActionablePool } from "./scan.js";
 
 export async function commitPool(
@@ -51,6 +51,15 @@ export async function commitPool(
     randomnessAccount: address(randomness.pubkey.toBase58()),
   });
 
-  await sendAndConfirm(connection, [sbCommitIx, kitIxToWeb3(raffleCommitIx)], [keeperKp]);
+  try {
+    await sendAndConfirm(connection, [sbCommitIx, kitIxToWeb3(raffleCommitIx)], [keeperKp]);
+  } catch (err) {
+    logError(
+      poolAddress,
+      `commitDrawPrivate bundle failed — orphaned randomness account: ${randomness.pubkey.toBase58()} (reclaim rent manually)`,
+      err,
+    );
+    throw err; // re-throw so the caller's catch in index.ts also logs and continues to next pool
+  }
   log(poolAddress, "commitDrawPrivate confirmed — pool → AwaitingVrf");
 }

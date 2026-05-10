@@ -19,7 +19,7 @@ import { kitIxToWeb3, sendAndConfirm } from "./tx.js";
 import { log, logError } from "./logger.js";
 import type { ActionablePool } from "./scan.js";
 
-/** TicketBatch on-chain account size: 8 + 32 + 32 + 8 + 8 + 1 = 89. */
+// discriminator(8) + pool(32) + owner(32) + firstTicketId(8) + lastTicketId(8) + bump(1) = 89
 const TICKET_BATCH_SIZE = 89;
 /** Byte offset of `pool` field inside TicketBatch (after 8-byte discriminator). */
 const POOL_FIELD_OFFSET = 8;
@@ -157,6 +157,10 @@ export async function settlePool(
   log(poolAddress, `oracle revealed: ${revealedValue}`);
 
   const totalTickets = entry.pool.totalTickets;
+  if (totalTickets === 0n) {
+    logError(poolAddress, "pool is in AwaitingVrf with zero tickets — cannot compute winner", new Error("totalTickets is 0"));
+    return;
+  }
   const winnerId = computeWinnerId(revealedValue, totalTickets);
   log(poolAddress, `winner ticket: ${winnerId} of ${totalTickets}`);
 

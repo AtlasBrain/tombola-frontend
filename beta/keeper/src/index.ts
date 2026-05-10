@@ -56,7 +56,7 @@ async function main(): Promise<void> {
   await runTick(ctx);
   setInterval(() => {
     runTick(ctx).catch((err: unknown) => {
-      logInfo(`tick error: ${err instanceof Error ? err.message : String(err)}`);
+      logError("(global)", "tick failed", err);
     });
   }, intervalMs);
 }
