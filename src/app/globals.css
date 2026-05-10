@@ -75,6 +75,29 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* === HowItWorks process animation =========================================
+ * A traveling glow-dot moves left-to-right along the connector line above
+ * the three step cards, conveying "this is a sequence". Loops every 5s
+ * with a brief fade at start and end so the loop point isn't jarring.
+ */
+@keyframes process-traveler {
+  0%   { left: 0%;   opacity: 0; }
+  6%   {              opacity: 1; }
+  94%  {              opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+.process-traveler { animation: process-traveler 5s linear infinite; }
+
+/* Dotted perforation strip — used inside tear-corner step cards to mimic the
+ * tear line on a real raffle ticket. Color is currentColor so callers can
+ * tint per-step. */
+.perforation {
+  background-image: linear-gradient(to right, currentColor 2px, transparent 2px);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  height: 1px;
+}
+
 /* === Animation keyframes (ported from public/redesign-v1-recolored.html) === */
 
 /* Hero rotating ring — 4 layers spinning at different speeds */
