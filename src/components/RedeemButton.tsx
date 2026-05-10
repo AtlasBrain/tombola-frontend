@@ -7,6 +7,7 @@ import { Transaction } from "@solana/web3.js";
 import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import { RaffleClient } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
+import { pushNotification } from "@/lib/notifications";
 import { useToast } from "./Toast";
 import type { RedemptionLinkParams } from "@/lib/private-pools";
 
@@ -75,6 +76,20 @@ export function RedeemButton({ params }: Props) {
           ? "You're whitelisted ✓"
           : "1 ticket purchased ✓",
       );
+      pushNotification({
+        wallet: publicKey.toBase58(),
+        kind: "redeemed",
+        title:
+          params.mode === "Whitelist"
+            ? "Invite redeemed"
+            : "Ticket redeemed",
+        body:
+          params.mode === "Whitelist"
+            ? `Whitelisted on pool ${params.pool.slice(0, 6)}…${params.pool.slice(-4)}`
+            : `1 ticket on pool ${params.pool.slice(0, 6)}…${params.pool.slice(-4)}`,
+        href: `/pool/private/${params.pool}`,
+        dedupeId: `redeem-${params.pool}-${params.code}`,
+      });
       router.push(`/pool/private/${params.pool}`);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);

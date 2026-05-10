@@ -12,6 +12,7 @@ import {
 import { PROGRAM_ID, RaffleClient } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { formatSol } from "@/lib/format";
+import { pushNotification } from "@/lib/notifications";
 import { useToast } from "./Toast";
 
 interface Props {
@@ -102,6 +103,13 @@ export function BuyTicketPrivateButton({
         "confirmed",
       );
       pushToast("success", `Bought ${qty} ticket${qty === 1 ? "" : "s"} ✓`);
+      pushNotification({
+        wallet: publicKey.toBase58(),
+        kind: "purchase",
+        title: `Bought ${qty} ticket${qty === 1 ? "" : "s"}`,
+        body: `${formatSol(ticketPriceLamports * BigInt(qty))} · private pool`,
+        href: `/pool/private/${poolAddress}`,
+      });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       pushToast("error", msg.slice(0, 100));
@@ -115,6 +123,7 @@ export function BuyTicketPrivateButton({
     connection,
     poolAddress,
     qty,
+    ticketPriceLamports,
     pushToast,
   ]);
 

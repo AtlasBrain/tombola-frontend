@@ -14,6 +14,7 @@ import {
   findWinningBatch,
   type BatchRange,
 } from "@/lib/winning-batch";
+import { pushNotification } from "@/lib/notifications";
 
 interface Props {
   /** Pool PDA. Used to look up the settle tx signature. */
@@ -114,18 +115,28 @@ export function WinnerBanner({
     };
   }, [connection, winningBatch]);
 
-  // One-shot toast + Notification when YOU are the winner. Guarded by
-  // notifiedRef so it doesn't refire on hot-reload / state churn.
+  // One-shot toast + Notification + persistent inbox entry when YOU are the
+  // winner. Guarded by notifiedRef so it doesn't refire on hot-reload /
+  // state churn.
   useEffect(() => {
     if (!resolved || !isWinner || notifiedRef.current) return;
+    if (!myAddr) return;
     notifiedRef.current = true;
     const message = `You won ${formatSol(totalPotLamports)}!`;
     pushToast("success", `🎉 ${message}`);
 
-    // Browser Notification — only fires while the tab is open (foreground OR
-    // background). If permission isn't granted we silently fall back to just
-    // the toast above. We don't auto-request here; we ask once via the click
-    // handler in the banner so users see WHY we're asking.
+    // Persistent inbox entry — survives the user navigating away or
+    // refreshing the tab. Dedupe by pool so multiple banner re-mounts
+    // don't multiply the notification.
+    pushNotification({
+      wallet: myAddr,
+      kind: "win",
+      title: `🏆 You won ${formatSol(totalPotLamports)}`,
+      body: `Pool ${poolAddress.slice(0, 6)}…${poolAddress.slice(-4)} resolved in your favor.`,
+      href: `/pool/private/${poolAddress}`,
+      dedupeId: `win-${poolAddress}`,
+    });
+
     if (
       typeof window !== "undefined" &&
       "Notification" in window &&
@@ -140,7 +151,7 @@ export function WinnerBanner({
         // Some browsers throw on Notification with insufficient context — ignore
       }
     }
-  }, [resolved, isWinner, totalPotLamports, poolAddress, pushToast]);
+  }, [resolved, isWinner, myAddr, totalPotLamports, poolAddress, pushToast]);
 
   if (!resolved || !winner) return null;
 

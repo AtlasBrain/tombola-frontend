@@ -20,6 +20,7 @@
     "@solana/web3-compat": "^0.0.21",
     "@solana/web3.js": "^1.98.4",
     "@switchboard-xyz/on-demand": "^3.10.1",
+    "@upstash/redis": "^1.38.0",
     "js-sha3": "^0.9.3",
     "next": "15.5.18",
     "react": "19.1.0",
