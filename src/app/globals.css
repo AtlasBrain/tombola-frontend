@@ -58,6 +58,23 @@ body {
   font-family: var(--font-space-mono), ui-monospace, monospace;
 }
 
+/* === Hide native number-input spinner arrows ============================
+ * The CreatePoolForm renders bigger custom-styled number inputs (hero ticket
+ * price, mini-stat days/hours/fee/codes). The browser-default up/down spinner
+ * arrows clash with the display-font/mono presentation and add hover noise on
+ * tile cards. Suppress them everywhere; the form's own min/max constraints
+ * and validation handle out-of-range values.
+ */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* === Animation keyframes (ported from public/redesign-v1-recolored.html) === */
 
 /* Hero rotating ring — 4 layers spinning at different speeds */
