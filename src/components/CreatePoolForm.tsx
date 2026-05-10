@@ -245,10 +245,14 @@ export function CreatePoolForm({ onCreated }: Props) {
         )}
       </div>
 
-      {/* DURATION / FEE / CODES — mini stat grid, mirrors PoolCard's
-          tickets/buyers/closes-in tile row. Each input lives inside its own
-          neutral card with mono caps label + display-font value. */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* DAYS / HOURS / FEE / CODES — 4 equal mini-stat tiles in a row.
+          Days and hours used to share a tile (days dominant, hours sub-input)
+          which made hours feel demoted. They're now separate tiles, same
+          size, both with display-font values in mint — duration is a single
+          row instead of nested. errors.duration surfaces under the Days
+          tile since that's the dominant axis; clearing days alone shows the
+          violation immediately. */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <MiniStatInput
           id="days"
           label="Days"
@@ -256,24 +260,15 @@ export function CreatePoolForm({ onCreated }: Props) {
           onChange={setDays}
           min={0}
           max={90}
-          // Show hours under the days input as a secondary control so the
-          // 3-tile rhythm stays clean. Days is the dominant axis (1d–90d).
-          subInput={
-            <input
-              id="hours"
-              aria-label="Hours"
-              type="number"
-              min="0"
-              max="23"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              style={{ color: "#88cfc4" }}
-              className="w-full bg-transparent font-mono text-[10px] uppercase tabular-nums tracking-widest outline-none placeholder:text-neutral-700"
-              placeholder="0"
-            />
-          }
-          subLabel="hrs"
           errorOnRow={errors.duration}
+        />
+        <MiniStatInput
+          id="hours"
+          label="Hours"
+          value={hours}
+          onChange={setHours}
+          min={0}
+          max={23}
         />
         <MiniStatInput
           id="feePct"
@@ -365,8 +360,6 @@ function MiniStatInput({
   min,
   max,
   step,
-  subInput,
-  subLabel,
   errorOnRow,
 }: {
   id: string;
@@ -376,8 +369,6 @@ function MiniStatInput({
   min: number;
   max: number;
   step?: number;
-  subInput?: React.ReactNode;
-  subLabel?: string;
   errorOnRow?: string;
 }) {
   return (
@@ -408,16 +399,6 @@ function MiniStatInput({
         style={{ color: "#88cfc4" }}
         className="mt-1 w-full bg-transparent font-display text-xl uppercase tabular-nums outline-none focus:outline-none"
       />
-      {subInput && (
-        <div className="mt-1 flex items-baseline justify-between gap-1">
-          {subInput}
-          {subLabel && (
-            <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
-              {subLabel}
-            </span>
-          )}
-        </div>
-      )}
       {errorOnRow && (
         <p
           className="mt-1 font-mono text-[9px] uppercase tracking-widest text-rose-400"
