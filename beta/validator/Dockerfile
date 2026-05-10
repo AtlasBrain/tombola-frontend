@@ -1,4 +1,4 @@
-FROM solanalabs/solana:v2.2.0
+FROM solanalabs/solana:stable
 
 RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
