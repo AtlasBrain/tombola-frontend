@@ -33,7 +33,7 @@ export function BentoFooter({
           </svg>
           <div>
             <h3 className="font-display text-3xl uppercase leading-[0.95] sm:text-5xl">
-              Discover<br />win<br />repeat.
+              Discover<br />win<br />repeat
             </h3>
             <p className="mt-3 max-w-xs text-sm text-neutral-400">
               A new round opens automatically the moment the last one settles.

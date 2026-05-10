@@ -30,7 +30,7 @@ export function Hero() {
         </span>
 
         <h1 className="font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
-          Where SOL<br />wins big.
+          Where SOL<br />wins big
         </h1>
 
         <p className="mx-auto mt-6 max-w-md text-sm text-neutral-400 sm:text-base">

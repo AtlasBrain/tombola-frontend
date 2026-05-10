@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { PROGRAM_ID } from "@tombola/sdk";
 import { AllRoundsTable } from "@/components/AllRoundsTable";
 import { BentoFooter } from "@/components/BentoFooter";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { HostRaffleSection } from "@/components/HostRaffleSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { PoolCard } from "@/components/PoolCard";
@@ -70,25 +70,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grad-private rounded-2xl border border-neutral-800 bg-neutral-900/40 p-8 text-center">
-          <h3 className="font-display text-3xl uppercase">Host your own raffle</h3>
-          <p className="mt-2 text-sm text-neutral-400">
-            Mint invite codes and run a private pool. You set the price,
-            duration, and creator fee.
-          </p>
-          <Link
-            href="/create"
-            style={{ ["--tear-bg" as never]: "#88cfc4" }}
-            className="btn-fx fx-tear mt-6 inline-flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
-          >
-            Create a private pool
-            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px] text-[#88cfc4]">
-              →
-            </span>
-          </Link>
-        </div>
-      </section>
+      <HostRaffleSection />
 
       <RecentWinners />
       <AllRoundsTable pools={pools} />
