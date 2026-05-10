@@ -106,7 +106,10 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
             >
               {created ? "Pool created" : "New private pool"}
             </p>
-            <h2 className="mt-1 font-display text-3xl uppercase">
+            <h2
+              className="mt-1 font-display text-3xl uppercase"
+              style={{ color: MINT }}
+            >
               {created ? "You're live" : "Parameters"}
             </h2>
           </div>
@@ -114,7 +117,12 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-400 transition hover:border-neutral-600 hover:text-neutral-100"
+            style={{
+              borderColor: `${MINT}66`,
+              color: MINT,
+              background: `${MINT}10`,
+            }}
+            className="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition hover:brightness-125"
           >
             {created ? "Done" : "Cancel"}
           </button>
