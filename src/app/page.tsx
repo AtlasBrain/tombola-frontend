@@ -71,7 +71,7 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-8 text-center">
+        <div className="grad-private rounded-2xl border border-neutral-800 bg-neutral-900/40 p-8 text-center">
           <h3 className="font-display text-3xl uppercase">Host your own raffle</h3>
           <p className="mt-2 text-sm text-neutral-400">
             Mint invite codes and run a private pool. You set the price,
@@ -79,9 +79,13 @@ export default async function Home() {
           </p>
           <Link
             href="/create"
-            className="mt-6 inline-flex rounded bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-500"
+            style={{ ["--tear-bg" as never]: "#88cfc4" }}
+            className="btn-fx fx-tear mt-6 inline-flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
           >
-            Create a private pool →
+            Create a private pool
+            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px] text-[#88cfc4]">
+              →
+            </span>
           </Link>
         </div>
       </section>

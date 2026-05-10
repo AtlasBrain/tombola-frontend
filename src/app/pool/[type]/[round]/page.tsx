@@ -20,10 +20,14 @@ export const dynamic = "force-dynamic";
 const RPC_URL =
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 
-const STATE_BADGE: Record<PoolView["state"], { label: string; className: string }> = {
-  Open: { label: "Open", className: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" },
-  AwaitingVrf: { label: "Drawing…", className: "bg-amber-500/10 text-amber-400 ring-amber-500/20" },
-  Resolved: { label: "Resolved", className: "bg-neutral-500/10 text-neutral-400 ring-neutral-500/20" },
+// Per-cadence accent (matches PoolCard + /my-tickets). Used on the state pill
+// and the POT readout so the public detail page reads as the same brand color
+// as the homepage card you clicked from.
+const POOL_ACCENT: Record<PoolView["kind"], string> = {
+  Weekly: "#c9b5dc",
+  Biweekly: "#E89999",
+  Triweekly: "#88cfc4",
+  Monthly: "#e8d89e",
 };
 
 function shortAddress(addr: string): string {
@@ -58,9 +62,36 @@ export default async function PoolDetailPage({
   if (!detail) notFound();
 
   const { pool, batches, winner, winningTicketId } = detail;
-  const badge = STATE_BADGE[pool.state];
   const closed = pool.state !== "Open";
   const ticketsForOneSol = (1_000_000_000n / pool.ticketPriceLamports).toString();
+  const accent = POOL_ACCENT[pool.kind];
+
+  // State pill — Open uses the pool's per-cadence accent; the others use
+  // semantic amber/neutral so "drawing" / "resolved" are unambiguous.
+  const badge =
+    pool.state === "Open"
+      ? {
+          label: "Open",
+          style: {
+            borderColor: `${accent}4d`,
+            background: `${accent}1a`,
+            color: accent,
+          },
+          className: "border",
+        }
+      : pool.state === "AwaitingVrf"
+        ? {
+            label: "Drawing…",
+            style: undefined,
+            className:
+              "border border-amber-500/30 bg-amber-500/10 text-amber-400",
+          }
+        : {
+            label: "Resolved",
+            style: undefined,
+            className:
+              "border border-neutral-800 bg-neutral-900/50 text-neutral-400",
+          };
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12 sm:py-20">
@@ -101,7 +132,8 @@ export default async function PoolDetailPage({
             </p>
           </div>
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${badge.className}`}
+            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}
+            style={badge.style}
           >
             {badge.label}
           </span>
@@ -113,7 +145,10 @@ export default async function PoolDetailPage({
           <div className="text-xs uppercase tracking-wider text-neutral-500">
             Pot
           </div>
-          <div className="mt-2 text-4xl font-bold text-emerald-400">
+          <div
+            className="mt-2 text-4xl font-bold"
+            style={{ color: accent }}
+          >
             <FlashOnChange value={pool.totalPotLamports.toString()}>
               {formatSol(pool.totalPotLamports)}
             </FlashOnChange>
@@ -200,6 +235,7 @@ export default async function PoolDetailPage({
           spentLamports: b.spentLamports,
         }))}
         totalTickets={pool.totalTickets}
+        accentColor={accent}
       />
     </div>
   );

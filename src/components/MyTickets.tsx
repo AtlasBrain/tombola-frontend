@@ -131,7 +131,7 @@ export function MyTickets({ pools }: Props) {
                   Round #{a.round.toString()}
                 </span>
               </div>
-              <div className="mt-2 text-2xl font-semibold tabular-nums text-emerald-400">
+              <div className="mt-2 text-2xl font-semibold tabular-nums" style={{ color: "#88cfc4" }}>
                 {formatTickets(a.tickets)}{" "}
                 <span className="text-sm font-normal text-neutral-500">
                   tickets

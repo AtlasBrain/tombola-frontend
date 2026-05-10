@@ -27,9 +27,11 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 const TOAST_TTL_MS = 3500;
 const MAX_VISIBLE = 4;
 
+// Mint = brand accent for success (emerald is not in the palette).
+// Rose stays for error since rose-500 is the brand's reserved error tone.
 const KIND_STYLE: Record<ToastKind, string> = {
   success:
-    "border-emerald-500/30 bg-emerald-500/10 text-emerald-100 [&>span:first-child]:bg-emerald-500/20 [&>span:first-child]:text-emerald-300",
+    "border-[#88cfc4]/30 bg-[#88cfc4]/10 text-[#d1ece8] [&>span:first-child]:bg-[#88cfc4]/20 [&>span:first-child]:text-[#88cfc4]",
   error:
     "border-rose-500/30 bg-rose-500/10 text-rose-100 [&>span:first-child]:bg-rose-500/20 [&>span:first-child]:text-rose-300",
   info: "border-neutral-700 bg-neutral-900/90 text-neutral-100 [&>span:first-child]:bg-neutral-800 [&>span:first-child]:text-neutral-300",

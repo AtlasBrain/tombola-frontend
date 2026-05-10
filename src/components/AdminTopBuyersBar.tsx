@@ -63,8 +63,8 @@ export function AdminTopBuyersBar({ participants }: Props) {
               <div className="flex-1">
                 <div className="h-3 overflow-hidden rounded-full bg-neutral-800">
                   <div
-                    className="h-full bg-emerald-500"
-                    style={{ width: `${widthPct}%` }}
+                    className="h-full"
+                    style={{ width: `${widthPct}%`, background: "#88cfc4" }}
                   />
                 </div>
               </div>

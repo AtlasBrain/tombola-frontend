@@ -55,7 +55,10 @@ function sortByRecency(batches: BatchRow[]): BatchRow[] {
 export function RecentBuysTable({
   batches,
   totalTickets,
-  accentColor,
+  // Default mint — every page that calls this without an explicit accent
+  // (e.g. caller falls back) used to render emerald, which is not in the
+  // brand palette. Mint is the safe brand fallback.
+  accentColor = "#88cfc4",
   displayHeading = false,
 }: Props) {
   const { connection } = useConnection();
@@ -156,14 +159,10 @@ export function RecentBuysTable({
                   return (
                     <tr
                       key={b.batchAddress}
-                      className={`border-t border-neutral-800/50 transition-colors ${
-                        mine
-                          ? accentColor
-                            ? "hover:brightness-110"
-                            : "bg-emerald-500/5 hover:bg-emerald-500/10"
-                          : "hover:bg-neutral-900/40"
-                      }`}
-                      style={mine ? youRowStyle : undefined}
+                      className="border-t border-neutral-800/50 transition-colors hover:brightness-110"
+                      style={
+                        mine ? youRowStyle : { background: "transparent" }
+                      }
                     >
                       <td className="px-6 py-3">
                         <a
@@ -172,9 +171,7 @@ export function RecentBuysTable({
                           rel="noreferrer"
                           className={`font-mono transition-colors ${
                             mine
-                              ? accentColor
-                                ? "hover:brightness-125"
-                                : "text-emerald-300 hover:text-emerald-200"
+                              ? "hover:brightness-125"
                               : "text-neutral-300 hover:text-neutral-100"
                           }`}
                           style={mine ? youOwnerStyle : undefined}
@@ -183,10 +180,8 @@ export function RecentBuysTable({
                           {shortAddress(b.owner)}
                           {mine && (
                             <span
-                              className={`ml-2 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${
-                                accentColor ? "" : "bg-emerald-500/20"
-                              }`}
-                              style={mine ? youBadgeStyle : undefined}
+                              className="ml-2 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider"
+                              style={youBadgeStyle}
                             >
                               you
                             </span>
@@ -203,12 +198,8 @@ export function RecentBuysTable({
                         {sig ? relativeTime(sig.blockTime, nowSec) : "…"}
                       </td>
                       <td
-                        className={`py-3 pr-4 tabular-nums ${
-                          spentAccent ? "" : "text-emerald-400"
-                        }`}
-                        style={
-                          spentAccent ? { color: spentAccent } : undefined
-                        }
+                        className="py-3 pr-4 tabular-nums"
+                        style={{ color: spentAccent }}
                       >
                         {formatSol(b.spentLamports)}
                       </td>

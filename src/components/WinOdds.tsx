@@ -95,53 +95,31 @@ export function WinOdds({ poolAddress, totalTickets, accentColor }: Props) {
   const pctStr = pctTimes100.toFixed(2);
   const pctClamped = Math.min(100, Math.max(0, pctTimes100));
 
-  // When an accent is provided, render the lavender/pink/mint variant with
-  // CSS-in-style hex tokens so the same component covers public (default
-  // emerald) and private (mint) pages without a Tailwind class explosion.
-  if (accentColor) {
-    return (
-      <div
-        className="flex flex-col gap-1 rounded-lg border px-3 py-2"
-        style={{
-          borderColor: `${accentColor}33`,
-          background: `${accentColor}0d`,
-        }}
-      >
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-          <span className="text-neutral-500">Your odds</span>
-          <span className="tabular-nums" style={{ color: accentColor }}>
-            {pctStr}%
-          </span>
-        </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${pctClamped}%`, background: accentColor }}
-          />
-        </div>
-        <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
-          {userTickets.toString()} of {totalTickets.toString()} ticket
-          {totalTickets === 1n ? "" : "s"}
-        </div>
-      </div>
-    );
-  }
-
+  // Single mint-default variant — emerald is not in the brand palette.
+  // Callers can still override `accentColor` for per-page treatments
+  // (private pool detail uses mint, public detail picks per-cadence).
+  const accent = accentColor ?? "#88cfc4";
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-neutral-400">Your odds</span>
-        <span className="font-medium tabular-nums text-emerald-300">
+    <div
+      className="flex flex-col gap-1 rounded-lg border px-3 py-2"
+      style={{
+        borderColor: `${accent}33`,
+        background: `${accent}0d`,
+      }}
+    >
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+        <span className="text-neutral-500">Your odds</span>
+        <span className="tabular-nums" style={{ color: accent }}>
           {pctStr}%
         </span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
         <div
-          className="h-full rounded-full bg-emerald-400 transition-all duration-500"
-          style={{ width: `${pctClamped}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pctClamped}%`, background: accent }}
         />
       </div>
-      <div className="text-xs tabular-nums text-neutral-500">
+      <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
         {userTickets.toString()} of {totalTickets.toString()} ticket
         {totalTickets === 1n ? "" : "s"}
       </div>
