@@ -100,9 +100,9 @@ export function HostRaffleSection() {
   const redeemed = stats ? formatCountCompact(stats.redeemedCount) : "—";
 
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-20">
+    <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 sm:pb-20">
       <div
-        className="relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-8 sm:p-12"
+        className="relative overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 p-5 sm:rounded-3xl sm:p-8 lg:p-12"
         style={{
           backgroundImage: `radial-gradient(120% 100% at 50% 0%, ${MINT}1f 0%, transparent 60%)`,
         }}
@@ -110,11 +110,11 @@ export function HostRaffleSection() {
         <FloatingIcons />
 
         <div className="relative z-10">
-          <div className="grid items-stretch gap-10 lg:grid-cols-[1fr_400px]">
+          <div className="grid items-stretch gap-8 lg:grid-cols-[1fr_400px] lg:gap-10">
             {/* LEFT — copy + stats */}
             <div className="flex flex-col">
               <ForCreatorBadge />
-              <h2 className="mt-3 font-display text-4xl uppercase leading-[0.95] sm:text-6xl">
+              <h2 className="mt-3 font-display text-4xl uppercase leading-[0.95] sm:text-5xl lg:text-6xl">
                 Host your own
                 <br />
                 raffle
@@ -124,7 +124,7 @@ export function HostRaffleSection() {
                 tokens, single-use on chain.
               </p>
 
-              <div className="mt-auto grid grid-cols-3 gap-12 pt-8">
+              <div className="mt-8 grid grid-cols-3 gap-4 sm:mt-auto sm:gap-8 lg:gap-12 lg:pt-8">
                 <Stat value={totalSol} label="SOL minted in private pools" color={LAVENDER} />
                 <Stat value={creators} label="Creators hosted a pool" color={MINT} />
                 <Stat value={redeemed} label="Invite codes redeemed" color={YELLOW} />
@@ -164,7 +164,7 @@ function ForCreatorBadge() {
 
 function FlowColumn() {
   return (
-    <aside className="flex flex-col rounded-2xl border border-neutral-900 bg-neutral-950/60 p-7">
+    <aside className="flex flex-col rounded-2xl border border-neutral-900 bg-neutral-950/60 p-5 sm:p-7">
       {/* Highlighted "How it flows" header — lavender so it doesn't compete
           with the mint accents elsewhere on the section. The accent line
           fills the rest of the row. */}
@@ -302,13 +302,15 @@ function Stat({
         className="font-display uppercase tabular-nums"
         style={{
           color,
-          fontSize: "clamp(40px, 6vw, 80px)",
+          // Min size lowered for mobile so 3 columns + gap-4 fit in 320px+
+          // viewports without truncating. Scales up to 80px on desktop.
+          fontSize: "clamp(28px, 6vw, 80px)",
           lineHeight: 0.9,
         }}
       >
         {value}
       </div>
-      <div className="mt-3 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+      <div className="mt-2 font-mono text-[9px] uppercase tracking-widest text-neutral-500 sm:mt-3 sm:text-[10px]">
         {label}
       </div>
     </div>
@@ -318,7 +320,7 @@ function Stat({
 function ActivityFeed() {
   const items = [...ACTIVITY, ...ACTIVITY]; // double for seamless loop
   return (
-    <div className="mt-4 rounded-2xl border border-neutral-900 bg-neutral-950/80 p-5">
+    <div className="mt-4 rounded-2xl border border-neutral-900 bg-neutral-950/80 p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
         <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
           Live activity
@@ -340,7 +342,7 @@ function ActivityFeed() {
           {items.map((x, i) => (
             <div
               key={`${x.l}-${i}`}
-              className="flex items-center gap-3 font-mono text-xs"
+              className="flex items-center gap-2 font-mono text-[11px] sm:gap-3 sm:text-xs"
             >
               <span
                 aria-hidden
@@ -350,15 +352,18 @@ function ActivityFeed() {
               <span className="shrink-0" style={{ color: x.c }}>
                 {x.l}
               </span>
-              <span className="text-neutral-500">·</span>
+              <span className="hidden text-neutral-500 sm:inline">·</span>
               <span className="truncate text-neutral-300">
                 {x.w}…{x.t}
               </span>
-              <span className="text-neutral-500">·</span>
+              {/* extra info only fits on lg+ */}
               <span className="ml-auto hidden truncate text-neutral-400 lg:inline">
-                {x.extra}
+                · {x.extra}
               </span>
-              <span className="shrink-0 text-neutral-600">just now</span>
+              {/* timestamp hidden on smallest screens to save horizontal space */}
+              <span className="ml-auto hidden shrink-0 text-neutral-600 sm:inline lg:ml-0">
+                just now
+              </span>
             </div>
           ))}
         </div>

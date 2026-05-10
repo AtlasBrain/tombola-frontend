@@ -2,26 +2,35 @@
 import { useCallback, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-  type TransactionInstruction,
-} from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
 import {
   createSolanaRpc,
   type Address,
   type TransactionSigner,
 } from "@solana/kit";
-import {
-  AnchorUtils,
-  getDefaultDevnetQueue,
-  Randomness,
-} from "@switchboard-xyz/on-demand";
 import { RaffleClient } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { useToast } from "./Toast";
+
+/**
+ * Private-pool admin actions. The keeper daemon (Project Tombola, D-071)
+ * handles the entire commit/settle cycle for private pools, so the manual
+ * draw button is gone — it was dead weight and only worked for 1-ticket
+ * pools anyway.
+ *
+ * What's left here is the one path the daemon CANNOT handle:
+ *   - close_empty_private_pool requires the creator's signature, so when
+ *     a pool closes with zero tickets sold the creator alone can reclaim
+ *     the rent. We surface that as a clear "Reclaim rent" CTA.
+ *
+ * Plus a "stuck" notice for the rare case where AwaitingVrf has been
+ * pending for >1h with no reveal — private pools have no on-chain retry
+ * path so the only recovery is the operator team. Keep the message; users
+ * shouldn't see anything actionable.
+ *
+ * The component name is kept as "DrawWinnerButton" only to avoid an
+ * import-rename churn across the existing pages that wire it in.
+ */
 
 interface Props {
   poolAddress: string;
@@ -32,7 +41,6 @@ interface Props {
 }
 
 const RETRY_TIMEOUT_SECS = 3_600;
-const SETTLE_RETRIES = 6;
 
 export function DrawWinnerButton({
   poolAddress,
@@ -46,255 +54,25 @@ export function DrawWinnerButton({
   const { setVisible: setWalletModalVisible } = useWalletModal();
   const { push: pushToast } = useToast();
   const [busy, setBusy] = useState(false);
-  const [phase, setPhase] = useState<string>("");
 
   const nowSec = Math.floor(Date.now() / 1000);
   const closed = closeTimeUnix <= nowSec;
   const closeTimeoutPassed = closeTimeUnix + RETRY_TIMEOUT_SECS <= nowSec;
+  const isCreator = publicKey?.toBase58() === creator;
+  const stuck = state === 1 && closeTimeoutPassed;
+  const reclaimable = state === 0 && closed && totalTickets === 0n;
 
-  // Decide which action this button performs based on state + timers.
-  // Note: private pools have no on-chain retry instruction (the protocol
-  // only ships retry_draw_public). If Switchboard never reveals for a
-  // private pool, the only recovery is operator intervention. We surface
-  // this as a "stuck" message rather than a broken retry button.
-  const action:
-    | "commit"
-    | "settle"
-    | "stuck"
-    | "close-empty"
-    | "none" =
-    state === 0 && closed && totalTickets === 0n
-      ? "close-empty"
-      : state === 0 && closed
-        ? "commit"
-        : state === 1 && closeTimeoutPassed
-          ? "stuck"
-          : state === 1
-            ? "settle"
-            : "none";
-
-  const requireWallet = useCallback(
-    (cb: () => void) => {
-      if (!publicKey || !signTransaction) {
-        setWalletModalVisible(true);
-        return;
-      }
-      cb();
-    },
-    [publicKey, signTransaction, setWalletModalVisible],
-  );
-
-  const onCommit = useCallback(async () => {
-    if (!publicKey || !signTransaction) return;
-    setBusy(true);
-    setPhase("Generating randomness account…");
-    try {
-      const rpc = createSolanaRpc(connection.rpcEndpoint);
-      const client = new RaffleClient({ rpc });
-      const callerSigner = {
-        address: publicKey.toBase58(),
-      } as unknown as TransactionSigner;
-
-      const sbConn = new Connection(connection.rpcEndpoint, "confirmed");
-      const switchboardProgram = await AnchorUtils.loadProgramFromConnection(sbConn);
-      const queue = await getDefaultDevnetQueue(connection.rpcEndpoint);
-
-      const randomnessKp = Keypair.generate();
-      const [randomness, createIx] = await Randomness.create(
-        switchboardProgram,
-        randomnessKp,
-        queue.pubkey,
-        publicKey,
-      );
-
-      // Tx 1: create the randomness account (web3.js, two signers)
-      setPhase("Creating randomness account on chain…");
-      {
-        const tx = new Transaction().add(createIx);
-        tx.feePayer = publicKey;
-        const { blockhash, lastValidBlockHeight } =
-          await connection.getLatestBlockhash();
-        tx.recentBlockhash = blockhash;
-        tx.partialSign(randomnessKp);
-        const signed = await signTransaction(tx);
-        const sig = await connection.sendRawTransaction(signed.serialize(), {
-          skipPreflight: false,
-        });
-        await connection.confirmTransaction(
-          { signature: sig, blockhash, lastValidBlockHeight },
-          "confirmed",
-        );
-      }
-
-      // Tx 2: bundle Switchboard.commitIx + raffle.commit_draw_private
-      setPhase("Committing draw…");
-      const sbCommitIx: TransactionInstruction = await randomness.commitIx(
-        queue.pubkey,
-        publicKey,
-        undefined,
-      );
-      const raffleCommitIx = await client.commitDrawPrivate({
-        caller: callerSigner,
-        pool: poolAddress as Address,
-        randomnessAccount: randomness.pubkey.toBase58() as Address,
-      });
-      const tx = new Transaction()
-        .add(sbCommitIx)
-        .add(kitToWeb3(raffleCommitIx));
-      tx.feePayer = publicKey;
-      const { blockhash, lastValidBlockHeight } =
-        await connection.getLatestBlockhash();
-      tx.recentBlockhash = blockhash;
-      const signed = await signTransaction(tx);
-      const sig = await connection.sendRawTransaction(signed.serialize(), {
-        skipPreflight: false,
-      });
-      await connection.confirmTransaction(
-        { signature: sig, blockhash, lastValidBlockHeight },
-        "confirmed",
-      );
-      pushToast("success", "Commit landed; oracle is producing the reveal");
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      pushToast("error", msg.slice(0, 100));
-      setPhase("");
-    } finally {
-      setBusy(false);
+  const onReclaim = useCallback(async () => {
+    if (!publicKey || !signTransaction) {
+      setWalletModalVisible(true);
+      return;
     }
-  }, [
-    connection,
-    publicKey,
-    signTransaction,
-    poolAddress,
-    pushToast,
-  ]);
-
-  const onSettle = useCallback(async () => {
-    if (!publicKey || !signTransaction) return;
-    setBusy(true);
-    setPhase("Reading pool state…");
-    try {
-      const rpc = createSolanaRpc(connection.rpcEndpoint);
-      const client = new RaffleClient({ rpc });
-      const callerSigner = {
-        address: publicKey.toBase58(),
-      } as unknown as TransactionSigner;
-
-      const { fetchPrivatePool } = await import("@tombola/sdk/generated");
-      const pool = await fetchPrivatePool(rpc, poolAddress as Address);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const vrfOpt = pool.data.vrfRequest as any;
-      let randomnessAddr: Address;
-      if (vrfOpt && typeof vrfOpt === "object" && "__option" in vrfOpt) {
-        if (vrfOpt.__option !== "Some") {
-          throw new Error("Pool is AwaitingVrf but vrfRequest is None");
-        }
-        randomnessAddr = vrfOpt.value as Address;
-      } else if (vrfOpt) {
-        randomnessAddr = vrfOpt as Address;
-      } else {
-        throw new Error("Pool is AwaitingVrf but vrfRequest is null");
-      }
-
-      const sbConn = new Connection(connection.rpcEndpoint, "confirmed");
-      const switchboardProgram = await AnchorUtils.loadProgramFromConnection(sbConn);
-      const randomness = new Randomness(
-        switchboardProgram,
-        new PublicKey(String(randomnessAddr)),
-      );
-
-      const treasury = (await client.getProtocolConfig()).treasury;
-
-      for (let attempt = 1; attempt <= SETTLE_RETRIES; attempt++) {
-        setPhase(`Fetching reveal from oracle (attempt ${attempt}/${SETTLE_RETRIES})…`);
-        try {
-          const sbRevealIx: TransactionInstruction = await randomness.revealIx(
-            publicKey,
-          );
-
-          // Multi-ticket private settle requires off-chain gateway pre-fetch
-          // to compute winner_id before bundling reveal+settle. Out of scope
-          // for the frontend keeper in v1 — point user to the operator daemon.
-          if (totalTickets > 1n) {
-            throw new Error(
-              "Multi-ticket private pools must be drawn by the operator daemon (frontend keeper handles 1-ticket pools only).",
-            );
-          }
-
-          // 1-ticket path: winner_id = 0; winning_batch is at first_ticket_id=0
-          const [winningBatch] = await client.ticketBatchPda(
-            poolAddress as Address,
-            0n,
-          );
-          const batch = await client.getTicketBatch(
-            poolAddress as Address,
-            0n,
-          );
-          const winnerAddr = batch.owner;
-
-          const settleIx = await client.settleDrawPrivate({
-            caller: callerSigner,
-            pool: poolAddress as Address,
-            winningBatch,
-            winner: winnerAddr,
-            creator: creator as Address,
-            treasury,
-            randomnessAccount: randomnessAddr,
-          });
-
-          setPhase("Bundling reveal + settle (atomic)…");
-          const tx = new Transaction()
-            .add(sbRevealIx)
-            .add(kitToWeb3(settleIx));
-          tx.feePayer = publicKey;
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash();
-          tx.recentBlockhash = blockhash;
-          const signed = await signTransaction(tx);
-          // skipPreflight=true: simulation runs at slot N but tx lands at N+M;
-          // strict clock_slot==reveal_slot would fail in sim (companion D-068).
-          const sig = await connection.sendRawTransaction(signed.serialize(), {
-            skipPreflight: true,
-          });
-          await connection.confirmTransaction(
-            { signature: sig, blockhash, lastValidBlockHeight },
-            "confirmed",
-          );
-          pushToast("success", "Pool resolved — winner paid out");
-          return;
-        } catch (e) {
-          if (attempt < SETTLE_RETRIES) {
-            await new Promise((r) => setTimeout(r, 15_000));
-            continue;
-          }
-          throw e;
-        }
-      }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      pushToast("error", msg.slice(0, 200));
-      setPhase("");
-    } finally {
-      setBusy(false);
+    if (publicKey.toBase58() !== creator) {
+      pushToast("error", "Only the pool creator can reclaim rent.");
+      return;
     }
-  }, [
-    connection,
-    publicKey,
-    signTransaction,
-    poolAddress,
-    creator,
-    pushToast,
-    totalTickets,
-  ]);
-
-  const onCloseEmpty = useCallback(async () => {
-    if (!publicKey || !signTransaction) return;
     setBusy(true);
-    setPhase("Reclaiming creator rent…");
     try {
-      if (publicKey.toBase58() !== creator) {
-        throw new Error("Only the pool creator can close an empty pool");
-      }
       const rpc = createSolanaRpc(connection.rpcEndpoint);
       const client = new RaffleClient({ rpc });
       const creatorSigner = {
@@ -317,65 +95,51 @@ export function DrawWinnerButton({
         { signature: sig, blockhash, lastValidBlockHeight },
         "confirmed",
       );
-      pushToast("success", "Pool closed; rent refunded");
+      pushToast("success", "Pool closed; rent refunded to your wallet.");
     } catch (e: unknown) {
-      pushToast("error", (e instanceof Error ? e.message : String(e)).slice(0, 200));
+      pushToast(
+        "error",
+        (e instanceof Error ? e.message : String(e)).slice(0, 200),
+      );
     } finally {
       setBusy(false);
-      setPhase("");
     }
   }, [
-    connection,
     publicKey,
     signTransaction,
-    poolAddress,
     creator,
+    connection,
+    poolAddress,
     pushToast,
+    setWalletModalVisible,
   ]);
 
-  if (action === "none" || state === 2) return null;
+  // Resolved or fully open with time remaining: nothing to surface.
+  if (state === 2) return null;
+  if (state === 0 && !closed) return null;
 
-  // Only the creator sees the manual draw controls. Buyers get passive copy
-  // — the keeper daemon (off-chain cron) handles the draw cycle in normal
-  // operation; the creator's button exists as a fallback if the keeper is
-  // delayed or down. Anyone CAN call commit/settle on-chain (permissionless),
-  // but exposing it to buyers caused confusion (they thought they HAD to).
-  const isCreator = publicKey?.toBase58() === creator;
-
-  if (action === "stuck") {
-    if (!isCreator) {
+  // AwaitingVrf or closed-with-tickets: keeper handles it. Buyers + creators
+  // see a passive status. Creators see a slightly different copy (they own
+  // the pool) but no actionable button — the daemon is the actor.
+  if (state === 1 || (state === 0 && closed && totalTickets > 0n)) {
+    if (stuck) {
       return (
-        <div className="mt-6 rounded border border-amber-700/40 bg-amber-900/20 p-4">
-          <p className="text-sm text-amber-300">
-            Draw is delayed — the oracle hasn&apos;t revealed within an hour
-            of close. The pool creator can contact the operator team to
-            recover.
+        <div className="mt-6 rounded-2xl border border-amber-700/40 bg-amber-900/20 p-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-amber-300">
+            Draw delayed
+          </p>
+          <p className="mt-1 text-sm text-amber-200">
+            The oracle hasn&apos;t revealed within an hour of close. Private
+            pools have no on-chain retry path; the operator team needs to
+            recover this round manually.
           </p>
         </div>
       );
     }
-    return (
-      <div className="mt-6 rounded border border-red-700/40 bg-red-900/20 p-4">
-        <p className="text-sm text-red-300">
-          Draw is stuck: oracle hasn&apos;t revealed within an hour of close. Private
-          pools have no on-chain retry path (protocol limitation). Contact the
-          operator team to recover.
-        </p>
-      </div>
-    );
-  }
-
-  // Buyer-facing passive copy. The keeper daemon picks up the round on its
-  // next sweep (devnet cron = every 5 min). LivePoolWatcher updates the
-  // page reactively when the state transition lands on chain — no refresh
-  // needed.
-  if (!isCreator) {
     const message =
-      action === "settle"
+      state === 1
         ? "Drawing winner — oracle reveal landed; settle is being submitted."
-        : action === "commit"
-          ? "Round closed — the keeper will draw a winner shortly. You'll be notified if you win."
-          : "Round closed with zero tickets sold — the creator can reclaim rent.";
+        : "Round closed — the keeper will draw a winner shortly. You'll be notified if you win.";
     return (
       <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
         <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
@@ -386,35 +150,39 @@ export function DrawWinnerButton({
     );
   }
 
-  const labels = {
-    commit: "Draw winner",
-    settle: "Settle (oracle reveal ready)",
-    "close-empty": "Reclaim rent (no tickets sold)",
-  } as const;
-
-  const handlers = {
-    commit: () => requireWallet(onCommit),
-    settle: () => requireWallet(onSettle),
-    "close-empty": () => requireWallet(onCloseEmpty),
-  } as const;
-
-  return (
-    <div className="mt-6 flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={handlers[action]}
-        disabled={busy}
-        className="rounded bg-amber-600 px-4 py-3 font-semibold text-white hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-neutral-700"
-      >
-        {busy ? phase || "Working…" : labels[action]}
-      </button>
-      {action === "commit" && (
+  // Empty pool: only the creator can close it. Show reclaim CTA when
+  // they're connected; show a passive message to non-creators.
+  if (reclaimable) {
+    if (!isCreator) {
+      return (
+        <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            Status
+          </p>
+          <p className="mt-1 text-sm text-neutral-300">
+            Round closed with zero tickets sold. The pool creator can
+            reclaim rent.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="mt-6 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onReclaim}
+          disabled={busy}
+          className="rounded-lg bg-amber-600 px-4 py-3 font-display text-xs uppercase tracking-widest text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-neutral-700"
+        >
+          {busy ? "Reclaiming…" : "Reclaim rent"}
+        </button>
         <p className="text-xs text-neutral-500">
-          The keeper daemon normally handles this automatically; this button
-          is a manual fallback. You pay the tx fee; the pool reimburses you
-          for the VRF cost out of accumulated fees.
+          Closes the empty pool and refunds the rent (~0.002 SOL) to your
+          wallet. No tickets were sold so there&apos;s nothing to draw.
         </p>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return null;
 }

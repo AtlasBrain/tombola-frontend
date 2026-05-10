@@ -19,8 +19,8 @@ export function BentoFooter({
   const totalPlayers = totalTickets === 0 ? 0 : Math.max(1, Math.round(totalTickets / 3));
 
   return (
-    <section id="faq" className="mx-auto max-w-7xl px-6 pb-24">
-      <div className="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4">
+    <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-24">
+      <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
         {/* Big brand tile (2x2) */}
         <div className="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-neutral-900 bg-gradient-to-br from-lime/10 via-neutral-950 to-black p-8">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" className="text-lime" aria-hidden>

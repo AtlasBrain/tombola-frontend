@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
@@ -11,8 +12,8 @@ type NavItem =
   | { kind: "link"; href: string; label: string };
 
 // Full nav — only renders on the homepage where the anchor sections actually
-// exist. POOLS/HOW IT WORKS/STATS/FAQ all scroll to ids inside the homepage's
-// long-form layout, so on any other route they'd no-op and feel broken.
+// exist. PUBLIC POOLS / HOW IT WORKS / FAQ all scroll to ids inside the
+// homepage's long-form layout, so on any other route they'd no-op.
 const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
   { kind: "link",   href: "/create",     label: "PRIVATE" },
@@ -33,9 +34,6 @@ const NAV_SUBROUTE: readonly NavItem[] = [
 export function Header() {
   const pathname = usePathname();
   const isHomepage = pathname === "/";
-  // Hide whichever item points at the current route so we don't render a
-  // link that goes to itself. /create/* and /pool/private/* both belong to
-  // the "PRIVATE" cluster — suppress that link too while inside.
   const hideHref =
     pathname.startsWith("/my-tickets")
       ? "/my-tickets"
@@ -46,19 +44,30 @@ export function Header() {
     (item) => item.kind === "anchor" || item.href !== hideHref,
   );
 
+  // Mobile menu state — closed by default. Toggled by the hamburger button.
+  // Closes automatically when a nav item is tapped (the link / anchor handler
+  // calls closeMenu).
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
   function handleScroll(id: string) {
     return (e: React.MouseEvent) => {
       e.preventDefault();
       smoothScrollToId(id);
+      closeMenu();
     };
   }
 
   return (
-    <header className="mx-auto max-w-7xl px-6 py-5">
-      <div className="grid grid-cols-3 items-center gap-4">
+    <header className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
+      <div className="flex items-center justify-between gap-3 sm:grid sm:grid-cols-3 sm:gap-4">
         {/* LEFT: logo */}
-        <Link href="/" className="flex items-center gap-2.5 justify-self-start">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" className="text-white">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 sm:gap-2.5 sm:justify-self-start"
+          onClick={closeMenu}
+        >
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="text-white sm:h-[34px] sm:w-[34px]">
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
             <line x1="12" y1="3"  x2="12" y2="6"  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -66,10 +75,10 @@ export function Header() {
             <line x1="3"  y1="12" x2="6"  y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
-          <span className="font-display text-lg uppercase tracking-tight">TOMBOLA</span>
+          <span className="font-display text-base uppercase tracking-tight sm:text-lg">TOMBOLA</span>
         </Link>
 
-        {/* CENTER: nav links */}
+        {/* CENTER: nav links — desktop only */}
         <nav className="hidden items-center gap-1 justify-self-center sm:flex">
           {navItems.map((item) =>
             item.kind === "anchor" ? (
@@ -82,19 +91,81 @@ export function Header() {
                 {item.label}
               </a>
             ) : (
-              <Link key={item.href} href={item.href} className="nav-link">
+              <Link key={item.href} href={item.href} className="nav-link" onClick={closeMenu}>
                 {item.label}
               </Link>
             ),
           )}
         </nav>
 
-        {/* RIGHT: status + CTA */}
-        <div className="flex items-center gap-2 justify-self-end">
-          <NetworkPill />
+        {/* RIGHT: status + CTA + mobile menu toggle */}
+        <div className="flex items-center gap-2 sm:justify-self-end">
+          <div className="hidden sm:block">
+            <NetworkPill />
+          </div>
           <ConnectWalletButton />
+          {/* Hamburger — visible below sm. Animates between bars and × on toggle. */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950 sm:hidden"
+          >
+            <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              {menuOpen ? (
+                <>
+                  <line x1="3" y1="3" x2="13" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="13" y1="3" x2="3" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </>
+              ) : (
+                <>
+                  <line x1="2" y1="4"  x2="14" y2="4"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="2" y1="8"  x2="14" y2="8"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile slide-down menu — visible only when toggled, only below sm.
+          Items stack vertically, full-width tap targets (h-12). Tapping any
+          item closes the menu via closeMenu() called inside handleScroll /
+          the Link onClick. */}
+      {menuOpen && (
+        <nav
+          className="mt-3 flex flex-col gap-1 rounded-2xl border border-neutral-800 bg-neutral-950/95 p-2 backdrop-blur-sm sm:hidden"
+          aria-label="Mobile navigation"
+        >
+          <div className="px-3 py-2 sm:hidden">
+            <NetworkPill />
+          </div>
+          {navItems.map((item) =>
+            item.kind === "anchor" ? (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={handleScroll(item.id)}
+                className="flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeMenu}
+                className="flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
+        </nav>
+      )}
     </header>
   );
 }
