@@ -100,14 +100,27 @@ export function BentoFooter({
           </a>
         </div>
 
-        {/* 0.5% fee */}
-        <div className="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-gradient-to-br from-[#88cfc4]/10 to-neutral-950 p-6">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">PROTOCOL FEE</span>
-          <div>
-            <div className="font-display text-3xl uppercase text-[#88cfc4]">0.5%</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">NO HIDDEN CUTS</div>
-          </div>
-        </div>
+        {/* Telegram — same shape as the FOLLOW (X) and GITHUB tiles above so
+            the social row reads as a triplet. URL is a placeholder; replace
+            with the project's actual Telegram link when published. */}
+        <a
+          href="https://t.me/atlasbrain"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6 transition-all hover:border-neutral-700"
+        >
+          <span className="font-display text-base uppercase">Telegram</span>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="text-neutral-300"
+            aria-hidden
+          >
+            <path d="M21.05 2.92 1.86 10.51c-1.31.52-1.3 1.27-.24 1.59l4.93 1.54 11.4-7.19c.54-.33 1.03-.15.63.21l-9.24 8.34h-.01l.01.01-.34 5.08c.5 0 .72-.23.99-.5l2.4-2.33 4.97 3.67c.92.51 1.58.24 1.81-.85L21.96 4.46c.34-1.39-.5-2.04-1.42-1.61z" />
+          </svg>
+        </a>
 
         {/* Final CTA */}
         <a
