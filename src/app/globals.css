@@ -75,6 +75,91 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* === HostRaffleSection animations =======================================
+ * The "Host your own raffle" section uses several layered animations:
+ *  - cta-halo:    pulsing pink glow around the lottery-ticket button
+ *  - ticket-shimmer: diagonal sweep across the ticket button (tightened
+ *                 travel range — starts close to the button's left edge,
+ *                 not far outside it)
+ *  - feed-up:     vertical scroll for the live-activity feed
+ *  - traveler-v:  glow-dot moves down the Create/Share/Earn connector
+ *  - float-r1..r6: 6 independent ease-in-out drift loops for the floating
+ *                 ticket / coin / dice / sparkle decorations
+ */
+@keyframes cta-halo {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(232, 153, 153, 0.5),
+      0 0 30px 0 rgba(232, 153, 153, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(232, 153, 153, 0),
+      0 0 38px 6px rgba(232, 153, 153, 0.4);
+  }
+}
+.cta-halo {
+  animation: cta-halo 2.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@keyframes ticket-shimmer {
+  0%        { transform: translateX(-30%); }
+  50%, 100% { transform: translateX(110%); }
+}
+.ticket-shimmer-mask::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 60%
+  );
+  transform: translateX(-30%);
+  animation: ticket-shimmer 3.6s ease-in-out infinite;
+  clip-path: polygon(
+    14px 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    14px 100%,
+    0 calc(100% - 14px),
+    0 14px
+  );
+}
+
+@keyframes feed-up {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.feed-track { animation: feed-up 22s linear infinite; }
+
+@keyframes traveler-v {
+  0%   { top: 0%;   opacity: 0; }
+  6%   {            opacity: 1; }
+  94%  {            opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+.traveler-v { animation: traveler-v 4.5s linear infinite; }
+
+@keyframes float-r1 { 0%,100%{ transform:translate(0,0) rotate(-5deg);} 50%{ transform:translate(8px,-12px) rotate(3deg);} }
+@keyframes float-r2 { 0%,100%{ transform:translate(0,0) rotate(8deg);}  50%{ transform:translate(-10px,-8px) rotate(-4deg);} }
+@keyframes float-r3 { 0%,100%{ transform:translate(0,0) rotate(-12deg);} 50%{ transform:translate(6px,-16px) rotate(2deg);} }
+@keyframes float-r4 { 0%,100%{ transform:translate(0,0) rotate(4deg);}  50%{ transform:translate(-8px,-10px) rotate(-6deg);} }
+@keyframes float-r5 { 0%,100%{ transform:translate(0,0) rotate(2deg);}  50%{ transform:translate(10px,-6px) rotate(-3deg);} }
+@keyframes float-r6 { 0%,100%{ transform:translate(0,0) rotate(-3deg);} 50%{ transform:translate(-6px,-12px) rotate(5deg);} }
+.float-r1 { animation: float-r1 5.2s ease-in-out infinite; transform-origin: center; }
+.float-r2 { animation: float-r2 6.4s ease-in-out infinite -1s; transform-origin: center; }
+.float-r3 { animation: float-r3 5.0s ease-in-out infinite -2s; transform-origin: center; }
+.float-r4 { animation: float-r4 5.6s ease-in-out infinite -1.5s; transform-origin: center; }
+.float-r5 { animation: float-r5 7.0s ease-in-out infinite -3s; transform-origin: center; }
+.float-r6 { animation: float-r6 6.0s ease-in-out infinite -2.5s; transform-origin: center; }
+
 /* === HowItWorks process animation =========================================
  * A traveling glow-dot moves left-to-right along the connector line above
  * the three step cards, conveying "this is a sequence". Loops every 5s
