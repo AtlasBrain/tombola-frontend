@@ -32,14 +32,27 @@ function ageSince(unix: number): string {
   return `${Math.floor(dt / 86400)}d`;
 }
 
+function stateMeta(p: PoolView) {
+  if (p.state === "Open") {
+    return { label: "OPEN", cls: "bg-lime/10 text-lime" };
+  }
+  if (p.state === "AwaitingVrf") {
+    return { label: "DRAWING", cls: "bg-[#e8d89e]/10 text-[#e8d89e]" };
+  }
+  return { label: "RESOLVED", cls: "bg-neutral-500/10 text-neutral-400" };
+}
+
 export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
   // Sort largest pot first
   const ranked = [...pools].sort((a, b) => Number(b.totalPotLamports - a.totalPotLamports));
 
   return (
-    <section id="stats" className="mx-auto max-w-7xl px-6 pb-20">
+    <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
       <h2 className="mb-6 font-display text-xl uppercase sm:text-2xl">All rounds</h2>
-      <div className="overflow-x-auto rounded-2xl border border-neutral-900 bg-neutral-950">
+
+      {/* DESKTOP: full table — 8 columns. Hidden below sm because the
+          columns crush together on phones (was the bug the user reported). */}
+      <div className="hidden overflow-x-auto rounded-2xl border border-neutral-900 bg-neutral-950 sm:block">
         <table className="w-full text-base">
           <thead className="border-b border-neutral-900">
             <tr className="text-left font-mono text-[11px] uppercase tracking-widest text-neutral-500">
@@ -59,14 +72,7 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
               const tickets = Number(p.totalTickets);
               const buyers = tickets === 0 ? 0 : Math.max(1, Math.round(tickets / 3));
               const potSol = Number(p.totalPotLamports) / 1_000_000_000;
-              const stateLabel =
-                p.state === "Open" ? "OPEN" : p.state === "AwaitingVrf" ? "DRAWING" : "RESOLVED";
-              const stateClass =
-                p.state === "Open"
-                  ? "bg-lime/10 text-lime"
-                  : p.state === "AwaitingVrf"
-                    ? "bg-[#e8d89e]/10 text-[#e8d89e]"
-                    : "bg-neutral-500/10 text-neutral-400";
+              const state = stateMeta(p);
               return (
                 <tr key={p.poolType} className="transition-colors hover:bg-neutral-900/40">
                   <td className="px-6 py-4 text-neutral-500">#{i + 1}</td>
@@ -81,8 +87,8 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
                   <td className="py-4 text-white">{tickets.toLocaleString()}</td>
                   <td className="py-4 text-neutral-400">{buyers}</td>
                   <td className="py-4">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${stateClass}`}>
-                      {stateLabel}
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${state.cls}`}>
+                      {state.label}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right text-neutral-400">{formatCloses(p)}</td>
@@ -92,6 +98,98 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* MOBILE: card layout. Each round becomes a vertical card with the
+          same data laid out as a 2×2 grid + state pill at the top-right.
+          Replaces the table below sm to fix the data-overlap bug. */}
+      <ul className="flex flex-col gap-3 sm:hidden">
+        {ranked.map((p, i) => {
+          const accent = HEX[p.kind];
+          const tickets = Number(p.totalTickets);
+          const buyers = tickets === 0 ? 0 : Math.max(1, Math.round(tickets / 3));
+          const potSol = Number(p.totalPotLamports) / 1_000_000_000;
+          const state = stateMeta(p);
+          return (
+            <li
+              key={p.poolType}
+              className="rounded-2xl border border-neutral-900 bg-neutral-950 p-4"
+              style={{
+                backgroundImage: `linear-gradient(90deg, ${accent}10 0%, transparent 35%)`,
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span
+                      aria-hidden
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: accent }}
+                    />
+                    <span className="font-display text-base uppercase">
+                      {p.kind}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+                      · #{p.round.toString()}
+                    </span>
+                  </div>
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+                    rank #{i + 1}
+                  </div>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${state.cls}`}
+                >
+                  {state.label}
+                </span>
+              </div>
+
+              <dl className="mt-4 grid grid-cols-2 gap-3 font-mono text-xs">
+                <Cell
+                  label="Pot"
+                  value={`${potSol.toFixed(2)} SOL`}
+                  valueColor={accent}
+                />
+                <Cell label="Tickets" value={tickets.toLocaleString()} />
+                <Cell label="Buyers" value={buyers.toString()} />
+                <Cell
+                  label={
+                    p.state === "Open"
+                      ? "Closes in"
+                      : p.state === "AwaitingVrf"
+                        ? "Closed"
+                        : "—"
+                  }
+                  value={formatCloses(p)}
+                />
+              </dl>
+            </li>
+          );
+        })}
+      </ul>
     </section>
+  );
+}
+
+function Cell({
+  label,
+  value,
+  valueColor,
+}: {
+  label: string;
+  value: string;
+  valueColor?: string;
+}) {
+  return (
+    <div>
+      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+        {label}
+      </div>
+      <div
+        className="mt-0.5 font-display text-base uppercase tabular-nums"
+        style={{ color: valueColor ?? "#f5f5f5" }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }
