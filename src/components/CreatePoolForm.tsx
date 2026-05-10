@@ -36,7 +36,11 @@ export function CreatePoolForm({ onCreated }: Props) {
   const { publicKey, signTransaction } = useWallet();
   const { setVisible: setWalletModalVisible } = useWalletModal();
 
-  const [priceSol, setPriceSol] = useState("");
+  // Pre-populate every field with a sensible default so the form opens in
+  // the "ready to submit" state — no validation error visible, CTA enabled,
+  // every input rendering its mint value. The creator can override any field
+  // before clicking CREATE POOL.
+  const [priceSol, setPriceSol] = useState("0.01");
   const [days, setDays] = useState("1");
   const [hours, setHours] = useState("0");
   const [feePct, setFeePct] = useState("0");
@@ -263,7 +267,8 @@ export function CreatePoolForm({ onCreated }: Props) {
               max="23"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              className="w-full bg-transparent font-mono text-[10px] uppercase tabular-nums tracking-widest text-neutral-400 outline-none placeholder:text-neutral-700"
+              style={{ color: "#88cfc4" }}
+              className="w-full bg-transparent font-mono text-[10px] uppercase tabular-nums tracking-widest outline-none placeholder:text-neutral-700"
               placeholder="0"
             />
           }
@@ -397,6 +402,10 @@ function MiniStatInput({
         step={step}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        // Tint values mint so they read as the same brand color as the
+        // ticket-price hero number above. UA default is black-on-dark,
+        // which made the values nearly invisible on the dark panel.
+        style={{ color: "#88cfc4" }}
         className="mt-1 w-full bg-transparent font-display text-xl uppercase tabular-nums outline-none focus:outline-none"
       />
       {subInput && (

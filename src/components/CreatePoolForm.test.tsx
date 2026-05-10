@@ -14,8 +14,16 @@ vi.mock("@solana/wallet-adapter-react-ui", () => ({
 import { CreatePoolForm } from "./CreatePoolForm";
 
 describe("<CreatePoolForm />", () => {
-  it("disables submit until all required fields are valid", () => {
+  it("submit is enabled by default (sensible defaults pre-populated)", () => {
     render(<CreatePoolForm onCreated={() => {}} />);
+    const submit = screen.getByRole("button", { name: /create pool/i });
+    expect(submit).not.toBeDisabled();
+  });
+
+  it("disables submit when ticket price is cleared", () => {
+    render(<CreatePoolForm onCreated={() => {}} />);
+    const priceInput = screen.getByLabelText(/ticket price/i);
+    fireEvent.change(priceInput, { target: { value: "" } });
     const submit = screen.getByRole("button", { name: /create pool/i });
     expect(submit).toBeDisabled();
   });
