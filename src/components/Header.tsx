@@ -129,41 +129,47 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile slide-down menu — overlays page content (absolute, doesn't
-          push Hero down) with a soft slide-in. Always rendered; opacity +
-          translate-y + pointer-events toggle so the open/close transition
-          is smooth instead of an instant React mount/unmount. inset-x
-          mirrors the header's horizontal padding so the panel hugs the
-          edges of the page like the rest of the layout. */}
+      {/* Mobile menu — iris reveal. The panel is overlaid (absolute, does
+          not push Hero), always rendered, and the open/close gesture is a
+          clip-path circle that EXPANDS from the hamburger button's
+          position (right edge, top of panel) so the menu literally
+          unfolds out of the button you tapped.
+
+          Origin computed from the panel's coord system:
+            - panel hugs left-4/right-4 of the header
+            - hamburger sits on the right side, ~18px in from the right edge
+            - so origin x = `calc(100% - 18px)`, y = `0`
+          Closed: circle(0% at origin) — fully clipped away.
+          Open:   circle(150% at origin) — bigger than the panel diagonal,
+                  so the whole panel is revealed.
+
+          Tailwind doesn't have a token for these clip-path values so we
+          set them inline via style. */}
       <nav
         aria-label="Mobile navigation"
         aria-hidden={!menuOpen}
-        className={`absolute top-full left-4 right-4 mt-2 origin-top rounded-2xl border border-neutral-800 bg-neutral-950/95 p-2 shadow-2xl shadow-black/70 backdrop-blur-md transition duration-200 ease-out sm:hidden ${
-          menuOpen
-            ? "translate-y-0 scale-100 opacity-100"
-            : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
-        }`}
+        style={{
+          clipPath: menuOpen
+            ? "circle(150% at calc(100% - 18px) 0)"
+            : "circle(0% at calc(100% - 18px) 0)",
+          opacity: menuOpen ? 1 : 0,
+          transition:
+            "clip-path 450ms cubic-bezier(0.55, 0, 0.2, 1), opacity 200ms ease-out",
+          pointerEvents: menuOpen ? "auto" : "none",
+        }}
+        className="absolute left-4 right-4 top-full mt-2 rounded-2xl border border-neutral-800 bg-neutral-950/95 p-2 shadow-2xl shadow-black/70 backdrop-blur-md sm:hidden"
       >
         <div className="flex flex-col gap-1">
           <div className="px-3 py-2">
             <NetworkPill />
           </div>
-          {navItems.map((item, i) =>
+          {navItems.map((item) =>
             item.kind === "anchor" ? (
               <a
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={handleScroll(item.id)}
-                style={{
-                  // small staggered delay so items cascade in when the menu
-                  // opens — adds polish at near-zero cost
-                  transitionDelay: menuOpen ? `${i * 25}ms` : "0ms",
-                }}
-                className={`flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:bg-neutral-900 hover:text-white ${
-                  menuOpen
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-1 opacity-0"
-                }`}
+                className="flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
                 tabIndex={menuOpen ? 0 : -1}
               >
                 {item.label}
@@ -173,14 +179,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 onClick={closeMenu}
-                style={{
-                  transitionDelay: menuOpen ? `${i * 25}ms` : "0ms",
-                }}
-                className={`flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:bg-neutral-900 hover:text-white ${
-                  menuOpen
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-1 opacity-0"
-                }`}
+                className="flex h-12 items-center rounded-lg px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
                 tabIndex={menuOpen ? 0 : -1}
               >
                 {item.label}
