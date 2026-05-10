@@ -75,6 +75,34 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* === Hamburger toggle (Header mobile) ===================================
+ * Spin variant: the icon rotates 180° while the three bars morph into an X.
+ * Top + bottom bars rotate ±45° and translate to meet at the center; middle
+ * bar fades. Active when .ham-spin has the `.open` class.
+ */
+.ham-spin .ham-bars {
+  position: relative;
+  width: 18px;
+  height: 14px;
+  transition: transform 0.35s cubic-bezier(0.5, 0, 0.3, 1.2);
+}
+.ham-spin .ham-bars span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+.ham-spin .ham-bars span:nth-child(1) { top: 0; }
+.ham-spin .ham-bars span:nth-child(2) { top: 6px; }
+.ham-spin .ham-bars span:nth-child(3) { top: 12px; }
+.ham-spin.open .ham-bars { transform: rotate(180deg); }
+.ham-spin.open .ham-bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.ham-spin.open .ham-bars span:nth-child(2) { opacity: 0; }
+.ham-spin.open .ham-bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
 /* === HostRaffleSection animations =======================================
  * The "Host your own raffle" section uses several layered animations:
  *  - cta-halo:    pulsing pink glow around the lottery-ticket button

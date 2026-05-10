@@ -106,29 +106,25 @@ export function Header() {
             <NetworkPill />
           </div>
           <ConnectWalletButton />
-          {/* Hamburger — visible below sm. Animates between bars and × on toggle. */}
+          {/* Hamburger — visible below sm. The .ham-spin CSS in globals.css
+              rotates the icon 180° while the bars morph into an × on .open.
+              CSS-driven so the animation runs on every toggle without React
+              mount/unmount churn. */}
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950 sm:hidden"
+            className={`ham-spin ml-1 flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950 text-neutral-100 transition-colors hover:border-neutral-600 sm:hidden ${
+              menuOpen ? "open" : ""
+            }`}
           >
             <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-              {menuOpen ? (
-                <>
-                  <line x1="3" y1="3" x2="13" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="13" y1="3" x2="3" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </>
-              ) : (
-                <>
-                  <line x1="2" y1="4"  x2="14" y2="4"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="2" y1="8"  x2="14" y2="8"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </>
-              )}
-            </svg>
+            <span className="ham-bars" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
           </button>
         </div>
       </div>
