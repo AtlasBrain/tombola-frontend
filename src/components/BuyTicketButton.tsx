@@ -153,7 +153,7 @@ export function BuyTicketButton({
           onChange={onQtyChange}
           onBlur={onQtyBlur}
           disabled={busy}
-          className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-[#c9b5dc]/40 focus:ring-2 focus:ring-[#c9b5dc]/20 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Number of tickets to buy"
         />
       </label>

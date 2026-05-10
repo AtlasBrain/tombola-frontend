@@ -98,9 +98,13 @@ export function RedeemButton({ params }: Props) {
       <button
         type="button"
         onClick={() => setWalletModalVisible(true)}
-        className="rounded bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-500"
+        style={{ ["--tear-bg" as never]: "#88cfc4" }}
+        className="btn-fx fx-tear inline-flex items-center justify-center gap-2 px-6 py-3 font-display text-sm uppercase tracking-widest text-black transition hover:brightness-110"
       >
         Connect wallet to redeem
+        <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px] text-[#88cfc4]">
+          →
+        </span>
       </button>
     );
   }
@@ -111,13 +115,23 @@ export function RedeemButton({ params }: Props) {
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="rounded bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-neutral-700"
+        style={{ ["--tear-bg" as never]: busy ? "#1a1a1a" : "#88cfc4" }}
+        className="btn-fx fx-tear inline-flex items-center justify-center gap-2 px-6 py-3 font-display text-sm uppercase tracking-widest transition hover:brightness-110 disabled:cursor-not-allowed"
       >
-        {busy
-          ? "Redeeming…"
-          : params.mode === "Whitelist"
-            ? "Redeem invite (you'll be whitelisted)"
-            : "Redeem invite (auto-purchases 1 ticket)"}
+        {busy ? (
+          <span className="text-neutral-500">Redeeming…</span>
+        ) : (
+          <>
+            <span className="text-black">
+              {params.mode === "Whitelist"
+                ? "Redeem invite (whitelist)"
+                : "Redeem invite (1 ticket)"}
+            </span>
+            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px] text-[#88cfc4]">
+              →
+            </span>
+          </>
+        )}
       </button>
       {err && (
         <p className="text-sm text-red-400" role="alert">

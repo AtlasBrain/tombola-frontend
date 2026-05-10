@@ -24,7 +24,7 @@ export function StatsBar({ pools }: { pools: PoolView[] }) {
         label="Total pot"
         value={
           <FlashOnChange value={totalPot.toString()}>
-            <span className="text-emerald-400">{formatSol(totalPot)}</span>
+            <span style={{ color: "#88cfc4" }}>{formatSol(totalPot)}</span>
           </FlashOnChange>
         }
       />

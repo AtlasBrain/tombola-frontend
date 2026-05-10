@@ -28,7 +28,8 @@ interface Props {
   batches: BatchRange[];
   /** Pool state — used to detect AwaitingVrf -> Resolved transitions for the toast. */
   state: "Open" | "AwaitingVrf" | "Resolved" | 0 | 1 | 2;
-  /** Hex/CSS accent color. Public pages skip this for emerald default. */
+  /** Hex/CSS accent color. When omitted, uses mint as the safe brand
+   *  default — emerald is no longer in the palette. */
   accentColor?: string;
 }
 
@@ -144,7 +145,7 @@ export function WinnerBanner({
   if (!resolved || !winner) return null;
 
   const rpcUrl = connection.rpcEndpoint;
-  const accent = accentColor ?? "#34d399"; // emerald-400 default
+  const accent = accentColor ?? "#88cfc4"; // mint default — emerald is not in the palette
   const winnerStyle = isWinner
     ? {
         borderColor: accent,

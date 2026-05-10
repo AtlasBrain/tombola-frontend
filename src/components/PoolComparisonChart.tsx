@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { FlashOnChange } from "./FlashOnChange";
 import { formatSol } from "@/lib/format";
-import type { PoolView } from "@/lib/mock-pools";
+import type { PoolView, PoolKind } from "@/lib/mock-pools";
+
+// Per-cadence accent matching PoolCard + the rest of the brand palette.
+// Emerald is not in the palette — bars used to be a generic emerald gradient,
+// now each bar paints in its pool's color so the chart reads "weekly is up,
+// monthly is down" at a glance.
+const ACCENT_BY_KIND: Record<PoolKind, string> = {
+  Weekly: "#c9b5dc",
+  Biweekly: "#E89999",
+  Triweekly: "#88cfc4",
+  Monthly: "#e8d89e",
+};
 
 /**
  * 4-column vertical bar chart comparing pots across the four pools.
@@ -35,6 +46,9 @@ export function PoolComparisonChart({ pools }: { pools: PoolView[] }) {
                   8,
                   Number((pool.totalPotLamports * 100n) / max),
                 );
+          // Per-cadence accent so each bar reads as the same color as the
+          // PoolCard for that round on the homepage.
+          const accent = ACCENT_BY_KIND[pool.kind];
           return (
             <Link
               key={pool.poolType}
@@ -42,14 +56,24 @@ export function PoolComparisonChart({ pools }: { pools: PoolView[] }) {
               className="group flex h-full flex-1 flex-col items-center gap-2"
             >
               <FlashOnChange value={pool.totalPotLamports.toString()}>
-                <span className="text-xs font-medium tabular-nums text-neutral-300 group-hover:text-emerald-300">
+                <span
+                  className="text-xs font-medium tabular-nums text-neutral-300 transition-colors"
+                  style={
+                    {
+                      ["--bar-hover" as never]: accent,
+                    } as React.CSSProperties
+                  }
+                >
                   {formatSol(pool.totalPotLamports)}
                 </span>
               </FlashOnChange>
               <div className="relative flex w-full flex-1 items-end">
                 <div
-                  className="w-full rounded-t-md bg-linear-to-t from-emerald-500/30 to-emerald-500/70 transition-all duration-700 group-hover:from-emerald-500/40 group-hover:to-emerald-400"
-                  style={{ height: `${heightPct}%` }}
+                  className="w-full rounded-t-md transition-all duration-700"
+                  style={{
+                    height: `${heightPct}%`,
+                    background: `linear-gradient(to top, ${accent}4d, ${accent}b3)`,
+                  }}
                 />
               </div>
               <span className="text-xs text-neutral-500 group-hover:text-neutral-300">

@@ -14,7 +14,8 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:bg-emerald-400"
+        style={{ background: "#c9b5dc" }}
+        className="rounded-lg px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:brightness-110"
       >
         Back to pools
       </Link>
