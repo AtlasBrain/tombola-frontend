@@ -7,9 +7,15 @@ export default defineConfig({
     environment: "node",
   },
   resolve: {
-    alias: {
-      "@tombola/sdk": path.resolve(__dirname, "../../vendor/sdk/index.ts"),
-      "@tombola/sdk/*": [path.resolve(__dirname, "../../vendor/sdk/*")],
-    },
+    alias: [
+      {
+        find: /^@tombola\/sdk\/(.+)$/,
+        replacement: path.resolve(__dirname, "../../vendor/sdk/$1"),
+      },
+      {
+        find: "@tombola/sdk",
+        replacement: path.resolve(__dirname, "../../vendor/sdk/index.ts"),
+      },
+    ],
   },
 });
