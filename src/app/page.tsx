@@ -1,6 +1,7 @@
 import { PROGRAM_ID } from "@tombola/sdk";
 import { AllRoundsTable } from "@/components/AllRoundsTable";
 import { BentoFooter } from "@/components/BentoFooter";
+import { FAQ } from "@/components/FAQ";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { HostRaffleSection } from "@/components/HostRaffleSection";
@@ -76,6 +77,7 @@ export default async function Home() {
       <AllRoundsTable pools={pools} />
       <WhyItsFair />
       <HowItWorks />
+      <FAQ />
       <BentoFooter pools={pools} programId={PROGRAM_ID.toString()} cluster={CLUSTER} />
 
       <footer className="border-t border-neutral-900">
