@@ -35,7 +35,7 @@ export default function CreatePoolPage() {
               POOL CREATOR
             </span>
             <h1 className="font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
-              Private<br />pools.
+              Private<br />pools
             </h1>
             <p className="mt-4 text-sm text-neutral-400 sm:text-base">
               Mint invite codes and hand them out individually. Codes are

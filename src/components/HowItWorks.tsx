@@ -108,7 +108,7 @@ export function HowItWorks() {
         <div className="mb-12 flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-display text-3xl uppercase sm:text-5xl leading-[0.95]">
             From idea to win<br />
-            in three steps.
+            in three steps
           </h2>
           <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
             3 steps · no claim · on chain

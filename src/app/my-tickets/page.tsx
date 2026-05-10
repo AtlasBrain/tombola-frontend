@@ -26,7 +26,7 @@ export default function MyTicketsPage() {
               YOUR SCOREBOARD
             </span>
             <h1 className="font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
-              My tickets.
+              My tickets
             </h1>
             <p className="mt-4 text-sm text-neutral-400 sm:text-base">
               Every pool you&apos;ve bought into. Wins are credited directly to
