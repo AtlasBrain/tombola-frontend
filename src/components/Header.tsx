@@ -14,11 +14,10 @@ type NavItem =
 // exist. POOLS/HOW IT WORKS/STATS/FAQ all scroll to ids inside the homepage's
 // long-form layout, so on any other route they'd no-op and feel broken.
 const NAV_HOMEPAGE: readonly NavItem[] = [
-  { kind: "anchor", id: "pools",         label: "POOLS" },
+  { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
   { kind: "link",   href: "/create",     label: "PRIVATE" },
   { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
   { kind: "anchor", id: "how-it-works",  label: "HOW IT WORKS" },
-  { kind: "anchor", id: "stats",         label: "STATS" },
   { kind: "anchor", id: "faq",           label: "FAQ" },
 ];
 

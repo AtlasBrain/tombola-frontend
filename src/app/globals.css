@@ -86,21 +86,23 @@ input[type="number"] {
  *  - float-r1..r6: 6 independent ease-in-out drift loops for the floating
  *                 ticket / coin / dice / sparkle decorations
  */
+/* filter: drop-shadow respects the alpha mask of the rendered element, so
+ * the glow follows the lottery-ticket tear-corner outline instead of a
+ * rectangular bounding box. Apply directly to the button (not a wrapper). */
 @keyframes cta-halo {
   0%, 100% {
-    box-shadow:
-      0 0 0 0 rgba(232, 153, 153, 0.5),
-      0 0 30px 0 rgba(232, 153, 153, 0);
+    filter:
+      drop-shadow(0 0 0px rgba(232, 153, 153, 0))
+      drop-shadow(0 0 0px rgba(232, 153, 153, 0));
   }
   50% {
-    box-shadow:
-      0 0 0 6px rgba(232, 153, 153, 0),
-      0 0 38px 6px rgba(232, 153, 153, 0.4);
+    filter:
+      drop-shadow(0 0 18px rgba(232, 153, 153, 0.55))
+      drop-shadow(0 0 4px rgba(232, 153, 153, 0.35));
   }
 }
 .cta-halo {
   animation: cta-halo 2.4s ease-in-out infinite;
-  border-radius: 6px;
 }
 
 @keyframes ticket-shimmer {

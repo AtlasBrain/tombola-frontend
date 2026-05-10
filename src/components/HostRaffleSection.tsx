@@ -258,31 +258,32 @@ function FlowColumn() {
  */
 function CreatePoolTicketButton() {
   return (
-    <span className="cta-halo inline-block">
-      <Link
-        href="/create"
-        style={{ ["--tear-bg" as never]: PINK }}
-        className="btn-fx fx-tear-lg ticket-shimmer-mask relative inline-flex items-center gap-3.5 px-5 py-3.5 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
+    <Link
+      href="/create"
+      style={{ ["--tear-bg" as never]: PINK }}
+      // .cta-halo is applied here (not on a wrapper) so its filter:
+      // drop-shadow renders the glow against the actual rendered alpha
+      // of the tear-corner pseudo, not a rectangular bounding box.
+      className="cta-halo btn-fx fx-tear-lg ticket-shimmer-mask relative inline-flex items-center gap-3.5 px-5 py-3.5 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
+    >
+      <span className="relative z-10">Create a private pool</span>
+      <span
+        aria-hidden
+        className="relative z-10 self-stretch w-px"
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, rgba(0,0,0,0.6) 4px, transparent 4px)",
+          backgroundSize: "1px 8px",
+          backgroundRepeat: "repeat-y",
+        }}
+      />
+      <span
+        className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px]"
+        style={{ color: PINK }}
       >
-        <span className="relative z-10">Create a private pool</span>
-        <span
-          aria-hidden
-          className="relative z-10 self-stretch w-px"
-          style={{
-            backgroundImage:
-              "linear-gradient(to bottom, rgba(0,0,0,0.6) 4px, transparent 4px)",
-            backgroundSize: "1px 8px",
-            backgroundRepeat: "repeat-y",
-          }}
-        />
-        <span
-          className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px]"
-          style={{ color: PINK }}
-        >
-          →
-        </span>
-      </Link>
-    </span>
+        →
+      </span>
+    </Link>
   );
 }
 
