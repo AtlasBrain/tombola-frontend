@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { createSolanaRpc, type Address } from "@solana/kit";
 import { hashLeaf, PROGRAM_ID, findRedeemedCodePda } from "@tombola/sdk";
+import { fetchMaybeRedeemedCode } from "@tombola/sdk/generated/accounts/redeemedCode";
 import { encodeRedemptionLink } from "@/lib/private-pools";
 import { loadCodesFromStorage, type StoredCodesPayload } from "@/lib/private-pool-storage";
 
@@ -23,6 +24,7 @@ interface RowState {
   code: string;
   proof: Uint8Array[];
   redeemed: boolean;
+  redeemer: string | null;
 }
 
 const COPY_FEEDBACK_MS = 1_500;
@@ -66,13 +68,12 @@ export function AdminRedemptionStatus({
             poolAddress as Address,
             codeHash,
           );
-          const acc = await rpc
-            .getAccountInfo(pda as never, { encoding: "base64" })
-            .send();
+          const acc = await fetchMaybeRedeemedCode(rpc as never, pda);
           return {
             code,
             proof: stored.proofs[code],
-            redeemed: !!acc.value,
+            redeemed: acc.exists,
+            redeemer: acc.exists ? (acc.data.redeemer as string) : null,
           } satisfies RowState;
         }),
       );
@@ -129,11 +130,11 @@ export function AdminRedemptionStatus({
 
   const onDownloadCsv = useCallback(() => {
     if (!rows) return;
-    const header = "index,code,redeemed,redemption_url\n";
+    const header = "index,code,redeemed,redeemer,redemption_url\n";
     const body = rows
       .map(
         (r, i) =>
-          `${i + 1},${r.code},${r.redeemed ? "yes" : "no"},${linkFor(r)}`,
+          `${i + 1},${r.code},${r.redeemed ? "yes" : "no"},${r.redeemer ?? ""},${linkFor(r)}`,
       )
       .join("\n");
     const blob = new Blob([header + body], {
@@ -337,9 +338,22 @@ export function AdminRedemptionStatus({
               <span className="w-8 shrink-0 text-right text-neutral-600">
                 {i + 1}
               </span>
-              <code className="flex-1 truncate text-neutral-500 line-through">
+              <code className="w-28 shrink-0 truncate text-neutral-500 line-through">
                 {r.code.slice(0, 16)}…
               </code>
+              {r.redeemer ? (
+                <a
+                  href={`https://solscan.io/account/${r.redeemer}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-w-0 truncate text-[#88cfc4] hover:underline"
+                  title={r.redeemer}
+                >
+                  {r.redeemer.slice(0, 6)}…{r.redeemer.slice(-4)}
+                </a>
+              ) : (
+                <span className="text-neutral-600">—</span>
+              )}
             </li>
           ))}
         </ul>
