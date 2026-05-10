@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { NetworkPill } from "@/components/NetworkPill";
+import { NotificationBell } from "@/components/NotificationBell";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
 type NavItem =
@@ -18,6 +19,7 @@ const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
   { kind: "link",   href: "/create",     label: "PRIVATE" },
   { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
+  { kind: "link",   href: "/leaderboard",label: "LEADERBOARD" },
   { kind: "anchor", id: "how-it-works",  label: "HOW IT WORKS" },
   { kind: "anchor", id: "faq",           label: "FAQ" },
 ];
@@ -26,9 +28,10 @@ const NAV_HOMEPAGE: readonly NavItem[] = [
 // they'd no-op). POOLS becomes a cross-page link to /#pools (browser scrolls
 // after navigation). The current page is filtered out by hideHref below.
 const NAV_SUBROUTE: readonly NavItem[] = [
-  { kind: "link", href: "/#pools",     label: "POOLS" },
-  { kind: "link", href: "/create",     label: "PRIVATE" },
-  { kind: "link", href: "/my-tickets", label: "MY TICKETS" },
+  { kind: "link", href: "/#pools",      label: "POOLS" },
+  { kind: "link", href: "/create",      label: "PRIVATE" },
+  { kind: "link", href: "/my-tickets",  label: "MY TICKETS" },
+  { kind: "link", href: "/leaderboard", label: "LEADERBOARD" },
 ];
 
 export function Header() {
@@ -37,9 +40,11 @@ export function Header() {
   const hideHref =
     pathname.startsWith("/my-tickets")
       ? "/my-tickets"
-      : pathname === "/create" || pathname.startsWith("/create/")
-        ? "/create"
-        : null;
+      : pathname.startsWith("/leaderboard")
+        ? "/leaderboard"
+        : pathname === "/create" || pathname.startsWith("/create/")
+          ? "/create"
+          : null;
   const navItems = (isHomepage ? NAV_HOMEPAGE : NAV_SUBROUTE).filter(
     (item) => item.kind === "anchor" || item.href !== hideHref,
   );
@@ -105,6 +110,7 @@ export function Header() {
           <div className="hidden sm:block">
             <NetworkPill />
           </div>
+          <NotificationBell />
           <ConnectWalletButton />
           {/* Hamburger — visible below sm. The .ham-spin CSS in globals.css
               rotates the icon 180° while the bars morph into an × on .open.

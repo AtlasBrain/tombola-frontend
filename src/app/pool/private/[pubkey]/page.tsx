@@ -225,7 +225,14 @@ export default function PrivatePoolPage({
                 {shortAddr(pubkey)}
               </h1>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-                CREATOR {shortAddr(pool.creator)} · FEE {(pool.creatorFeeBps / 100).toFixed(1)}% ·{" "}
+                CREATOR{" "}
+                <a
+                  href={`/creator/${pool.creator}`}
+                  className="hover:text-white"
+                >
+                  {shortAddr(pool.creator)} →
+                </a>{" "}
+                · FEE {(pool.creatorFeeBps / 100).toFixed(1)}% ·{" "}
                 <a
                   href={explorerAddressUrl(pubkey, connection.rpcEndpoint)}
                   target="_blank"

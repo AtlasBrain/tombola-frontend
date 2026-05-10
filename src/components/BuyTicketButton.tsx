@@ -7,6 +7,7 @@ import { createSolanaRpc, type TransactionSigner } from "@solana/kit";
 import { RaffleClient, type PoolTypeValue } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { formatSol } from "@/lib/format";
+import { pushNotification } from "@/lib/notifications";
 import { useToast } from "./Toast";
 
 interface Props {
@@ -78,6 +79,13 @@ export function BuyTicketButton({
         "success",
         `Bought ${qty} ticket${qty === 1 ? "" : "s"} ✓`,
       );
+      pushNotification({
+        wallet: publicKey.toBase58(),
+        kind: "purchase",
+        title: `Bought ${qty} ticket${qty === 1 ? "" : "s"}`,
+        body: `${formatSol(BigInt(qty) * ticketPriceLamports)} · round ${round.toString()}`,
+        href: "/#pools",
+      });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setErr(msg);
@@ -86,7 +94,7 @@ export function BuyTicketButton({
     } finally {
       setBusy(false);
     }
-  }, [connection, publicKey, signTransaction, poolType, round, qty, pushToast]);
+  }, [connection, publicKey, signTransaction, poolType, round, qty, ticketPriceLamports, pushToast]);
 
   if (closed) {
     return (

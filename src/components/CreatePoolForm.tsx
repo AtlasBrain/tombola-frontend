@@ -14,6 +14,7 @@ import {
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { findMyPrivatePools, type RedemptionMode } from "@/lib/private-pools";
 import { saveCodesToStorage } from "@/lib/private-pool-storage";
+import { pushNotification } from "@/lib/notifications";
 
 const MIN_DURATION_SECS = 3_600;
 const MAX_DURATION_SECS = 90 * 86_400;
@@ -164,6 +165,15 @@ export function CreatePoolForm({ onCreated }: Props) {
           "Couldn't save codes to browser storage — copy/download them now or they're lost.",
         );
       }
+
+      pushNotification({
+        wallet: publicKey.toBase58(),
+        kind: "created",
+        title: `Created private pool`,
+        body: `${count} invite code${count === 1 ? "" : "s"} · ${priceSol} SOL/ticket`,
+        href: `/pool/private/${poolAddress}`,
+        dedupeId: `created-${poolAddress}`,
+      });
 
       onCreated({ poolAddress, codes, proofs: proofMap, mode });
     } catch (e: unknown) {
