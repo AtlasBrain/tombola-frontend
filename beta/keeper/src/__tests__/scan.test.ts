@@ -38,4 +38,18 @@ describe("classifyPool", () => {
   it("returns null for resolved pool", () => {
     expect(classifyPool({ ...BASE, state: 2 }, now, STUCK_THRESHOLD)).toBeNull();
   });
+
+  it("returns 'commit' when closeTime equals now (exact boundary)", () => {
+    expect(classifyPool({ ...BASE, state: 0, closeTime: now }, now, STUCK_THRESHOLD)).toBe("commit");
+  });
+
+  it("returns 'stuck' when nowSec equals exactly the stuck threshold (exact boundary)", () => {
+    const closeTime = now - STUCK_THRESHOLD;
+    expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("stuck");
+  });
+
+  it("returns 'settle' for AwaitingVrf pool with zero tickets (settled anyway)", () => {
+    const closeTime = now - 60n;
+    expect(classifyPool({ ...BASE, state: 1, closeTime, totalTickets: 0n }, now, STUCK_THRESHOLD)).toBe("settle");
+  });
 });

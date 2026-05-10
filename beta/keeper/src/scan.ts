@@ -11,7 +11,7 @@ export interface ActionablePool {
 }
 
 // PrivatePool on-chain account size. Verified on devnet (8 discriminator + 208 fields).
-const PRIVATE_POOL_SIZE = 216n;
+const PRIVATE_POOL_SIZE = 216;
 // How many seconds after close_time before declaring the oracle stuck.
 const STUCK_THRESHOLD_SEC = 3_600n;
 
@@ -59,6 +59,8 @@ export async function scanActionablePools(
     account: { data: readonly [string, "base64"] };
   }>;
 
+  if (!Array.isArray(accounts)) throw new Error("getProgramAccounts returned unexpected shape");
+
   const decoder = getPrivatePoolDecoder();
   const result: ActionablePool[] = [];
 
@@ -73,8 +75,8 @@ export async function scanActionablePools(
         STUCK_THRESHOLD_SEC,
       );
       if (action) result.push({ address: acc.pubkey, pool, action });
-    } catch {
-      // Corrupt or unrecognised account — skip silently.
+    } catch (err) {
+      console.warn(`scan: skipping ${acc.pubkey}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
