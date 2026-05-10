@@ -7,14 +7,21 @@ set -euo pipefail
 # ────────────────────────────────────────────────────────────────────────────────
 
 DEVNET="https://api.devnet.solana.com"
-FAUCET_RESERVE="${FAUCET_RESERVE_SOL:-5000000}"   # pre-fund treasury (5 million SOL)
+FAUCET_RESERVE="${FAUCET_RESERVE_SOL:-5000000}"
+
+# Railway injects $PORT — default to 8080 if not set (local testing)
+export NGINX_PORT="${PORT:-8080}"
 
 echo "Starting solana-test-validator…"
 echo "  Program ID : $PROGRAM_ID"
 echo "  Treasury   : $TREASURY_ADDRESS"
+echo "  nginx port : $NGINX_PORT"
 
-# Clone the deployed Tombola program from devnet so testers can use the real contract.
-# --reset wipes the ledger on each restart (clean state for every deploy).
+# ── generate nginx config with the correct port ────────────────────────────────
+# envsubst substitutes only ${NGINX_PORT}, leaving nginx's own $variables alone
+envsubst '${NGINX_PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+
+# ── start validator ────────────────────────────────────────────────────────────
 solana-test-validator \
     --reset \
     --bind-address 0.0.0.0 \
@@ -25,7 +32,7 @@ solana-test-validator \
     --quiet &
 VALIDATOR_PID=$!
 
-# ── wait for RPC to be ready ───────────────────────────────────────────────────
+# ── wait for RPC ───────────────────────────────────────────────────────────────
 echo "Waiting for validator RPC…"
 for i in $(seq 1 60); do
     if solana cluster-version --url http://localhost:8899 >/dev/null 2>&1; then
@@ -35,20 +42,17 @@ for i in $(seq 1 60); do
     sleep 1
 done
 
-# ── fund the treasury from the built-in faucet ────────────────────────────────
-# solana-test-validator has no airdrop limits — we can mint any amount.
+# ── fund treasury ──────────────────────────────────────────────────────────────
 echo "Funding treasury with ${FAUCET_RESERVE} SOL…"
 solana airdrop "$FAUCET_RESERVE" "$TREASURY_ADDRESS" \
     --url http://localhost:8899 \
     --commitment confirmed
 echo "Treasury funded."
 
-# ── start nginx proxy ─────────────────────────────────────────────────────────
-# HTTP RPC (8899) and WebSocket (8900) both exposed on port 80.
+# ── start nginx ────────────────────────────────────────────────────────────────
 nginx -g "daemon off;" &
 NGINX_PID=$!
 
-echo "Ready — RPC + WS on port 80 (proxy to :8899 / :8900)"
+echo "Ready — RPC+WS on port $NGINX_PORT (proxy to :8899 / :8900)"
 
-# Keep running until any child exits
 wait -n $VALIDATOR_PID $NGINX_PID
