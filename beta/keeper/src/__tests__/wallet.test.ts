@@ -3,7 +3,11 @@ import { Keypair } from "@solana/web3.js";
 import { loadKeeperKeypair } from "../wallet.js";
 
 describe("loadKeeperKeypair", () => {
-  const original = process.env.KEEPER_KEYPAIR;
+  let original: string | undefined;
+
+  beforeEach(() => {
+    original = process.env.KEEPER_KEYPAIR;
+  });
 
   afterEach(() => {
     if (original === undefined) delete process.env.KEEPER_KEYPAIR;
@@ -23,6 +27,18 @@ describe("loadKeeperKeypair", () => {
   it("throws when KEEPER_KEYPAIR is not a 64-element array", () => {
     process.env.KEEPER_KEYPAIR = JSON.stringify([1, 2, 3]);
     expect(() => loadKeeperKeypair()).toThrow("must be a 64-element JSON array");
+  });
+
+  it("throws when KEEPER_KEYPAIR contains non-integer values", () => {
+    const secretKey = Array.from({ length: 64 }, () => 1.5);
+    process.env.KEEPER_KEYPAIR = JSON.stringify(secretKey);
+    expect(() => loadKeeperKeypair()).toThrow("must be integers in [0, 255]");
+  });
+
+  it("throws when KEEPER_KEYPAIR contains out-of-range values", () => {
+    const secretKey = Array.from({ length: 64 }, (_, i) => (i === 0 ? 300 : i % 256));
+    process.env.KEEPER_KEYPAIR = JSON.stringify(secretKey);
+    expect(() => loadKeeperKeypair()).toThrow("must be integers in [0, 255]");
   });
 
   it("returns a Keypair when given a valid 64-byte secret key", () => {

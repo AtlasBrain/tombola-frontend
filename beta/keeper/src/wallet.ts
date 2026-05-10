@@ -14,5 +14,8 @@ export function loadKeeperKeypair(): Keypair {
       `KEEPER_KEYPAIR must be a 64-element JSON array, got ${Array.isArray(arr) ? `length ${arr.length}` : "non-array"}`,
     );
   }
+  if (!(arr as number[]).every((el) => Number.isInteger(el) && el >= 0 && el <= 255)) {
+    throw new Error("KEEPER_KEYPAIR elements must be integers in [0, 255]");
+  }
   return Keypair.fromSecretKey(Uint8Array.from(arr as number[]));
 }

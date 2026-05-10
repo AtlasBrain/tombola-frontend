@@ -33,6 +33,7 @@ export async function sendAndConfirm(
   ixs: TransactionInstruction[],
   signers: Keypair[],
 ): Promise<string> {
+  if (signers.length === 0) throw new Error("sendAndConfirm requires at least one signer");
   const tx = new Transaction();
   for (const ix of ixs) tx.add(ix);
   tx.feePayer = signers[0].publicKey;
