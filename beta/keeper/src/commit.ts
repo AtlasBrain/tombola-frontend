@@ -8,7 +8,7 @@ import {
   ON_DEMAND_MAINNET_QUEUE,
   AnchorUtils,
 } from "@switchboard-xyz/on-demand";
-import { createKeyPairSignerFromBytes, createSolanaRpc, type Address } from "@solana/kit";
+import { address, createKeyPairSignerFromBytes, createSolanaRpc, type Address } from "@solana/kit";
 import { RaffleClient } from "@tombola/sdk";
 import { kitIxToWeb3, sendAndConfirm } from "./tx.js";
 import { log } from "./logger.js";
@@ -42,13 +42,13 @@ export async function commitPool(
 
   // ---- Step B: bundle sbCommit + commitDrawPrivate ----
   const sbCommitIx = await randomness.commitIx(queuePk, keeperKp.publicKey, undefined);
-  const rpc = createSolanaRpc(rpcUrl as never);
+  const rpc = createSolanaRpc(rpcUrl as `${string}://${string}`);
   const client = new RaffleClient({ rpc });
   const callerSigner = await createKeyPairSignerFromBytes(keeperKp.secretKey);
   const raffleCommitIx = await client.commitDrawPrivate({
     caller: callerSigner,
-    pool: poolAddress as Address,
-    randomnessAccount: randomness.pubkey.toBase58() as Address,
+    pool: address(poolAddress),
+    randomnessAccount: address(randomness.pubkey.toBase58()),
   });
 
   await sendAndConfirm(connection, [sbCommitIx, kitIxToWeb3(raffleCommitIx)], [keeperKp]);
