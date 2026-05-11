@@ -13,6 +13,7 @@ import {
   verifyFriendAction,
   type FriendAction,
 } from "@/lib/friend-store";
+import { isRateLimited } from "@/lib/kv/ratelimit";
 
 // Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
 // Dynamic + short maxDuration: each request is fast and never cached.
@@ -41,6 +42,17 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: `Unknown action: ${action}` },
       { status: 400 },
+    );
+  }
+
+  // Rate-limit BEFORE consuming the nonce so spammers can't drain nonces.
+  if (
+    typeof wallet === "string" &&
+    (await isRateLimited("friend-write", wallet))
+  ) {
+    return NextResponse.json(
+      { error: "Too many requests", code: "rate_limited" },
+      { status: 429 },
     );
   }
 

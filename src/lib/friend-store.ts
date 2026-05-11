@@ -129,11 +129,30 @@ export async function sendFriendRequest(
     requestedBy: from,
     ts: Date.now(),
   };
-  await Promise.all([
-    r.set(edgeKey(from, to), row),
-    r.sadd(`${PENDING_OUT_PREFIX}${from}`, to),
-    r.sadd(`${PENDING_IN_PREFIX}${to}`, from),
-  ]);
+  // Atomic create-if-absent on the canonical edge key. If two concurrent
+  // requests reach this point (the pre-check above raced), only one wins;
+  // the other re-reads and surfaces the appropriate error path.
+  const acquired = await r.set(edgeKey(from, to), row, { nx: true });
+  if (!acquired) {
+    const racedEdge = await getEdge(from, to);
+    if (racedEdge?.status === "accepted") {
+      return { ok: false, error: "Already friends." };
+    }
+    if (racedEdge?.requestedBy === from) {
+      return { ok: false, error: "Request already sent." };
+    }
+    return {
+      ok: false,
+      error: "This wallet already invited you — accept their request instead.",
+    };
+  }
+  // Index sets are SADDs (idempotent), safe to write after edge acquisition.
+  // Use a pipeline so it's one network round-trip.
+  await r
+    .pipeline()
+    .sadd(`${PENDING_OUT_PREFIX}${from}`, to)
+    .sadd(`${PENDING_IN_PREFIX}${to}`, from)
+    .exec();
   return { ok: true };
 }
 
@@ -151,29 +170,27 @@ export async function respondToFriendRequest(
     return { ok: false, error: "No pending request from that wallet." };
   }
 
-  const pendingCleanup = [
-    r.srem(`${PENDING_OUT_PREFIX}${initiator}`, responder),
-    r.srem(`${PENDING_IN_PREFIX}${responder}`, initiator),
-  ];
-
+  // All state transitions go into one pipeline so the canonical edge key
+  // and its index sets land in the same network round-trip. Pipelines are
+  // not fully atomic on Upstash REST (no MULTI/EXEC), but since the
+  // responder side is single-wallet-authenticated, concurrent contention
+  // is bounded to that wallet's own rate-limited callers.
+  const pipe = r.pipeline();
   if (accept) {
     const accepted: EdgeRow = {
       status: "accepted",
       requestedBy: initiator,
       ts: edge.ts,
     };
-    await Promise.all([
-      r.set(edgeKey(responder, initiator), accepted),
-      r.sadd(`${ACCEPTED_PREFIX}${responder}`, initiator),
-      r.sadd(`${ACCEPTED_PREFIX}${initiator}`, responder),
-      ...pendingCleanup,
-    ]);
+    pipe.set(edgeKey(responder, initiator), accepted);
+    pipe.sadd(`${ACCEPTED_PREFIX}${responder}`, initiator);
+    pipe.sadd(`${ACCEPTED_PREFIX}${initiator}`, responder);
   } else {
-    await Promise.all([
-      r.del(edgeKey(responder, initiator)),
-      ...pendingCleanup,
-    ]);
+    pipe.del(edgeKey(responder, initiator));
   }
+  pipe.srem(`${PENDING_OUT_PREFIX}${initiator}`, responder);
+  pipe.srem(`${PENDING_IN_PREFIX}${responder}`, initiator);
+  await pipe.exec();
   return { ok: true };
 }
 
@@ -190,11 +207,12 @@ export async function unfriend(
   if (!edge) return { ok: false, error: "No relationship to remove." };
 
   if (edge.status === "accepted") {
-    await Promise.all([
-      r.del(edgeKey(caller, other)),
-      r.srem(`${ACCEPTED_PREFIX}${caller}`, other),
-      r.srem(`${ACCEPTED_PREFIX}${other}`, caller),
-    ]);
+    await r
+      .pipeline()
+      .del(edgeKey(caller, other))
+      .srem(`${ACCEPTED_PREFIX}${caller}`, other)
+      .srem(`${ACCEPTED_PREFIX}${other}`, caller)
+      .exec();
     return { ok: true };
   }
 
@@ -202,11 +220,12 @@ export async function unfriend(
   if (edge.requestedBy !== caller) {
     return { ok: false, error: "Only the requester can cancel a pending invite." };
   }
-  await Promise.all([
-    r.del(edgeKey(caller, other)),
-    r.srem(`${PENDING_OUT_PREFIX}${caller}`, other),
-    r.srem(`${PENDING_IN_PREFIX}${other}`, caller),
-  ]);
+  await r
+    .pipeline()
+    .del(edgeKey(caller, other))
+    .srem(`${PENDING_OUT_PREFIX}${caller}`, other)
+    .srem(`${PENDING_IN_PREFIX}${other}`, caller)
+    .exec();
   return { ok: true };
 }
 

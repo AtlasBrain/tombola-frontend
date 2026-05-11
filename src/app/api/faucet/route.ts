@@ -9,6 +9,7 @@ import {
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import { getRedis } from "@/lib/kv/redis";
+import { isRateLimited } from "@/lib/kv/ratelimit";
 
 // Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
 // Dynamic + short maxDuration: each request is fast and never cached.
@@ -31,25 +32,57 @@ const RPC_URL =
 // not for production (resets on each cold start, useless under multi-region).
 const memUsed = new Set<string>();
 
-async function isUsed(code: string): Promise<boolean> {
+/** Two-stage claim:
+ *
+ *   1. `reserveCode` — atomic `SET NX EX 60` with a "pending" marker.
+ *      Returns false if another request already holds the code OR the code
+ *      was permanently claimed. Crash between this and finalize lets the
+ *      TTL expire after 60s so the code becomes claimable again.
+ *
+ *   2. `finalizeUsed` — long-TTL overwrite once the SOL transfer confirmed.
+ *
+ *   3. `releaseReservation` — undo a still-pending reservation when the
+ *      transfer fails BEFORE confirmation. Safe: we only delete keys whose
+ *      value matches our "pending:" marker so we never wipe a finalized
+ *      claim.
+ */
+const RESERVATION_TTL_SEC = 60;
+const CLAIM_TTL_SEC = 365 * 24 * 3600;
+const PENDING_PREFIX = "pending:";
+
+async function reserveCode(code: string, wallet: string): Promise<boolean> {
   const redis = getRedis();
-  if (redis) return !!(await redis.get(`tombola:faucet:used:${code}`));
-  return memUsed.has(code);
-}
-async function markUsed(code: string, wallet: string): Promise<void> {
-  const redis = getRedis();
-  if (redis) {
-    await redis.set(`tombola:faucet:used:${code}`, wallet, {
-      ex: 365 * 24 * 3600,
-    });
-  } else {
+  if (!redis) {
+    if (memUsed.has(code)) return false;
     memUsed.add(code);
+    return true;
   }
+  const res = await redis.set(
+    `tombola:faucet:used:${code}`,
+    `${PENDING_PREFIX}${wallet}`,
+    { nx: true, ex: RESERVATION_TTL_SEC },
+  );
+  return res !== null;
 }
-async function unmarkUsed(code: string): Promise<void> {
+
+async function finalizeUsed(code: string, wallet: string): Promise<void> {
   const redis = getRedis();
-  if (redis) await redis.del(`tombola:faucet:used:${code}`);
-  else memUsed.delete(code);
+  if (!redis) return; // memUsed already contains the code from reserveCode
+  await redis.set(`tombola:faucet:used:${code}`, wallet, { ex: CLAIM_TTL_SEC });
+}
+
+async function releaseReservation(code: string, wallet: string): Promise<void> {
+  const redis = getRedis();
+  if (!redis) {
+    memUsed.delete(code);
+    return;
+  }
+  // Only delete if the value is still our pending marker; protects against
+  // a concurrent finalize that races with this rollback.
+  const cur = await redis.get<string>(`tombola:faucet:used:${code}`);
+  if (cur === `${PENDING_PREFIX}${wallet}`) {
+    await redis.del(`tombola:faucet:used:${code}`);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -60,17 +93,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "code and wallet required" }, { status: 400 });
   }
 
+  // IP-keyed rate-limit. Code uniqueness is permanent (per code, lifetime),
+  // but a single IP could try hundreds of bad codes in a loop without it.
+  // Vercel forwards the client IP in x-forwarded-for; fall back to a literal
+  // "unknown" so the limiter still buckets garbage requests.
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+  if (await isRateLimited("faucet", ip)) {
+    return NextResponse.json(
+      { error: "Too many requests", code: "rate_limited" },
+      { status: 429 },
+    );
+  }
+
   // INVITE_CODES being empty = open faucet (no codes needed). Set the var to
   // lock it down.
   if (VALID_CODES.size > 0 && !VALID_CODES.has(code.toUpperCase())) {
     return NextResponse.json({ error: "Invalid invite code" }, { status: 400 });
-  }
-
-  if (await isUsed(code.toUpperCase())) {
-    return NextResponse.json(
-      { error: "Invite code already claimed" },
-      { status: 409 },
-    );
   }
 
   let recipient: PublicKey;
@@ -94,8 +135,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
 
-  // Mark before sending to prevent concurrent double-claims
-  await markUsed(code.toUpperCase(), wallet);
+  // Atomic reserve. If reserveCode returns false the code is either
+  // permanently claimed OR another in-flight request is claiming it. Either
+  // way the right answer is 409.
+  const upperCode = code.toUpperCase();
+  const reserved = await reserveCode(upperCode, wallet);
+  if (!reserved) {
+    return NextResponse.json(
+      { error: "Invite code already claimed" },
+      { status: 409 },
+    );
+  }
 
   try {
     const connection = new Connection(RPC_URL, "confirmed");
@@ -109,9 +159,12 @@ export async function POST(request: NextRequest) {
     const sig = await sendAndConfirmTransaction(connection, tx, [treasury], {
       commitment: "confirmed",
     });
+    // Promote the short-TTL reservation to a permanent claim now that the
+    // transfer is confirmed on-chain.
+    await finalizeUsed(upperCode, wallet);
     return NextResponse.json({ success: true, signature: sig, sol: FAUCET_SOL });
   } catch (err) {
-    await unmarkUsed(code.toUpperCase());
+    await releaseReservation(upperCode, wallet);
     const msg = err instanceof Error ? err.message : String(err);
     console.error("faucet transfer failed:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });

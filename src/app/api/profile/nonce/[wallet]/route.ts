@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { issueNonce } from "@/lib/profile-store";
+import { isRateLimited } from "@/lib/kv/ratelimit";
 
 // Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
 // Dynamic + short maxDuration: each request is fast and never cached.
@@ -20,6 +21,12 @@ export async function GET(_req: Request, ctx: RouteCtx) {
   // Cheap shape-only validation so we don't burn KV writes on garbage URLs.
   if (typeof wallet !== "string" || wallet.length < 32 || wallet.length > 44) {
     return NextResponse.json({ error: "Invalid wallet" }, { status: 400 });
+  }
+  if (await isRateLimited("profile-nonce", wallet)) {
+    return NextResponse.json(
+      { error: "Too many requests", code: "rate_limited" },
+      { status: 429 },
+    );
   }
   try {
     const nonce = await issueNonce(wallet);

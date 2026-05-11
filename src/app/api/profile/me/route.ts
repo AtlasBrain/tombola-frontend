@@ -8,6 +8,7 @@
 
 import { NextResponse } from "next/server";
 import { verifySignedRequest } from "@/lib/profile-auth";
+import { isRateLimited } from "@/lib/kv/ratelimit";
 import {
   defaultProfile,
   getProfileByWallet,
@@ -43,8 +44,20 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // 1. Verify wallet signature over the nonce. On success the nonce is
-  //    consumed; replays will fail at the next request.
+  // 1a. Rate-limit BEFORE consuming the nonce — otherwise a spammer could
+  //     drain nonces without ever passing signature verification.
+  if (
+    typeof body.wallet === "string" &&
+    (await isRateLimited("profile-write", body.wallet))
+  ) {
+    return NextResponse.json(
+      { error: "Too many requests", code: "rate_limited" },
+      { status: 429 },
+    );
+  }
+
+  // 1b. Verify wallet signature over the nonce. On success the nonce is
+  //     consumed; replays will fail at the next request.
   const authErr = await verifySignedRequest({
     wallet: body.wallet,
     nonce: body.nonce,
