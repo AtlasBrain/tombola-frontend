@@ -1,6 +1,6 @@
 import { type Address, createSolanaRpc } from "@solana/kit";
-import { getPrivatePoolDecoder } from "@tombola/sdk/generated/accounts/privatePool";
-import type { PrivatePool } from "@tombola/sdk/generated/accounts/privatePool";
+import { getPrivatePoolDecoder } from "../../../vendor/sdk/generated/accounts/privatePool.ts";
+import type { PrivatePool } from "../../../vendor/sdk/generated/accounts/privatePool.ts";
 
 export type PoolAction = "commit" | "settle" | "stuck";
 

@@ -9,7 +9,7 @@ import {
   AnchorUtils,
 } from "@switchboard-xyz/on-demand";
 import { address, createKeyPairSignerFromBytes, createSolanaRpc, type Address } from "@solana/kit";
-import { RaffleClient } from "@tombola/sdk";
+import { RaffleClient } from "../../../vendor/sdk/index.ts";
 import { kitIxToWeb3, sendAndConfirm } from "./tx.js";
 import { log, logError } from "./logger.js";
 import type { ActionablePool } from "./scan.js";

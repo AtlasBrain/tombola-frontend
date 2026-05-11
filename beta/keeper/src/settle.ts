@@ -12,9 +12,8 @@ import {
   type Address,
   type Option,
 } from "@solana/kit";
-import { RaffleClient } from "@tombola/sdk";
-import { getTicketBatchDecoder } from "@tombola/sdk/generated/accounts/ticketBatch";
-import { PROGRAM_ID } from "@tombola/sdk";
+import { RaffleClient, PROGRAM_ID } from "../../../vendor/sdk/index.ts";
+import { getTicketBatchDecoder } from "../../../vendor/sdk/generated/accounts/ticketBatch.ts";
 import { kitIxToWeb3, sendAndConfirm } from "./tx.js";
 import { log, logError } from "./logger.js";
 import type { ActionablePool } from "./scan.js";
