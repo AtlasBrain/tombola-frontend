@@ -145,13 +145,18 @@ export function WinOdds({
         background: `${accent}0d`,
       }}
     >
-      {/* Row 1 — current odds. Hidden when the user owns 0 tickets so we
-          don't show a useless 0% line, but the preview row below still
-          renders so first-time buyers see the "if I buy" projection. */}
-      {userTickets > 0n && (
+      {/* Row 1 — current odds. Shown whenever the user owns tickets, AND
+          also when they're previewing a buy (so first-time buyers can see
+          their 0% baseline next to the projected post-buy odds). The only
+          time this row is omitted is when the user has tickets but isn't
+          previewing — that's the standalone-gauge case where the second
+          row doesn't exist either, and we just show the single bar. */}
+      {(userTickets > 0n || validPreview) && (
         <>
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-            <span className="text-neutral-500">Your odds</span>
+            <span className="text-neutral-500">
+              {validPreview ? "Current odds" : "Your odds"}
+            </span>
             <span className="tabular-nums" style={{ color: accent }}>
               {currentPctTimes100.toFixed(2)}%
             </span>
@@ -173,9 +178,7 @@ export function WinOdds({
           typing a valid qty in a sibling buy button. */}
       {validPreview && postPct !== null && (
         <>
-          {userTickets > 0n && (
-            <div className="mt-1 border-t border-neutral-800/60" />
-          )}
+          <div className="mt-1 border-t border-neutral-800/60" />
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
             <span className="text-neutral-500">After buying</span>
             <span className="tabular-nums" style={{ color: accent }}>
