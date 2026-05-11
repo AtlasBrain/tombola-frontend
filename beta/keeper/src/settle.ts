@@ -22,9 +22,6 @@ import type { ActionablePool } from "./scan.js";
 const TICKET_BATCH_SIZE = 89;
 /** Byte offset of `pool` field inside TicketBatch (after 8-byte discriminator). */
 const POOL_FIELD_OFFSET = 8;
-/** Max ms to poll for oracle reveal per tick before giving up. */
-const REVEAL_TIMEOUT_MS = 60_000;
-const REVEAL_POLL_INTERVAL_MS = 2_000;
 
 export interface BatchView {
   batchAddress: string;
@@ -53,25 +50,22 @@ export function findWinningBatch(
   );
 }
 
-/** Poll randomness.loadData() until oracle reveals or we time out. */
-async function waitForReveal(randomness: Randomness): Promise<bigint | null> {
-  const deadline = Date.now() + REVEAL_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    try {
-      const data = (await randomness.loadData()) as { value?: number[] };
-      const value = data?.value ?? [];
-      if (value.some((b: number) => b !== 0)) {
-        // First 8 bytes as u64 LE — mirrors on-chain reduction.
-        let n = 0n;
-        for (let i = 0; i < 8; i++) n |= BigInt(value[i] & 0xff) << (8n * BigInt(i));
-        return n;
-      }
-    } catch {
-      // transient — keep polling
-    }
-    await new Promise((r) => setTimeout(r, REVEAL_POLL_INTERVAL_MS));
-  }
-  return null;
+/**
+ * Read the 32-byte `value` from the randomness account and return it as a u64
+ * (first 8 bytes, little-endian). Returns null if the account hasn't been
+ * revealed yet (all zeros).
+ */
+async function readRevealedValue(
+  randomness: Randomness,
+): Promise<bigint | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = (await randomness.loadData()) as any;
+  const value = data?.value ?? [];
+  const arr = Array.from(value as Iterable<number>);
+  if (!arr.some((b) => b !== 0)) return null;
+  let n = 0n;
+  for (let i = 0; i < 8; i++) n |= BigInt(arr[i] & 0xff) << (8n * BigInt(i));
+  return n;
 }
 
 /** Fetch all TicketBatches for a pool, sorted by firstTicketId ascending. */
@@ -148,16 +142,42 @@ export async function settlePool(
   const switchboardProgram = await AnchorUtils.loadProgramFromConnection(connection);
   const randomness = new Randomness(switchboardProgram, new PublicKey(vrfAddr));
 
-  const revealedValue = await waitForReveal(randomness);
+  // Step 1: ensure randomness `value` is populated. In Switchboard On-Demand
+  // the `value` field stays zero until *we* send revealIx; it's not pushed by
+  // an external oracle. If it's still zero we try to send revealIx now.
+  let revealedValue = await readRevealedValue(randomness);
   if (revealedValue === null) {
-    log(poolAddress, "oracle has not revealed yet — will retry next tick");
-    return;
+    log(poolAddress, "value not populated — sending revealIx");
+    try {
+      const sbRevealIx = await randomness.revealIx(keeperKp.publicKey);
+      const sig = await sendAndConfirm(connection, [sbRevealIx], [keeperKp]);
+      log(poolAddress, `revealIx confirmed: ${sig}`);
+    } catch (err) {
+      log(
+        poolAddress,
+        `revealIx failed (slot not advanced or oracle not ready) — will retry next tick: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return;
+    }
+    revealedValue = await readRevealedValue(randomness);
+    if (revealedValue === null) {
+      logError(
+        poolAddress,
+        "revealIx confirmed but value still zero",
+        new Error("post-reveal value is zero"),
+      );
+      return;
+    }
   }
-  log(poolAddress, `oracle revealed: ${revealedValue}`);
+  log(poolAddress, `revealed value: ${revealedValue}`);
 
   const totalTickets = entry.pool.totalTickets;
   if (totalTickets === 0n) {
-    logError(poolAddress, "pool is in AwaitingVrf with zero tickets — cannot compute winner", new Error("totalTickets is 0"));
+    logError(
+      poolAddress,
+      "pool is in AwaitingVrf with zero tickets — cannot compute winner",
+      new Error("totalTickets is 0"),
+    );
     return;
   }
   const winnerId = computeWinnerId(revealedValue, totalTickets);
@@ -178,14 +198,14 @@ export async function settlePool(
     `winning batch: ${winningBatch.batchAddress}, winner: ${winningBatch.owner}`,
   );
 
+  // Step 2: send settleDrawPrivate. The randomness account is already revealed
+  // on-chain, so the on-chain settle ix reads `value` directly.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rpc = createSolanaRpc(rpcUrl as any);
   const client = new RaffleClient({ rpc });
   const config = await client.getProtocolConfig();
   const treasury = config.treasury as string;
 
-  // revealIx takes an optional payer PublicKey (web3.js).
-  const sbRevealIx = await randomness.revealIx(keeperKp.publicKey);
   const callerSigner = await createKeyPairSignerFromBytes(keeperKp.secretKey);
   const settleIx = await client.settleDrawPrivate({
     caller: callerSigner,
@@ -197,10 +217,6 @@ export async function settlePool(
     randomnessAccount: address(vrfAddr),
   });
 
-  await sendAndConfirm(
-    connection,
-    [sbRevealIx, kitIxToWeb3(settleIx)],
-    [keeperKp],
-  );
+  await sendAndConfirm(connection, [kitIxToWeb3(settleIx)], [keeperKp]);
   log(poolAddress, `settleDrawPrivate confirmed — winner: ${winningBatch.owner}`);
 }
