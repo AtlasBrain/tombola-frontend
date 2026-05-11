@@ -9,6 +9,13 @@ import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol } from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";
 import { fetchWalletStats, type WalletStats } from "@/lib/wallet-stats";
+import {
+  getFriendLists,
+  getFriendState,
+  sendFriendAction,
+  type Relationship,
+} from "@/lib/friend-client";
+import { useToast } from "@/components/Toast";
 
 interface Props {
   profile: ProfileRow;
@@ -38,10 +45,81 @@ function shortAddr(addr: string): string {
  */
 export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
   const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { publicKey, signMessage } = useWallet();
+  const { push: pushToast } = useToast();
   const viewer = publicKey?.toBase58() ?? null;
   const isOwner = viewer !== null && viewer === profile.wallet;
   const [editOpen, setEditOpen] = useState(false);
+
+  // Friendship state — null until first /api/friends/state lookup resolves.
+  // Refreshed whenever the viewer or target changes, AND after a successful
+  // mutation so the button flips immediately.
+  const [relationship, setRelationship] = useState<Relationship | null>(null);
+  const [busy, setBusy] = useState(false);
+  // Accepted friends count of the PROFILE wallet — separate from the
+  // viewer's count. Drives the "N friends" pill in the header.
+  const [friendCount, setFriendCount] = useState<number | null>(null);
+  // Pending incoming + outgoing requests on the OWNER's own profile — used
+  // to surface a "you have N invites" hint inside the owner-only section.
+  const [pendingIn, setPendingIn] = useState<number>(0);
+
+  // Refetch relationship + friend count when the viewer or the profile
+  // changes. `refreshTick` is bumped by mutation handlers to force a
+  // re-fetch after the server has updated.
+  const [refreshTick, setRefreshTick] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [rel, lists] = await Promise.all([
+          viewer
+            ? getFriendState(viewer, profile.wallet)
+            : Promise.resolve<Relationship>("strangers"),
+          getFriendLists(profile.wallet),
+        ]);
+        if (cancelled) return;
+        setRelationship(rel);
+        setFriendCount(lists.count);
+        if (isOwner) setPendingIn(lists.pendingIn.length);
+      } catch {
+        // Network blip — leave the last-known state visible.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [viewer, profile.wallet, isOwner, refreshTick]);
+
+  async function runFriendAction(action: "request" | "accept" | "reject" | "unfriend") {
+    if (!viewer || !signMessage) {
+      pushToast("error", "Connect a wallet that supports signMessage.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await sendFriendAction({
+        wallet: viewer,
+        signMessage,
+        target: profile.wallet,
+        action,
+      });
+      pushToast(
+        "success",
+        action === "request"
+          ? "Friend request sent."
+          : action === "accept"
+            ? "Friend request accepted."
+            : action === "reject"
+              ? "Friend request rejected."
+              : "Removed from friends.",
+      );
+      setRefreshTick((n) => n + 1);
+    } catch (e) {
+      pushToast("error", e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // Real on-chain stats. Stays null until the first fetch resolves; the UI
   // shows muted dashes during that brief load. Refetch when the wallet
@@ -115,9 +193,11 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
                   )}
                 </a>
               )}
-              {/* Friends count is wired in Phase 3; show a placeholder
-                  for layout reference. */}
-              <span className="text-neutral-600">0 friends</span>
+              <span className="text-neutral-600">
+                {friendCount === null
+                  ? "…"
+                  : `${friendCount} friend${friendCount === 1 ? "" : "s"}`}
+              </span>
             </div>
           </div>
 
@@ -152,7 +232,10 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
                 </div>
                 <ActionButton
                   isOwner={isOwner}
+                  relationship={relationship}
+                  busy={busy}
                   onEdit={() => setEditOpen(true)}
+                  onAction={runFriendAction}
                 />
               </>
             ) : (
@@ -162,7 +245,10 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
                 </span>
                 <ActionButton
                   isOwner={isOwner}
+                  relationship={relationship}
+                  busy={busy}
                   onEdit={() => setEditOpen(true)}
+                  onAction={runFriendAction}
                 />
               </>
             )}
@@ -175,6 +261,12 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
             {!profile.isPublic && isOwner && (
               <p className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
                 Private — only you see this section
+              </p>
+            )}
+            {isOwner && pendingIn > 0 && (
+              <p className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
+                ⋯ {pendingIn} pending friend request{pendingIn === 1 ? "" : "s"} —
+                visit the requesters&apos; profiles to respond
               </p>
             )}
             <div className="mt-4 grid grid-cols-4 gap-2.5">
@@ -272,10 +364,16 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
 
 function ActionButton({
   isOwner,
+  relationship,
+  busy,
   onEdit,
+  onAction,
 }: {
   isOwner: boolean;
+  relationship: Relationship | null;
+  busy: boolean;
   onEdit: () => void;
+  onAction: (a: "request" | "accept" | "reject" | "unfriend") => void;
 }) {
   if (isOwner) {
     return (
@@ -288,15 +386,83 @@ function ActionButton({
       </button>
     );
   }
-  // Phase 3 wires real friend-request state. For Phase 1 we render the
-  // happy-path "Add friend" CTA; clicks just no-op for now.
+
+  // Loading the relationship — render a disabled placeholder so the layout
+  // doesn't shift when the lookup resolves.
+  if (relationship === null) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500"
+      >
+        Loading…
+      </button>
+    );
+  }
+
+  // Incoming pending request — render BOTH accept and reject buttons so the
+  // viewer can act in one tap. The "Friends" / "Add friend" / "Requested"
+  // states each get a single button below.
+  if (relationship === "pending-in") {
+    return (
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onAction("accept")}
+          className="rounded-full bg-[#88cfc4] px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black transition hover:brightness-110 disabled:opacity-50"
+        >
+          ✓ Accept
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onAction("reject")}
+          className="rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-300 transition hover:border-neutral-600 disabled:opacity-50"
+        >
+          ✕ Reject
+        </button>
+      </div>
+    );
+  }
+
+  if (relationship === "pending-out") {
+    return (
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onAction("unfriend")}
+        title="Cancel your friend request"
+        className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-amber-400 transition hover:border-amber-500/50 disabled:opacity-50"
+      >
+        ⋯ Requested
+      </button>
+    );
+  }
+
+  if (relationship === "friends") {
+    return (
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onAction("unfriend")}
+        title="Click to unfriend"
+        className="rounded-full border bg-[#88cfc4]/10 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-[#88cfc4] transition hover:bg-[#88cfc4]/20 disabled:opacity-50"
+        style={{ borderColor: "rgba(136, 207, 196, 0.3)" }}
+      >
+        ✓ Friends
+      </button>
+    );
+  }
+
+  // relationship === "strangers"
   return (
     <button
       type="button"
-      onClick={() => {}}
-      disabled
-      title="Friend requests ship in Phase 3"
-      className="rounded-full bg-[#88cfc4] px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black opacity-50"
+      disabled={busy}
+      onClick={() => onAction("request")}
+      className="rounded-full bg-[#88cfc4] px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black transition hover:brightness-110 disabled:opacity-50"
     >
       + Add friend
     </button>
