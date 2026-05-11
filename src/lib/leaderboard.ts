@@ -88,8 +88,7 @@ export async function fetchLeaderboard(args: {
         const p = decoder.decode(bytes);
         publicPoolPdas.add(String(acc.pubkey));
         if (Number(p.state) !== 2) continue;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const winner = unwrapOption((p as any).winner, String);
+        const winner = unwrapOption(p.winner, String);
         if (!winner) continue;
         resolvedRoundsCount += 1;
         const cur = winnerTotals.get(winner) ?? { lamports: 0n, wins: 0 };

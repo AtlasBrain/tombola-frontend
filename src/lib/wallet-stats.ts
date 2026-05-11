@@ -155,8 +155,7 @@ export async function fetchWalletStats(args: {
     try {
       if (bytes.length === PUBLIC_POOL_SIZE) {
         const p = publicDecoder.decode(bytes);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const winner = unwrapOption((p as any).winner, String);
+        const winner = unwrapOption(p.winner, String);
         pools.set(pda, {
           pubkey: pda,
           kind: "public",
@@ -168,8 +167,7 @@ export async function fetchWalletStats(args: {
         });
       } else if (bytes.length === PRIVATE_POOL_SIZE) {
         const p = privateDecoder.decode(bytes);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const winner = unwrapOption((p as any).winner, String);
+        const winner = unwrapOption(p.winner, String);
         pools.set(pda, {
           pubkey: pda,
           kind: "private",

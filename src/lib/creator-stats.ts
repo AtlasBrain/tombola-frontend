@@ -91,11 +91,7 @@ export async function fetchCreatorStats(args: {
       const p = decoder.decode(bytes);
       const fee =
         (p.totalPot * BigInt(p.creatorFeeBps)) / 10_000n;
-      const winner = unwrapOption(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (p as any).winner,
-        String,
-      );
+      const winner = unwrapOption(p.winner, String);
       const isResolved = Number(p.state) === 2;
       pools.push({
         poolAddress: String(acc.pubkey),

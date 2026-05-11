@@ -114,8 +114,7 @@ export default function PrivatePoolPage({
           creator: String(acc.data.creator),
           creatorFeeBps: acc.data.creatorFeeBps,
           winner: unwrapWinner(acc.data.winner),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          winningTicketId: unwrapTicketId((acc.data as any).winningTicket),
+          winningTicketId: unwrapTicketId(acc.data.winningTicket),
         });
 
         // Fetch all TicketBatch accounts whose `pool` field == this pool PDA.

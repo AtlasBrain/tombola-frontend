@@ -54,8 +54,7 @@ export async function scanActionablePools(
   rpcUrl: string,
   programId: string,
 ): Promise<ActionablePool[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rpc = createSolanaRpc(rpcUrl as any);
+  const rpc = createSolanaRpc(rpcUrl);
   const nowSec = BigInt(Math.floor(Date.now() / 1000));
 
   // Two parallel state-filtered scans. Splitting Open vs. AwaitingVrf lets

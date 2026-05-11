@@ -123,14 +123,9 @@ export async function getPoolDetail(
 
   // Codama Option<T> decodes as { __option: 'Some'|'None', value? }. Some
   // SDK paths return raw values; handle both. Null = pre-settle.
-  const winner = unwrapOption<string>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p as any).winner,
-    String,
-  );
+  const winner = unwrapOption<string>(p.winner, String);
   const winningTicketId = unwrapOption<bigint>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p as any).winningTicket,
+    p.winningTicket,
     (v) => BigInt(v as bigint | number | string),
   );
 

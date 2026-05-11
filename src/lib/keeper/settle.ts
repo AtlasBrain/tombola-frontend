@@ -47,6 +47,16 @@ import {
   fetchTicketBatches,
 } from "../solana/program-queries";
 
+// Switchboard's Randomness.loadData() is typed `Promise<any>` upstream
+// (see @switchboard-xyz/on-demand .d.ts). Narrow it locally to the fields
+// we actually read. Cast through `unknown` rather than `any` so the
+// linter stays happy and any rename in the runtime payload shows up as
+// an explicit TS error here.
+interface RandomnessData {
+  /** 32-byte revealed value. All zeros before reveal, populated after. */
+  value: Iterable<number> | undefined;
+}
+
 // On-chain RandomnessAccountData layout — must match programs/raffle/src/vrf.rs.
 const RANDOMNESS_VALUE_OFFSET = 152;
 const RANDOMNESS_VALUE_LEN = 32;
@@ -117,8 +127,7 @@ async function fetchBatches(
   rpcUrl: string,
   poolAddress: string,
 ): Promise<BatchView[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rpc = createSolanaRpc(rpcUrl as any);
+  const rpc = createSolanaRpc(rpcUrl);
   const accounts = await fetchTicketBatches({
     rpc,
     programId: PROGRAM_ID,
@@ -150,8 +159,7 @@ export async function settlePool(
   const poolAddress = entry.address;
   log(poolAddress, "checking oracle reveal…");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const vrfOpt = (entry.pool as any).vrfRequest as Option<Address>;
+  const vrfOpt = entry.pool.vrfRequest as Option<Address>;
   if (!isSome(vrfOpt)) {
     logError(
       poolAddress,
@@ -172,9 +180,8 @@ export async function settlePool(
   // same account: it resets seed_slot to current, zeros the value, and
   // restarts the cycle. We do that, wait ~6s for the slot delay, then fall
   // through to the normal atomic reveal+settle path.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const randData = (await randomness.loadData()) as any;
-  const valueArr = Array.from((randData?.value ?? []) as Iterable<number>);
+  const randData = (await randomness.loadData()) as unknown as RandomnessData;
+  const valueArr = Array.from(randData?.value ?? []);
   const alreadyRevealed = valueArr.some((b) => b !== 0);
   if (alreadyRevealed) {
     log(
@@ -227,8 +234,7 @@ export async function settlePool(
   }
   log(poolAddress, `simulated revealed value: ${revealedValue}`);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const totalTickets = (entry.pool as any).totalTickets as bigint;
+  const totalTickets = entry.pool.totalTickets;
   if (totalTickets === 0n) {
     logError(
       poolAddress,
@@ -255,8 +261,7 @@ export async function settlePool(
     `winning batch: ${winningBatch.batchAddress}, winner: ${winningBatch.owner}`,
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rpc = createSolanaRpc(rpcUrl as any);
+  const rpc = createSolanaRpc(rpcUrl);
   const client = new RaffleClient({ rpc });
   const config = await client.getProtocolConfig();
   const treasury = config.treasury as string;
@@ -267,8 +272,7 @@ export async function settlePool(
     pool: address(poolAddress),
     winningBatch: address(winningBatch.batchAddress),
     winner: address(winningBatch.owner),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    creator: address(String((entry.pool as any).creator)),
+    creator: address(String(entry.pool.creator)),
     treasury: address(treasury),
     randomnessAccount: address(vrfAddr),
   });
