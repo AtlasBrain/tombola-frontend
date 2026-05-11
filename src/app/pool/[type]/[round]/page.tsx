@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BuyTicketButton } from "@/components/BuyTicketButton";
+import { BuyWithOdds } from "@/components/BuyWithOdds";
 import { Countdown } from "@/components/Countdown";
 import { FlashOnChange } from "@/components/FlashOnChange";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { RecentBuysTable } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
 import { PreviousWinnerLine } from "@/components/PreviousWinnerLine";
-import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, formatTickets } from "@/lib/format";
 import {
@@ -215,24 +214,15 @@ export default async function PoolDetailPage({
               ? "This round is closed. Once Switchboard randomness lands, the pot pays out and a new round opens."
               : "Pick a quantity. Each ticket has equal odds; more tickets = higher chance."}
           </p>
-          <BuyTicketButton
-            poolType={pool.poolType}
-            round={pool.round}
-            ticketPriceLamports={pool.ticketPriceLamports}
-            closed={closed}
-            totalTickets={pool.totalTickets}
-            batches={batches.map((b) => ({
-              owner: b.owner,
-              quantity: b.quantity,
-            }))}
-          />
           {pool.poolAddress && (
-            <div className="mt-4">
-              <WinOdds
-                poolAddress={pool.poolAddress}
-                totalTickets={pool.totalTickets}
-              />
-            </div>
+            <BuyWithOdds
+              poolType={pool.poolType}
+              round={pool.round}
+              ticketPriceLamports={pool.ticketPriceLamports}
+              closed={closed}
+              poolAddress={pool.poolAddress}
+              totalTickets={pool.totalTickets}
+            />
           )}
         </div>
       </section>

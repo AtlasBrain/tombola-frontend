@@ -10,8 +10,12 @@ interface Props {
   poolAddress: string;
   /** Total tickets in this round; the denominator. */
   totalTickets: bigint;
-  /** CSS color string used for the bar fill. Default emerald. */
+  /** CSS color string used for the bar fill. Default mint. */
   accentColor?: string;
+  /** Hypothetical buy qty being typed in a sibling buy-button. When > 0 the
+   *  gauge renders a second "After buying" row showing the post-buy odds
+   *  alongside the existing one — live as the input changes. */
+  previewQty?: number;
 }
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + …
@@ -25,7 +29,12 @@ const OWNER_OFFSET = 40n;
  * changes, so a pool mutation (own buy or someone else's) refetches the
  * user's stake.
  */
-export function WinOdds({ poolAddress, totalTickets, accentColor }: Props) {
+export function WinOdds({
+  poolAddress,
+  totalTickets,
+  accentColor,
+  previewQty = 0,
+}: Props) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
   const [userTickets, setUserTickets] = useState<bigint | null>(null);
@@ -86,19 +95,48 @@ export function WinOdds({ poolAddress, totalTickets, accentColor }: Props) {
     };
   }, [connection, publicKey, poolAddress, totalTickets]);
 
-  if (!publicKey || userTickets === null || userTickets === 0n) return null;
-  if (totalTickets === 0n) return null;
+  // Hide entirely when there's nothing to show — no wallet, no current
+  // tickets AND no preview in progress.
+  const validPreview = Number.isFinite(previewQty) && previewQty > 0;
+  if (!publicKey || userTickets === null) return null;
+  if (userTickets === 0n && !validPreview) return null;
+  if (totalTickets === 0n && !validPreview) return null;
 
-  // Percentage with 2 decimals via integer-only math (avoid Number(BigInt) on
-  // very large totals), then clamp for the bar width.
-  const pctTimes100 = Number((userTickets * 10_000n) / totalTickets) / 100;
-  const pctStr = pctTimes100.toFixed(2);
-  const pctClamped = Math.min(100, Math.max(0, pctTimes100));
-
-  // Single mint-default variant — emerald is not in the brand palette.
-  // Callers can still override `accentColor` for per-page treatments
-  // (private pool detail uses mint, public detail picks per-cadence).
+  // Single mint-default — emerald is not in the brand palette. Callers can
+  // override `accentColor` for per-cadence treatments.
   const accent = accentColor ?? "#88cfc4";
+
+  // Current odds (integer-only math on bigints; clamp to [0,100] for the bar).
+  const currentPctTimes100 =
+    totalTickets > 0n
+      ? Number((userTickets * 10_000n) / totalTickets) / 100
+      : 0;
+  const currentPct = Math.min(100, Math.max(0, currentPctTimes100));
+
+  // Hypothetical post-buy odds when the user has typed a valid preview qty.
+  let postPct: number | null = null;
+  let postOwned: bigint = 0n;
+  let postTotal: bigint = 0n;
+  if (validPreview) {
+    postOwned = userTickets + BigInt(previewQty);
+    postTotal = totalTickets + BigInt(previewQty);
+    if (postTotal > 0n) {
+      const pctTimes100 = Number((postOwned * 10_000n) / postTotal) / 100;
+      postPct = Math.min(100, Math.max(0, pctTimes100));
+    }
+  }
+
+  // The post-buy bar visualises two segments stacked side-by-side: the user's
+  // CURRENT share (solid accent) and the ADDED slice they'd gain by buying
+  // (lighter accent). Together they fill `postPct`. Showing the existing
+  // share inside the preview bar makes the delta visually unambiguous.
+  const previewBaseWidth = userTickets > 0n && postPct !== null
+    ? Math.min(postPct, currentPct)
+    : 0;
+  const previewAddWidth = postPct !== null
+    ? Math.max(0, postPct - previewBaseWidth)
+    : 0;
+
   return (
     <div
       className="flex flex-col gap-1 rounded-lg border px-3 py-2"
@@ -107,22 +145,77 @@ export function WinOdds({ poolAddress, totalTickets, accentColor }: Props) {
         background: `${accent}0d`,
       }}
     >
-      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-        <span className="text-neutral-500">Your odds</span>
-        <span className="tabular-nums" style={{ color: accent }}>
-          {pctStr}%
-        </span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pctClamped}%`, background: accent }}
-        />
-      </div>
-      <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
-        {userTickets.toString()} of {totalTickets.toString()} ticket
-        {totalTickets === 1n ? "" : "s"}
-      </div>
+      {/* Row 1 — current odds. Hidden when the user owns 0 tickets so we
+          don't show a useless 0% line, but the preview row below still
+          renders so first-time buyers see the "if I buy" projection. */}
+      {userTickets > 0n && (
+        <>
+          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+            <span className="text-neutral-500">Your odds</span>
+            <span className="tabular-nums" style={{ color: accent }}>
+              {currentPctTimes100.toFixed(2)}%
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${currentPct}%`, background: accent }}
+            />
+          </div>
+          <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
+            {userTickets.toString()} of {totalTickets.toString()} ticket
+            {totalTickets === 1n ? "" : "s"}
+          </div>
+        </>
+      )}
+
+      {/* Row 2 — live "after buying" projection. Only when the user is
+          typing a valid qty in a sibling buy button. */}
+      {validPreview && postPct !== null && (
+        <>
+          {userTickets > 0n && (
+            <div className="mt-1 border-t border-neutral-800/60" />
+          )}
+          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+            <span className="text-neutral-500">After buying</span>
+            <span className="tabular-nums" style={{ color: accent }}>
+              {postPct.toFixed(2)}%
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
+            {/* Two segments — solid current + lighter added — separated by a
+                hairline so the delta reads at a glance even on dense bars. */}
+            <div className="flex h-full w-full">
+              {previewBaseWidth > 0 && (
+                <div
+                  className="h-full transition-all duration-200"
+                  style={{
+                    width: `${previewBaseWidth}%`,
+                    background: accent,
+                  }}
+                />
+              )}
+              {previewAddWidth > 0 && (
+                <div
+                  className="h-full transition-all duration-200"
+                  style={{
+                    width: `${previewAddWidth}%`,
+                    background: accent,
+                    opacity: 0.5,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
+            {postOwned.toString()} of {postTotal.toString()} ticket
+            {postTotal === 1n ? "" : "s"}{" "}
+            <span style={{ color: accent }}>
+              (+{previewQty})
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

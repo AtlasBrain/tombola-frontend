@@ -21,13 +21,6 @@ interface Props {
   closed: boolean;
   accentColor?: string;
   ticketPriceSol?: number;
-  /** Total tickets sold so far (across all buyers). Used to compute the
-   *  live odds preview: post-buy odds = (myCurrent + qty) / (total + qty). */
-  totalTickets?: bigint;
-  /** Connected wallet's currently-owned tickets in this pool. Defaults to 0
-   *  if the page hasn't computed it yet — odds preview still renders, it just
-   *  treats the buyer as a newcomer. */
-  myCurrentTickets?: bigint;
   /** Soft UI cap on tickets per buy. Defaults to MAX_QTY_HARD. The hard cap
    *  is enforced on-chain by `buy_ticket_private` against pool's total_tickets
    *  bound; this prop lets the creator hint a smaller cap for fairness UI
@@ -38,6 +31,9 @@ interface Props {
    *  the page state refetches immediately (LivePoolWatcher's router.refresh
    *  is a no-op on a client-component page). */
   onPurchased?: () => void;
+  /** Fired whenever the qty input changes (empty / out-of-range → 0). Lets
+   *  the parent show a live "after-buying" overlay on the WinOdds gauge. */
+  onQtyChange?: (qty: number) => void;
 }
 
 const MIN_QTY = 1;
@@ -49,10 +45,9 @@ export function BuyTicketPrivateButton({
   closed,
   accentColor = "var(--mint)",
   ticketPriceSol,
-  totalTickets,
-  myCurrentTickets,
   maxTicketsPerBuy = MAX_QTY_HARD,
   onPurchased,
+  onQtyChange,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
@@ -64,6 +59,15 @@ export function BuyTicketPrivateButton({
   const [busy, setBusy] = useState(false);
   const [whitelisted, setWhitelisted] = useState<boolean | null>(null);
   const MAX_QTY = Math.max(MIN_QTY, Math.min(MAX_QTY_HARD, maxTicketsPerBuy));
+  const qtyValid =
+    Number.isFinite(qty) && qty >= MIN_QTY && qty <= MAX_QTY;
+
+  // Push qty up so a parent can overlay it on the WinOdds gauge. Declared
+  // BEFORE the early returns so hook order stays stable across renders.
+  // Invalid/empty qty is reported as 0 — the gauge treats that as "no preview".
+  useEffect(() => {
+    onQtyChange?.(qtyValid ? qty : 0);
+  }, [qty, qtyValid, onQtyChange]);
 
   // Whitelisted PDA check (re-derived per (pool, wallet) tuple)
   useEffect(() => {
@@ -201,24 +205,9 @@ export function BuyTicketPrivateButton({
     );
   }
 
-  const qtyValid =
-    Number.isFinite(qty) && qty >= MIN_QTY && qty <= MAX_QTY;
   const total = qtyValid ? ticketPriceLamports * BigInt(qty) : 0n;
 
-  // Live odds preview — computed when totalTickets is known. Treats unknown
-  // myCurrentTickets as 0 (fresh buyer). After buying, the buyer would own
-  // (mine + qty) of (total + qty) tickets — that's what we show.
-  const mine = myCurrentTickets ?? 0n;
-  const tot = totalTickets ?? null;
-  const showOdds = qtyValid && tot !== null;
-  const postOwned = mine + BigInt(qty);
-  const postTotal = (tot ?? 0n) + BigInt(qty);
-  const postOddsPct =
-    showOdds && postTotal > 0n
-      ? (Number(postOwned * 10_000n) / Number(postTotal)) / 100
-      : null;
-
-  function onQtyChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleQtyInput(e: React.ChangeEvent<HTMLInputElement>) {
     // Empty input is a valid "still typing" state — store NaN, render "", clamp on blur.
     const raw = e.target.value.replace(/[^\d]/g, "");
     if (raw === "") {
@@ -227,7 +216,7 @@ export function BuyTicketPrivateButton({
     }
     setQty(Number(raw));
   }
-  function onQtyBlur() {
+  function handleQtyBlur() {
     if (!Number.isFinite(qty) || qty < MIN_QTY) setQty(MIN_QTY);
     else if (qty > MAX_QTY) setQty(MAX_QTY);
   }
@@ -249,28 +238,12 @@ export function BuyTicketPrivateButton({
           max={MAX_QTY}
           step={1}
           value={Number.isFinite(qty) ? qty : ""}
-          onChange={onQtyChange}
-          onBlur={onQtyBlur}
+          onChange={handleQtyInput}
+          onBlur={handleQtyBlur}
           disabled={busy}
           className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-[color:var(--mint)]/40 focus:ring-2 focus:ring-[color:var(--mint)]/20 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Number of tickets to buy"
         />
-        {showOdds && postOddsPct !== null && (
-          <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-            After buying:{" "}
-            <span className="tabular-nums text-neutral-300">
-              {postOwned.toString()} / {postTotal.toString()}
-            </span>{" "}
-            ={" "}
-            <span
-              className="tabular-nums"
-              style={{ color: accentColor }}
-            >
-              {postOddsPct.toFixed(postOddsPct < 1 ? 2 : 1)}%
-            </span>{" "}
-            chance to win
-          </p>
-        )}
       </label>
       <button
         type="button"

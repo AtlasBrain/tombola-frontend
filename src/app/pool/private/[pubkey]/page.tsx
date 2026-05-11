@@ -1,6 +1,6 @@
 "use client";
 import { use, useEffect, useMemo, useState } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
 import {
   address as toAddress,
   createSolanaRpc,
@@ -87,7 +87,6 @@ export default function PrivatePoolPage({
 }) {
   const { pubkey } = use(params);
   const { connection } = useConnection();
-  const { publicKey } = useWallet();
   const [pool, setPool] = useState<PoolData | null>(null);
   const [batches, setBatches] = useState<BatchRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -96,6 +95,9 @@ export default function PrivatePoolPage({
   // client-only page, so we need a local signal.
   const [reloadKey, setReloadKey] = useState(0);
   const bumpReload = () => setReloadKey((k) => k + 1);
+  // Live mirror of BuyTicketPrivateButton's qty input. Drives the
+  // "After buying" overlay on the WinOdds gauge. 0 = no preview.
+  const [previewQty, setPreviewQty] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,17 +177,6 @@ export default function PrivatePoolPage({
     for (const b of batches) set.add(b.owner);
     return set.size;
   }, [batches]);
-
-  // Sum of the connected wallet's existing tickets across all their batches.
-  // Used for the live odds preview in BuyTicketPrivateButton: after buying,
-  // odds = (mine + qty) / (totalTickets + qty).
-  const myCurrentTickets = useMemo(() => {
-    const me = publicKey?.toBase58();
-    if (!me) return 0n;
-    let n = 0n;
-    for (const b of batches) if (b.owner === me) n += b.quantity;
-    return n;
-  }, [batches, publicKey]);
 
   if (err) {
     return (
@@ -318,9 +309,8 @@ export default function PrivatePoolPage({
               closed={closed}
               accentColor={PRIVATE_ACCENT}
               ticketPriceSol={ticketPriceSol}
-              totalTickets={pool.totalTickets}
-              myCurrentTickets={myCurrentTickets}
               onPurchased={bumpReload}
+              onQtyChange={setPreviewQty}
             />
           )}
 
@@ -330,6 +320,7 @@ export default function PrivatePoolPage({
               poolAddress={pubkey}
               totalTickets={pool.totalTickets}
               accentColor={PRIVATE_ACCENT}
+              previewQty={previewQty}
             />
           </div>
         </article>
