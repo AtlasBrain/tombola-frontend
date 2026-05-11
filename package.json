@@ -13,6 +13,7 @@
     "init:devnet": "tsx scripts/init_pools_devnet.mts"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
     "@solana/kit": "^6.9.0",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-react": "^0.15.39",
@@ -21,10 +22,13 @@
     "@solana/web3.js": "^1.98.4",
     "@switchboard-xyz/on-demand": "^3.10.1",
     "@upstash/redis": "^1.38.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^17.4.2",
     "js-sha3": "^0.9.3",
     "next": "15.5.18",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -39,8 +43,9 @@
     "eslint-config-next": "15.5.18",
     "happy-dom": "^20.9.0",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.5"
   }
 }

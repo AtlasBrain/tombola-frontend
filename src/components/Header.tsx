@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
-import { NetworkPill } from "@/components/NetworkPill";
+import { MyProfileButton } from "@/components/MyProfileButton";
 import { NotificationBell } from "@/components/NotificationBell";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
@@ -108,7 +108,7 @@ export function Header() {
         {/* RIGHT: status + CTA + mobile menu toggle */}
         <div className="flex items-center gap-2 sm:justify-self-end">
           <div className="hidden sm:block">
-            <NetworkPill />
+            <MyProfileButton />
           </div>
           <NotificationBell />
           <ConnectWalletButton />
@@ -167,7 +167,7 @@ export function Header() {
       >
         <div className="flex flex-col gap-1">
           <div className="px-3 py-2">
-            <NetworkPill />
+            <MyProfileButton />
           </div>
           {navItems.map((item) =>
             item.kind === "anchor" ? (
