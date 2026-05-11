@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { clusterApiUrl } from "@solana/web3.js";
 import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ToastProvider } from "./Toast";
 
@@ -34,11 +35,31 @@ export function WalletProviders({ children }: { children: ReactNode }) {
     [],
   );
 
+  // One QueryClient per browser session. Stale time 30s — most on-chain
+  // data we cache here (wallet stats, friend lists, weekly activity) does
+  // change but not within seconds. Components that need fresher data can
+  // pass their own staleTime / refetchInterval in the useQuery options.
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      }),
+  );
+
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={[]} autoConnect>
         <WalletModalProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <QueryClientProvider client={queryClient}>
+            <ToastProvider>{children}</ToastProvider>
+          </QueryClientProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

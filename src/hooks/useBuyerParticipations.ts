@@ -1,15 +1,16 @@
 "use client";
 
-// Owns the buyer dashboard's two-phase data load:
+// Two-phase load for the buyer dashboard:
 //
-//   1. findMyParticipations → set of pools the wallet has tickets in
-//   2. Trickle participant counts per pool (async iterator)
-//
-// `pools` flips from null → array as soon as phase 1 finishes; phase 2 just
-// fills in the trailing `participantsCount` field per row.
+//   1. findMyParticipations  → set of pools the wallet has tickets in
+//      (react-query handles cache, dedup, retry)
+//   2. iterateParticipantCounts → per-pool participant count, trickled in
+//      on a side effect that writes through the same cache entry so
+//      subsequent renders see populated counts immediately.
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Connection } from "@solana/web3.js";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PROGRAM_ID } from "@tombola/sdk";
 import {
   findMyParticipations,
@@ -26,34 +27,35 @@ export function useBuyerParticipations(
   wallet: string | null,
   connection: Connection,
 ): UseBuyerParticipationsResult {
-  const [pools, setPools] = useState<PoolMembership[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const queryKey = ["buyerParticipations", wallet, connection.rpcEndpoint];
 
+  const query = useQuery({
+    enabled: !!wallet,
+    queryKey,
+    queryFn: () =>
+      findMyParticipations({
+        rpcUrl: connection.rpcEndpoint,
+        programId: PROGRAM_ID,
+        walletAddress: wallet!,
+      }),
+  });
+
+  // Trickle participant counts AFTER the base query resolves. We mutate
+  // the same cache entry via setQueryData so a re-render lands the
+  // population without an explicit setState dance.
   useEffect(() => {
-    if (!wallet) {
-      setPools(null);
-      return;
-    }
+    if (!wallet || !query.data) return;
     let cancelled = false;
     (async () => {
       try {
-        const found = await findMyParticipations({
-          rpcUrl: connection.rpcEndpoint,
-          programId: PROGRAM_ID,
-          walletAddress: wallet,
-        });
-        if (cancelled) return;
-        setPools(found);
-
-        // Trickle in participant counts. The page is usable while these
-        // resolve — each pool just shows "…" until its count lands.
         for await (const { poolAddress, count } of iterateParticipantCounts({
           rpcUrl: connection.rpcEndpoint,
           programId: PROGRAM_ID,
-          poolAddresses: found.map((p) => p.poolAddress),
+          poolAddresses: query.data.map((p) => p.poolAddress),
         })) {
           if (cancelled) return;
-          setPools((prev) =>
+          qc.setQueryData<PoolMembership[]>(queryKey, (prev) =>
             prev
               ? prev.map((p) =>
                   p.poolAddress === poolAddress
@@ -63,14 +65,23 @@ export function useBuyerParticipations(
               : prev,
           );
         }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      } catch {
+        // network blip — counts stay at their current values.
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [connection, wallet]);
+    // queryKey is derived from the same deps, intentionally excluded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet, connection.rpcEndpoint, query.data]);
 
-  return { pools, error };
+  return {
+    pools: query.data ?? null,
+    error: query.error
+      ? query.error instanceof Error
+        ? query.error.message
+        : String(query.error)
+      : null,
+  };
 }
