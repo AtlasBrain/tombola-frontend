@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { editProfile, type ProfileRow } from "@/lib/profile-client";
+import { invalidatePseudo } from "@/lib/pseudo-cache";
 
 interface Props {
   /** Current profile loaded from /api/profile/[handle]. Pre-fills the form. */
@@ -67,6 +68,10 @@ export function EditProfileModal({ initial, onSaved, onClose }: Props) {
           isPublic,
         },
       });
+      // Pseudo (and avatar) might have changed — flush any cached
+      // wallet→pseudo lookup so other components on the page refresh
+      // their displayed label immediately.
+      invalidatePseudo(next.wallet);
       onSaved(next);
       onClose();
     } catch (e) {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { explorerAddressUrl } from "@/lib/explorer-url";
+import { usePseudo } from "@/lib/pseudo-cache";
 
 interface Props {
   wallet: string;
@@ -42,15 +43,23 @@ export function WalletLink({
   style,
   trailing,
 }: Props) {
+  // Resolve the wallet → pseudo if one is set. Falls back to the truncated
+  // wallet address otherwise. An explicit `label` prop always wins (used
+  // when callers want a custom string, e.g. AdminRedemptionStatus).
+  const pseudo = usePseudo(wallet);
+  const displayLabel = label ?? pseudo ?? shortAddress(wallet);
+  // When we render a pseudo, link to /u/<pseudo> for a prettier URL; the
+  // page resolves either form to the same profile.
+  const linkTarget = pseudo ?? wallet;
   return (
     <span className="inline-flex min-w-0 items-center gap-1">
       <Link
-        href={`/u/${encodeURIComponent(wallet)}`}
+        href={`/u/${encodeURIComponent(linkTarget)}`}
         title={`${wallet} — view profile`}
         className={`min-w-0 truncate transition-colors ${className ?? ""}`}
         style={style}
       >
-        {label ?? shortAddress(wallet)}
+        {displayLabel}
       </Link>
       {trailing}
       {rpcUrl && (
