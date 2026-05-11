@@ -1,5 +1,5 @@
 import type { PoolView } from "@/lib/mock-pools";
-import { BuyTicketButton } from "@/components/BuyTicketButton";
+import { PoolCardBuyOdds } from "@/components/PoolCardBuyOdds";
 import { Countdown } from "@/components/Countdown";
 
 const ACCENT_HEX: Record<PoolView["kind"], string> = {
@@ -38,12 +38,6 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
   // would display "BUYERS 1" on a brand-new round where nobody has bought yet).
   const buyers = tickets === 0 ? 0 : Math.max(1, Math.round(tickets / 3));
   const ticketPriceSol = Number(pool.ticketPriceLamports) / 1_000_000_000;
-
-  // Your-odds: if you buy 1 ticket now, your chance to win = 1 / (totalTickets + 1).
-  // Bar shrinks as tickets sell (your slice of the pie gets smaller).
-  const oddsPct = 100 / (tickets + 1);
-  const oddsBarPct = Math.min(100, oddsPct);
-  const oddsLabel = `1 IN ${(tickets + 1).toLocaleString()}`;
 
   const isOpen = pool.state === "Open";
   const isDrawing = pool.state === "AwaitingVrf";
@@ -138,34 +132,44 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
         </div>
       </div>
 
-      {/* Your odds — chance to win if you buy 1 ticket right now */}
-      <div className="mt-5">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-          <span className="text-neutral-500">YOUR ODDS</span>
-          <span className="text-neutral-300">{oddsLabel} ({oddsPct.toFixed(oddsPct < 10 ? 2 : 1)}%)</span>
-        </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
-          <div className="h-full rounded-full" style={{ width: `${oddsBarPct}%`, background: accent }} />
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="mt-6">
-        {isOpen ? (
-          <BuyTicketButton
-            poolType={pool.poolType}
-            round={pool.round}
-            ticketPriceLamports={pool.ticketPriceLamports}
-            closed={false}
-            accentColor={accent}
-            ticketPriceSol={ticketPriceSol}
-          />
-        ) : (
-          <button disabled className="mt-0 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 font-display text-sm uppercase text-neutral-500">
-            ROUND CLOSED <span className="font-mono opacity-70">· {isDrawing ? "DRAWING" : "RESOLVED"}</span>
-          </button>
-        )}
-      </div>
+      {/* Live "Your odds" bar + buy button — qty in the input drives the
+          odds bar dynamically. For non-open pools we fall back to a static
+          "1 IN N" display + a disabled CTA. */}
+      {isOpen ? (
+        <PoolCardBuyOdds
+          poolType={pool.poolType}
+          round={pool.round}
+          ticketPriceLamports={pool.ticketPriceLamports}
+          totalTickets={tickets}
+          accent={accent}
+          ticketPriceSol={ticketPriceSol}
+        />
+      ) : (
+        <>
+          <div className="mt-5">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span className="text-neutral-500">YOUR ODDS</span>
+              <span className="text-neutral-300">
+                1 IN {(tickets + 1).toLocaleString()} ({(100 / (tickets + 1)).toFixed(2)}%)
+              </span>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-900">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${Math.min(100, 100 / (tickets + 1))}%`, background: accent }}
+              />
+            </div>
+          </div>
+          <div className="mt-6">
+            <button
+              disabled
+              className="mt-0 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 font-display text-sm uppercase text-neutral-500"
+            >
+              ROUND CLOSED <span className="font-mono opacity-70">· {isDrawing ? "DRAWING" : "RESOLVED"}</span>
+            </button>
+          </div>
+        </>
+      )}
     </article>
   );
 }
