@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM_ID } from "@tombola/sdk";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import {
   computeLifetimeStats,
   filterCounts,
   filterPools,
-  findMyParticipations,
-  iterateParticipantCounts,
   type BuyerFilter,
   type PoolMembership,
 } from "@/lib/buyer-pools";
 import { Metric, Stat } from "@/components/ui/Stat";
+import { useBuyerParticipations } from "@/hooks/useBuyerParticipations";
 
 // Brand palette tokens — match globals.css :root accents
 const ACCENT_LAVENDER = "#c9b5dc";
@@ -109,52 +107,9 @@ function statePill(
 export function BuyerDashboard() {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
-  const [pools, setPools] = useState<PoolMembership[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
   const [filter, setFilter] = useState<BuyerFilter>("all");
-
-  useEffect(() => {
-    if (!publicKey) {
-      setPools(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const found = await findMyParticipations({
-          rpcUrl: connection.rpcEndpoint,
-          programId: PROGRAM_ID,
-          walletAddress: publicKey.toBase58(),
-        });
-        if (cancelled) return;
-        setPools(found);
-
-        // Trickle in participant counts. The page is usable while these
-        // resolve — each pool just shows "…" until its count lands.
-        for await (const { poolAddress, count } of iterateParticipantCounts({
-          rpcUrl: connection.rpcEndpoint,
-          programId: PROGRAM_ID,
-          poolAddresses: found.map((p) => p.poolAddress),
-        })) {
-          if (cancelled) return;
-          setPools((prev) =>
-            prev
-              ? prev.map((p) =>
-                  p.poolAddress === poolAddress
-                    ? { ...p, participantsCount: count }
-                    : p,
-                )
-              : prev,
-          );
-        }
-      } catch (e) {
-        if (!cancelled) setErr(e instanceof Error ? e.message : String(e));
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [connection, publicKey]);
+  const wallet = publicKey?.toBase58() ?? null;
+  const { pools, error: err } = useBuyerParticipations(wallet, connection);
 
   const stats = useMemo(
     () => (pools ? computeLifetimeStats(pools) : null),

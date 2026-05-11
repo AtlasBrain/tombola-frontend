@@ -1,26 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM_ID } from "@tombola/sdk";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";
-import { fetchWalletStats, type WalletStats } from "@/lib/wallet-stats";
-import {
-  fetchWalletActivity,
-  type WeeklyActivity,
-} from "@/lib/wallet-activity";
-import {
-  getFriendLists,
-  getFriendState,
-  sendFriendAction,
-  type Relationship,
-} from "@/lib/friend-client";
+import { sendFriendAction, type Relationship } from "@/lib/friend-client";
 import { useToast } from "@/components/Toast";
 import { StatTile } from "@/components/ui/Stat";
+import { useProfileData } from "@/hooks/useProfileData";
 
 interface Props {
   profile: ProfileRow;
@@ -50,45 +40,18 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
   const viewer = publicKey?.toBase58() ?? null;
   const isOwner = viewer !== null && viewer === profile.wallet;
   const [editOpen, setEditOpen] = useState(false);
-
-  // Friendship state — null until first /api/friends/state lookup resolves.
-  // Refreshed whenever the viewer or target changes, AND after a successful
-  // mutation so the button flips immediately.
-  const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [busy, setBusy] = useState(false);
-  // Accepted friends count of the PROFILE wallet — separate from the
-  // viewer's count. Drives the "N friends" pill in the header.
-  const [friendCount, setFriendCount] = useState<number | null>(null);
-  // Pending incoming + outgoing requests on the OWNER's own profile — used
-  // to surface a "you have N invites" hint inside the owner-only section.
-  const [pendingIn, setPendingIn] = useState<number>(0);
 
-  // Refetch relationship + friend count when the viewer or the profile
-  // changes. `refreshTick` is bumped by mutation handlers to force a
-  // re-fetch after the server has updated.
-  const [refreshTick, setRefreshTick] = useState(0);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [rel, lists] = await Promise.all([
-          viewer
-            ? getFriendState(viewer, profile.wallet)
-            : Promise.resolve<Relationship>("strangers"),
-          getFriendLists(profile.wallet),
-        ]);
-        if (cancelled) return;
-        setRelationship(rel);
-        setFriendCount(lists.count);
-        if (isOwner) setPendingIn(lists.pendingIn.length);
-      } catch {
-        // Network blip — leave the last-known state visible.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [viewer, profile.wallet, isOwner, refreshTick]);
+  // All three data fetches (friendship, stats, activity) live in one hook
+  // so this component stays focused on layout. `refresh()` retriggers only
+  // the friendship lookup — stats/activity don't change on a friend action.
+  const { relationship, friendCount, pendingIn, stats, activity, refresh } =
+    useProfileData({
+      wallet: profile.wallet,
+      viewer,
+      isOwner,
+      connection,
+    });
 
   async function runFriendAction(action: "request" | "accept" | "reject" | "unfriend") {
     if (!viewer || !signMessage) {
@@ -113,62 +76,13 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
               ? "Friend request rejected."
               : "Removed from friends.",
       );
-      setRefreshTick((n) => n + 1);
+      refresh();
     } catch (e) {
       pushToast("error", e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
   }
-
-  // Real on-chain stats. Stays null until the first fetch resolves; the UI
-  // shows muted dashes during that brief load. Refetch when the wallet
-  // changes (different profile) OR after the user saves a profile edit
-  // (cheap; the user expects the card to feel live).
-  const [stats, setStats] = useState<WalletStats | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    setStats(null);
-    (async () => {
-      try {
-        const s = await fetchWalletStats({
-          rpcUrl: connection.rpcEndpoint,
-          programId: PROGRAM_ID,
-          wallet: profile.wallet,
-        });
-        if (!cancelled) setStats(s);
-      } catch {
-        // RPC blip — leave stats null so the dashes stay visible.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [connection, profile.wallet]);
-
-  // 14-week buy activity for the sparkbar. Independent from the stats fetch
-  // because it requires N getSignaturesForAddress calls (one per batch) and
-  // we don't want to block the headline numbers behind those.
-  const [activity, setActivity] = useState<WeeklyActivity | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    setActivity(null);
-    (async () => {
-      try {
-        const a = await fetchWalletActivity({
-          rpcUrl: connection.rpcEndpoint,
-          programId: PROGRAM_ID,
-          wallet: profile.wallet,
-        });
-        if (!cancelled) setActivity(a);
-      } catch {
-        // Leave null; the bar grid stays in its muted "pending" state.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [connection, profile.wallet]);
 
   const initial =
     (profile.pseudo?.charAt(0) ?? profile.wallet.charAt(0) ?? "?").toUpperCase();
