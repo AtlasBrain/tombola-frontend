@@ -32,6 +32,7 @@ import {
   getAddressEncoder,
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { encodeBase58 } from "./base58";
 
 const TICKET_BATCH_SIZE = 89n;
 const PUBLIC_POOL_SIZE = 150;
@@ -100,25 +101,6 @@ function unwrapOption<T>(raw: any, coerce: (v: unknown) => T): T | null {
   return coerce(raw);
 }
 
-/** Base58 encode used in memcmp filters. We re-implement minimally since the
- *  rest of the file only needs the wallet pubkey as a base58 string. */
-function bytesToBase58(bytes: Uint8Array): string {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let n = 0n;
-  for (const b of bytes) n = (n << 8n) | BigInt(b);
-  let out = "";
-  while (n > 0n) {
-    out = ALPHABET[Number(n % 58n)] + out;
-    n /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    out = "1" + out;
-  }
-  return out || "1";
-}
-
 export async function fetchWalletStats(args: {
   rpcUrl: string;
   programId: string;
@@ -131,7 +113,7 @@ export async function fetchWalletStats(args: {
   const walletBytes = new Uint8Array(
     getAddressEncoder().encode(wallet as Address),
   );
-  const walletBase58 = bytesToBase58(walletBytes);
+  const walletBase58 = encodeBase58(walletBytes);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const batchAccounts = (await (rpc.getProgramAccounts as any)(

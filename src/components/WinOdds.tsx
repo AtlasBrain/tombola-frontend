@@ -11,7 +11,7 @@ interface Props {
   /** Total tickets in this round; the denominator. */
   totalTickets: bigint;
   /** CSS color string used for the bar fill. Default mint. */
-  accentColor?: string;
+  accent?: string;
   /** Hypothetical buy qty being typed in a sibling buy-button. When > 0 the
    *  gauge renders a second "After buying" row showing the post-buy odds
    *  alongside the existing one — live as the input changes. */
@@ -32,7 +32,7 @@ const OWNER_OFFSET = 40n;
 export function WinOdds({
   poolAddress,
   totalTickets,
-  accentColor,
+  accent = "#88cfc4",
   previewQty = 0,
 }: Props) {
   const { connection } = useConnection();
@@ -103,8 +103,7 @@ export function WinOdds({
   if (totalTickets === 0n && !validPreview) return null;
 
   // Single mint-default — emerald is not in the brand palette. Callers can
-  // override `accentColor` for per-cadence treatments.
-  const accent = accentColor ?? "#88cfc4";
+  // override `accent` for per-cadence treatments.
 
   // Current odds (integer-only math on bigints; clamp to [0,100] for the bar).
   const currentPctTimes100 =

@@ -13,7 +13,7 @@ import {
 } from "@/lib/creator-pools";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { WalletLink } from "@/components/WalletLink";
-import { formatSol } from "@/lib/format";
+import { formatSol, shortAddress} from "@/lib/format";
 import { CreatePoolModal } from "@/components/CreatePoolModal";
 
 const MINT = "#88cfc4";
@@ -96,11 +96,6 @@ function accessModeLabel(am: any): "Whitelist" | "OneCodePerTicket" {
     return am.__kind === "WhitelistMode" ? "Whitelist" : "OneCodePerTicket";
   }
   return "Whitelist";
-}
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 export function CreatorDashboard() {
@@ -506,7 +501,7 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
               href={`/create/my-pools/${pool.poolAddress}`}
               className="font-display text-xl uppercase transition hover:brightness-125"
             >
-              Private · {shortAddr(pool.poolAddress)}
+              Private · {shortAddress(pool.poolAddress)}
             </Link>
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${status.cls}`}
@@ -522,7 +517,7 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
               rel="noreferrer"
               className="hover:text-neutral-300"
             >
-              {shortAddr(pool.poolAddress)} ↗
+              {shortAddress(pool.poolAddress)} ↗
             </a>
             {pool.state === 2 && pool.winner && (
               <>
@@ -582,7 +577,7 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
             value={pool.winner ? "🏆" : "✓"}
             sub={
               pool.winner
-                ? `winner ${shortAddr(pool.winner)}`
+                ? `winner ${shortAddress(pool.winner)}`
                 : `${pool.totalTickets.toString()} tickets sold (voided)`
             }
           />

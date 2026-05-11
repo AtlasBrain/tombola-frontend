@@ -32,7 +32,7 @@ interface Props {
   state: "Open" | "AwaitingVrf" | "Resolved" | 0 | 1 | 2;
   /** Hex/CSS accent color. When omitted, uses mint as the safe brand
    *  default — emerald is no longer in the palette. */
-  accentColor?: string;
+  accent?: string;
 }
 
 function isResolved(s: Props["state"]): boolean {
@@ -53,7 +53,7 @@ export function WinnerBanner({
   totalPotLamports,
   batches,
   state,
-  accentColor,
+  accent = "#88cfc4", // mint default — emerald is not in the palette
 }: Props) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
@@ -152,7 +152,6 @@ export function WinnerBanner({
   if (!resolved || !winner) return null;
 
   const rpcUrl = connection.rpcEndpoint;
-  const accent = accentColor ?? "#88cfc4"; // mint default — emerald is not in the palette
   const winnerStyle = isWinner
     ? {
         borderColor: accent,

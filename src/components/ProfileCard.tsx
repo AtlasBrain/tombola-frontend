@@ -6,7 +6,7 @@ import { PROGRAM_ID } from "@tombola/sdk";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { explorerAddressUrl } from "@/lib/explorer-url";
-import { formatSol } from "@/lib/format";
+import { formatSol, shortAddress} from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";
 import { fetchWalletStats, type WalletStats } from "@/lib/wallet-stats";
 import {
@@ -30,11 +30,6 @@ interface Props {
 }
 
 const MINT = "#88cfc4";
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-}
 
 /**
  * Option B layout: avatar (72px) + pseudo + rank + wallet + X + friends
@@ -194,7 +189,7 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
           <div className="flex min-w-0 flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-display text-lg font-bold uppercase tracking-tight">
-                {profile.pseudo ?? shortAddr(profile.wallet)}
+                {profile.pseudo ?? shortAddress(profile.wallet)}
               </span>
               {/* Rank pill — PHASE 2 will populate; placeholder for now */}
             </div>
@@ -204,7 +199,7 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
               rel="noreferrer"
               className="font-mono text-[11px] text-neutral-500 transition hover:text-neutral-300"
             >
-              {shortAddr(profile.wallet)} ↗
+              {shortAddress(profile.wallet)} ↗
             </a>
             <div className="mt-0.5 flex flex-wrap items-center gap-3 font-mono text-[11px] text-neutral-500">
               {profile.xHandle && (

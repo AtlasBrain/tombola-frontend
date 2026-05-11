@@ -17,7 +17,7 @@
 
 import { Redis } from "@upstash/redis";
 import nacl from "tweetnacl";
-import bs58 from "bs58";
+import { decodeBase58 } from "./base58";
 import { consumeNonce } from "./profile-store";
 
 let redis: Redis | null = null;
@@ -263,8 +263,8 @@ export async function verifyFriendAction(
   let pubkeyBytes: Uint8Array;
   let sigBytes: Uint8Array;
   try {
-    pubkeyBytes = bs58Decode(wallet);
-    sigBytes = bs58Decode(signatureBase58);
+    pubkeyBytes = decodeBase58(wallet);
+    sigBytes = decodeBase58(signatureBase58);
   } catch {
     return "Invalid base58 in wallet or signature.";
   }
@@ -283,9 +283,3 @@ export async function verifyFriendAction(
   return null;
 }
 
-function bs58Decode(s: string): Uint8Array {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lib = bs58 as any;
-  const decode = (lib.default?.decode ?? lib.decode) as (s: string) => Uint8Array;
-  return decode(s);
-}

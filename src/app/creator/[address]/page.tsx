@@ -6,7 +6,7 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { PROGRAM_ID } from "@tombola/sdk";
 import { Header } from "@/components/Header";
 import { explorerAddressUrl } from "@/lib/explorer-url";
-import { formatSol } from "@/lib/format";
+import { formatSol, shortAddress} from "@/lib/format";
 import {
   fetchCreatorStats,
   type CreatorPoolSummary,
@@ -17,11 +17,6 @@ const LAVENDER = "#c9b5dc";
 const MINT = "#88cfc4";
 const YELLOW = "#e8d89e";
 const PINK = "#E89999";
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-}
 
 function durationLabel(openSec: number, closeSec: number): string {
   const secs = Math.max(0, closeSec - openSec);
@@ -148,7 +143,7 @@ export default function CreatorProfilePage({
                 Creator profile
               </span>
               <h1 className="mt-3 font-display text-3xl uppercase leading-[0.95] sm:text-5xl">
-                {shortAddr(address)}
+                {shortAddress(address)}
               </h1>
               <p className="mt-2 break-all font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 <a
@@ -306,7 +301,7 @@ function PoolCard({
             href={`/pool/private/${pool.poolAddress}`}
             className="font-display text-lg uppercase transition hover:brightness-125"
           >
-            {shortAddr(pool.poolAddress)}
+            {shortAddress(pool.poolAddress)}
           </Link>
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
             <a
@@ -315,7 +310,7 @@ function PoolCard({
               rel="noreferrer"
               className="hover:text-neutral-300"
             >
-              {shortAddr(pool.poolAddress)} ↗
+              {shortAddress(pool.poolAddress)} ↗
             </a>{" "}
             · {pool.accessMode === "Whitelist" ? "Whitelist" : "1 code/ticket"}{" "}
             · {(pool.creatorFeeBps / 100).toFixed(1)}% fee ·{" "}

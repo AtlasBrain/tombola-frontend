@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wallet profile — hybrid A+C mockups</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #0d0d0e;
+    --card-2: #14141a;
+    --card-3: #18181d;
+    --border: #1f1f23;
+    --divider: #2a2a2f;
+    --ink: #f5f5f5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --mint: #88cfc4;
+    --lavender: #c9b5dc;
+    --coral: #e89999;
+    --sand: #e8d89e;
+    --lime: #d4e84a;
+    --gold: #e8c969;
+    --rose: #e8a5c0;
+    --track: #18181b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 32px 120px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    min-height: 100vh;
+  }
+  .mono { font-family: ui-monospace, "Space Mono", Menlo, monospace; }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    color: var(--muted-2);
+    font-size: 13px;
+    margin: 0 0 32px;
+    max-width: 780px;
+    line-height: 1.55;
+  }
+  .opt {
+    margin: 0 auto 56px;
+    max-width: 720px;
+  }
+  .opt > .head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .opt > .head > h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .opt > .head > p {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .label {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .pos { color: var(--mint); }
+  .neg { color: var(--coral); }
+
+  /* Avatar */
+  .av {
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), var(--lavender));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+  }
+  .av-56 { width: 56px; height: 56px; font-size: 22px; }
+  .av-64 { width: 64px; height: 64px; font-size: 24px; }
+  .av-72 { width: 72px; height: 72px; font-size: 28px; }
+  .av-80 { width: 80px; height: 80px; font-size: 32px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+  .pseudo { font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .addr { font-size: 11px; color: var(--muted-2); letter-spacing: 0.04em; }
+  .rank-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(232, 201, 105, 0.12);
+    color: var(--gold);
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ============================ OPTION 1 — Trader-styled compact card ============================ */
+  .opt-1 .card { padding: 18px 20px; }
+  .opt-1 .top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .opt-1 .id-stack { display: flex; flex-direction: column; gap: 2px; }
+  .opt-1 .id-row { display: flex; align-items: center; gap: 8px; }
+  .opt-1 .pnl { text-align: right; }
+  .opt-1 .pnl .label { margin-bottom: 2px; display: block; }
+  .opt-1 .pnl .val {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .opt-1 .stats {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .opt-1 .stat { }
+  .opt-1 .stat .label { display: block; margin-bottom: 4px; font-size: 9px; }
+  .opt-1 .stat .val { font-size: 16px; font-weight: 700; line-height: 1; }
+  .opt-1 .stat .sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .opt-1 .badges { margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ============================ OPTION 2 — Trader bar + side stats ============================ */
+  .opt-2 .card { padding: 18px 20px; }
+  .opt-2 .layout {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 18px;
+  }
+  .opt-2 .left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .opt-2 .id-row { display: flex; align-items: center; gap: 12px; }
+  .opt-2 .id-stack { display: flex; flex-direction: column; gap: 2px; }
+  .opt-2 .hero .label { display: block; margin-bottom: 4px; }
+  .opt-2 .hero .val { font-size: 26px; font-weight: 700; line-height: 1; }
+  .opt-2 .hero .sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .opt-2 .divider { background: var(--border); }
+  .opt-2 .right .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 12px;
+  }
+  .opt-2 .right .stat-row:last-child { border-bottom: 0; }
+  .opt-2 .right .stat-row .label { font-family: ui-monospace, Menlo, monospace; }
+  .opt-2 .right .stat-row .val { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .opt-2 .badges { margin-top: 16px; display: flex; gap: 6px; flex-wrap: wrap; padding-top: 14px; border-top: 1px dashed var(--border); }
+
+  /* ============================ OPTION 3 — Hero + tiles ============================ */
+  .opt-3 .card { padding: 0; overflow: hidden; }
+  .opt-3 .hero {
+    padding: 22px;
+    background:
+      radial-gradient(60% 100% at 100% 0%, rgba(136,207,196,0.10) 0%, transparent 60%),
+      radial-gradient(40% 80% at 0% 100%, rgba(201,181,220,0.08) 0%, transparent 60%),
+      var(--card);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .opt-3 .id-stack { display: flex; flex-direction: column; gap: 4px; }
+  .opt-3 .id-row { display: flex; align-items: center; gap: 8px; }
+  .opt-3 .pnl { text-align: right; }
+  .opt-3 .pnl .label { display: block; margin-bottom: 2px; }
+  .opt-3 .pnl .val {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .opt-3 .pnl .delta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .opt-3 .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .opt-3 .tile {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+  }
+  .opt-3 .tile:last-child { border-right: 0; }
+  .opt-3 .tile .label { display: block; margin-bottom: 6px; }
+  .opt-3 .tile .val { font-size: 18px; font-weight: 700; line-height: 1; }
+  .opt-3 .tile .sub { color: var(--muted); font-size: 10px; margin-top: 4px; }
+  .opt-3 .badges {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--card-2);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* ============================ OPTION 4 — Trader head + sparkline ============================ */
+  .opt-4 .card { padding: 20px; }
+  .opt-4 .top { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+  .opt-4 .id-stack { display: flex; flex-direction: column; gap: 2px; }
+  .opt-4 .pnl { text-align: right; }
+  .opt-4 .pnl .val { font-size: 24px; font-weight: 700; line-height: 1; }
+  .opt-4 .stats {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .opt-4 .stat .label { display: block; margin-bottom: 4px; font-size: 9px; }
+  .opt-4 .stat .val { font-size: 16px; font-weight: 700; line-height: 1; }
+  .opt-4 .stat .sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .opt-4 .activity {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .opt-4 .activity .head-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .opt-4 .sparkbar {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 28px;
+  }
+  .opt-4 .sparkbar > div {
+    flex: 1;
+    background: var(--mint);
+    border-radius: 2px;
+    opacity: 0.85;
+  }
+  .opt-4 .badges {
+    margin-top: 14px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* ============================ OPTION 5 — Trader header + recent rounds list ============================ */
+  .opt-5 .card { padding: 20px; }
+  .opt-5 .top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .opt-5 .id-stack { display: flex; flex-direction: column; gap: 2px; }
+  .opt-5 .pnl { text-align: right; }
+  .opt-5 .pnl .val { font-size: 22px; font-weight: 700; line-height: 1; }
+  .opt-5 .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+  }
+  .opt-5 .stat .label { display: block; margin-bottom: 4px; font-size: 9px; }
+  .opt-5 .stat .val { font-size: 15px; font-weight: 700; line-height: 1; }
+  .opt-5 .stat .sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .opt-5 .rounds { margin-top: 12px; }
+  .opt-5 .rounds h4 {
+    margin: 0 0 8px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-2);
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  .opt-5 .rounds ul { margin: 0; padding: 0; list-style: none; }
+  .opt-5 .rounds li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .opt-5 .rounds li:last-child { border-bottom: 0; }
+  .opt-5 .rounds .when { color: var(--muted); font-size: 10px; }
+  .opt-5 .badges { margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<h1>Wallet profile — hybrid trader + compact</h1>
+<p class="lede">
+  All five variants share the same data: <b>marwan.sol</b>, <code>EaAL…pLBt</code>,
+  net +4.21 SOL, 214 tickets across 17 pools, 3 wins (17.6% rate). They differ in how that data
+  is grouped on the card. All sized around 720px wide so they slot into existing layouts
+  (sidebar, dashboard column, or pool-detail card).
+</p>
+
+<!-- ============================== 1 ============================== -->
+<section class="opt opt-1">
+  <div class="head">
+    <h2>1. Inline header + 4-stat strip</h2>
+    <p>One row: avatar, pseudo, big Net PnL on the right. Stats strip below. Closest to A in density, gets the C-style PnL hero.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <span class="addr mono">EaAL…pLBt ↗</span>
+      </div>
+      <div class="pnl">
+        <span class="label">Net PnL</span>
+        <div class="val num pos">+4.21 SOL</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="label">Tickets</span>
+        <div class="val num">214</div>
+        <div class="sub">avg 12.6 / pool</div>
+      </div>
+      <div class="stat">
+        <span class="label">Pools entered</span>
+        <div class="val num">17</div>
+        <div class="sub">3 won</div>
+      </div>
+      <div class="stat">
+        <span class="label">Win rate</span>
+        <div class="val num">17.6%</div>
+        <div class="sub">vs 8.9% exp.</div>
+      </div>
+      <div class="stat">
+        <span class="label">Best win</span>
+        <div class="val num pos">4.84</div>
+        <div class="sub">Monthly #1</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 2 ============================== -->
+<section class="opt opt-2">
+  <div class="head">
+    <h2>2. Hero PnL on left · stat list on right</h2>
+    <p>Two columns under one card. Left: identity + the headline PnL number. Right: a compact key:value list of secondary stats.</p>
+  </div>
+  <div class="card">
+    <div class="layout">
+      <div class="left">
+        <div class="id-row">
+          <div class="av av-72">M</div>
+          <div class="id-stack">
+            <span class="pseudo">marwan.sol</span>
+            <span class="addr mono">EaAL…pLBt ↗</span>
+            <span class="rank-pill" style="margin-top: 4px;">★ #14 all-time</span>
+          </div>
+        </div>
+        <div class="hero">
+          <span class="label">Net PnL · all-time</span>
+          <div class="val num pos">+4.21 SOL</div>
+          <div class="sub">+1.84 SOL last 30d</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="right">
+        <div class="stat-row"><span class="label">Tickets</span><span class="val num">214</span></div>
+        <div class="stat-row"><span class="label">Pools entered</span><span class="val num">17</span></div>
+        <div class="stat-row"><span class="label">Wins</span><span class="val num pos">3</span></div>
+        <div class="stat-row"><span class="label">Win rate</span><span class="val num">17.6%</span></div>
+        <div class="stat-row"><span class="label">Spent</span><span class="val num">2.14 SOL</span></div>
+        <div class="stat-row"><span class="label">Best win</span><span class="val num pos">4.84 SOL</span></div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 3 ============================== -->
+<section class="opt opt-3">
+  <div class="head">
+    <h2>3. Hero band + 4 tiles (no padding between)</h2>
+    <p>Hero band at the top with a subtle gradient + glowing PnL. Four tiles right below in a seamless row separated by hairlines — most "trader app" feel.</p>
+  </div>
+  <div class="card">
+    <div class="hero">
+      <div class="av av-72">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <span class="addr mono">EaAL…pLBt ↗</span>
+      </div>
+      <div class="pnl">
+        <span class="label">Net PnL</span>
+        <div class="val num pos">+4.21 SOL</div>
+        <div class="delta">+1.84 last 30d</div>
+      </div>
+    </div>
+    <div class="tiles">
+      <div class="tile">
+        <span class="label">Tickets</span>
+        <div class="val num">214</div>
+        <div class="sub">avg 12.6 / pool</div>
+      </div>
+      <div class="tile">
+        <span class="label">Pools</span>
+        <div class="val num">17</div>
+        <div class="sub">3 won · 14 lost</div>
+      </div>
+      <div class="tile">
+        <span class="label">Win rate</span>
+        <div class="val num">17.6%</div>
+        <div class="sub">vs 8.9% exp.</div>
+      </div>
+      <div class="tile">
+        <span class="label">Best win</span>
+        <div class="val num pos">4.84</div>
+        <div class="sub">Monthly #1</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+      <span class="badge"><span style="color: var(--mint);">⏱</span> Speed runner</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 4 ============================== -->
+<section class="opt opt-4">
+  <div class="head">
+    <h2>4. Header + stats + activity sparkbar</h2>
+    <p>Identical top section to #1, plus a tight 14-week activity bar at the bottom (mini heatmap rotated to a row of bars). Shows engagement without taking real estate.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <span class="addr mono">EaAL…pLBt ↗</span>
+      </div>
+      <div class="pnl">
+        <span class="label">Net PnL</span>
+        <div class="val num pos">+4.21 SOL</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="label">Tickets</span>
+        <div class="val num">214</div>
+        <div class="sub">17 pools</div>
+      </div>
+      <div class="stat">
+        <span class="label">Wins</span>
+        <div class="val num pos">3</div>
+        <div class="sub">17.6% rate</div>
+      </div>
+      <div class="stat">
+        <span class="label">Spent</span>
+        <div class="val num">2.14 SOL</div>
+        <div class="sub">all-time</div>
+      </div>
+      <div class="stat">
+        <span class="label">Won</span>
+        <div class="val num pos">6.35 SOL</div>
+        <div class="sub">best 4.84</div>
+      </div>
+    </div>
+    <div class="activity">
+      <div class="head-row">
+        <span class="label">Activity · 14 weeks</span>
+        <span class="label" style="color: var(--mint);">+34 last 7d</span>
+      </div>
+      <div class="sparkbar">
+        <div style="height: 12%; opacity: 0.6;"></div>
+        <div style="height: 30%;"></div>
+        <div style="height: 8%; opacity: 0.5;"></div>
+        <div style="height: 55%;"></div>
+        <div style="height: 22%;"></div>
+        <div style="height: 5%; opacity: 0.3;"></div>
+        <div style="height: 40%;"></div>
+        <div style="height: 60%;"></div>
+        <div style="height: 18%;"></div>
+        <div style="height: 35%;"></div>
+        <div style="height: 80%;"></div>
+        <div style="height: 25%;"></div>
+        <div style="height: 50%;"></div>
+        <div style="height: 100%;"></div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 5 ============================== -->
+<section class="opt opt-5">
+  <div class="head">
+    <h2>5. Header + stats + recent rounds list</h2>
+    <p>Top + 4-stat strip + a tight "last 4 rounds" list under it. Like seeing a trader's most recent positions next to their PnL.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <span class="addr mono">EaAL…pLBt ↗</span>
+      </div>
+      <div class="pnl">
+        <span class="label">Net PnL</span>
+        <div class="val num pos">+4.21 SOL</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="label">Tickets</span>
+        <div class="val num">214</div>
+        <div class="sub">17 pools</div>
+      </div>
+      <div class="stat">
+        <span class="label">Wins</span>
+        <div class="val num pos">3</div>
+        <div class="sub">17.6%</div>
+      </div>
+      <div class="stat">
+        <span class="label">Spent</span>
+        <div class="val num">2.14</div>
+        <div class="sub">SOL</div>
+      </div>
+      <div class="stat">
+        <span class="label">Won</span>
+        <div class="val num pos">6.35</div>
+        <div class="sub">SOL</div>
+      </div>
+    </div>
+    <div class="rounds">
+      <h4>Last 4 rounds</h4>
+      <ul>
+        <li>
+          <span>Weekly #2 · 13 tickets</span>
+          <span><span class="when">3m ago</span> &nbsp;<span style="color: var(--muted-2);">pending</span></span>
+        </li>
+        <li>
+          <span>Private FHDQ…A9WH · 26 tickets</span>
+          <span><span class="when">1h ago</span> &nbsp;<span class="pos">+0.85</span></span>
+        </li>
+        <li>
+          <span>Triweekly #1 · 5 tickets</span>
+          <span><span class="when">5d ago</span> &nbsp;<span style="color: var(--coral);">−0.05</span></span>
+        </li>
+        <li>
+          <span>Monthly #1 · 20 tickets</span>
+          <span><span class="when">2w ago</span> &nbsp;<span style="color: var(--coral);">−0.20</span></span>
+        </li>
+      </ul>
+    </div>
+    <div class="badges">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

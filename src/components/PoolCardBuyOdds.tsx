@@ -70,7 +70,7 @@ export function PoolCardBuyOdds({
           round={round}
           ticketPriceLamports={ticketPriceLamports}
           closed={false}
-          accentColor={accent}
+          accent={accent}
           ticketPriceSol={ticketPriceSol}
           onQtyChange={setQty}
         />

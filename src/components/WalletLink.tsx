@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { usePseudo } from "@/lib/pseudo-cache";
+import { shortAddress } from "@/lib/format";
 
 interface Props {
   wallet: string;
@@ -19,11 +20,6 @@ interface Props {
   /** Optional content rendered to the right of the address — typically a
    *  badge such as "you" / "★ #14". */
   trailing?: React.ReactNode;
-}
-
-function shortAddress(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 /**

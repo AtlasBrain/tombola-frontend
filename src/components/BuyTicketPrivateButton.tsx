@@ -11,6 +11,7 @@ import {
 } from "@solana/kit";
 import { PROGRAM_ID, RaffleClient } from "@tombola/sdk";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
+import { decodeBase58 } from "@/lib/base58";
 import { formatSol } from "@/lib/format";
 import { pushNotification } from "@/lib/notifications";
 import { useToast } from "./Toast";
@@ -19,7 +20,7 @@ interface Props {
   poolAddress: string;
   ticketPriceLamports: bigint;
   closed: boolean;
-  accentColor?: string;
+  accent?: string;
   ticketPriceSol?: number;
   /** Soft UI cap on tickets per buy. Defaults to MAX_QTY_HARD. The hard cap
    *  is enforced on-chain by `buy_ticket_private` against pool's total_tickets
@@ -43,7 +44,7 @@ export function BuyTicketPrivateButton({
   poolAddress,
   ticketPriceLamports,
   closed,
-  accentColor = "var(--mint)",
+  accent = "var(--mint)",
   ticketPriceSol,
   maxTicketsPerBuy = MAX_QTY_HARD,
   onPurchased,
@@ -87,8 +88,8 @@ export function BuyTicketPrivateButton({
           programAddress: PROGRAM_ID as Address,
           seeds: [
             new TextEncoder().encode("whitelisted"),
-            base58ToBytes(poolAddress),
-            base58ToBytes(publicKey.toBase58()),
+            decodeBase58(poolAddress),
+            decodeBase58(publicKey.toBase58()),
           ],
         });
         const acc = await rpc
@@ -181,7 +182,7 @@ export function BuyTicketPrivateButton({
       <button
         type="button"
         onClick={() => setWalletModalVisible(true)}
-        style={{ ["--tear-bg" as never]: accentColor }}
+        style={{ ["--tear-bg" as never]: accent }}
         className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110"
         title="Connect a wallet to buy"
       >
@@ -253,7 +254,7 @@ export function BuyTicketPrivateButton({
         type="button"
         onClick={onClick}
         disabled={busy || !qtyValid}
-        style={{ ["--tear-bg" as never]: accentColor }}
+        style={{ ["--tear-bg" as never]: accent }}
         className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {busy ? (
@@ -271,23 +272,3 @@ export function BuyTicketPrivateButton({
   );
 }
 
-function base58ToBytes(s: string): Uint8Array {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let num = 0n;
-  for (const c of s) {
-    const idx = ALPHABET.indexOf(c);
-    if (idx < 0) throw new Error("invalid base58");
-    num = num * 58n + BigInt(idx);
-  }
-  const bytes: number[] = [];
-  while (num > 0n) {
-    bytes.unshift(Number(num & 0xffn));
-    num >>= 8n;
-  }
-  for (const c of s) {
-    if (c !== "1") break;
-    bytes.unshift(0);
-  }
-  return Uint8Array.from(bytes);
-}

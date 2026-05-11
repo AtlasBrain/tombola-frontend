@@ -16,7 +16,7 @@ import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
-import { formatSol } from "@/lib/format";
+import { formatSol, shortAddress} from "@/lib/format";
 
 const TICKET_BATCH_SIZE = 89n;
 const POOL_OFFSET = 8n;
@@ -64,11 +64,6 @@ function unwrapTicketId(v: any): bigint | null {
       : null;
   }
   return BigInt(v as bigint | number | string);
-}
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 const STATE_PILL: Record<
@@ -234,7 +229,7 @@ export default function PrivatePoolPage({
                 Private pool · {pool.accessMode === "Whitelist" ? "WHITELIST" : "ONE CODE PER TICKET"}
               </p>
               <h1 className="mt-1 font-display text-3xl uppercase">
-                {shortAddr(pubkey)}
+                {shortAddress(pubkey)}
               </h1>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 CREATOR{" "}
@@ -242,7 +237,7 @@ export default function PrivatePoolPage({
                   href={`/creator/${pool.creator}`}
                   className="hover:text-white"
                 >
-                  {shortAddr(pool.creator)} →
+                  {shortAddress(pool.creator)} →
                 </a>{" "}
                 · FEE {(pool.creatorFeeBps / 100).toFixed(1)}% ·{" "}
                 <a
@@ -307,7 +302,7 @@ export default function PrivatePoolPage({
               poolAddress={pubkey}
               ticketPriceLamports={pool.ticketPriceLamports}
               closed={closed}
-              accentColor={PRIVATE_ACCENT}
+              accent={PRIVATE_ACCENT}
               ticketPriceSol={ticketPriceSol}
               onPurchased={bumpReload}
               onQtyChange={setPreviewQty}
@@ -319,7 +314,7 @@ export default function PrivatePoolPage({
             <WinOdds
               poolAddress={pubkey}
               totalTickets={pool.totalTickets}
-              accentColor={PRIVATE_ACCENT}
+              accent={PRIVATE_ACCENT}
               previewQty={previewQty}
             />
           </div>
@@ -333,7 +328,7 @@ export default function PrivatePoolPage({
           totalPotLamports={pool.totalPotLamports}
           batches={batches}
           state={pool.state}
-          accentColor={PRIVATE_ACCENT}
+          accent={PRIVATE_ACCENT}
         />
 
         {/* === DRAW (creator-only / public action) ===================== */}
@@ -350,7 +345,7 @@ export default function PrivatePoolPage({
           <RecentBuysTable
             batches={batches}
             totalTickets={pool.totalTickets}
-            accentColor={PRIVATE_ACCENT}
+            accent={PRIVATE_ACCENT}
             displayHeading
           />
         </div>

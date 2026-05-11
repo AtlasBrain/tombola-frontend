@@ -11,6 +11,7 @@ import {
   getAddressEncoder,
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { encodeBase58 } from "./base58";
 
 const PRIVATE_POOL_SIZE = 216n;
 const CREATOR_OFFSET = 8n; // first field after 8-byte discriminator
@@ -76,23 +77,6 @@ function unwrapOption<T>(raw: any, coerce: (v: unknown) => T): T | null {
   return coerce(raw);
 }
 
-function bytesToBase58(bytes: Uint8Array): string {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let num = 0n;
-  for (const b of bytes) num = (num << 8n) | BigInt(b);
-  let out = "";
-  while (num > 0n) {
-    out = ALPHABET[Number(num % 58n)] + out;
-    num /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    out = "1" + out;
-  }
-  return out;
-}
-
 export async function fetchCreatorStats(args: {
   rpcUrl: string;
   programId: string;
@@ -102,7 +86,7 @@ export async function fetchCreatorStats(args: {
   const creatorBytes = new Uint8Array(
     getAddressEncoder().encode(args.creatorAddress as Address),
   );
-  const creatorBase58 = bytesToBase58(creatorBytes);
+  const creatorBase58 = encodeBase58(creatorBytes);
 
   // Scan PrivatePool accounts where creator field == this address.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Odds gauge — stacked bar options</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card-bg: #88cfc40d;
+    --card-border: #88cfc433;
+    --divider: #ffffff1f;
+    --accent: #88cfc4;
+    --accent-warm: #e8d89e;
+    --ink: #e5e5e5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --track: #18181b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 32px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-monospace, "Space Mono", Menlo, monospace;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    font-weight: 700;
+    font-size: 28px;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .intro {
+    color: var(--muted-2);
+    font-size: 13px;
+    margin: 0 0 40px;
+    max-width: 720px;
+    line-height: 1.55;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+    max-width: 1300px;
+  }
+  .opt {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .opt > h2 {
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+    color: var(--muted-2);
+  }
+  .opt > p.subtitle {
+    color: var(--muted);
+    font-size: 11px;
+    margin: -4px 0 4px;
+    line-height: 1.5;
+  }
+  .gauge {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .label-row .muted { color: var(--muted); }
+  .label-row .accent { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .footer-row {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-variant-numeric: tabular-nums;
+  }
+  .footer-row .delta { color: var(--accent); }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .legend .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .bar {
+    height: 8px;
+    width: 100%;
+    border-radius: 999px;
+    background: var(--track);
+    overflow: hidden;
+    display: flex;
+    position: relative;
+  }
+  .bar > .seg {
+    height: 100%;
+    transition: width 0.18s ease-out;
+  }
+  /* Use the values to illustrate:
+     current = 9.09%  (10 of 110)
+     after   = 18.70% (23 of 123)
+     delta   = 9.61%   (the slice you'd gain by buying 13)
+  */
+
+  /* ============ Option A: solid + lighter ============ */
+  .opt-a .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-a .seg-add     { width: 9.61%; background: var(--accent); opacity: 0.45; }
+
+  /* ============ Option B: two distinct hues ============ */
+  .opt-b .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-b .seg-add     { width: 9.61%; background: var(--accent-warm); }
+
+  /* ============ Option C: arrow notation ============ */
+  .opt-c .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-c .seg-add     { width: 9.61%; background: var(--accent); opacity: 0.45; }
+
+  /* ============ Option D: tick marker on a single fill ============ */
+  .opt-d .bar { position: relative; }
+  .opt-d .seg-after   { width: 18.70%; background: var(--accent); opacity: 0.55; }
+  .opt-d .tick {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+    left: 9.09%;
+  }
+  .opt-d .tick-label {
+    position: absolute;
+    top: 12px;
+    left: 9.09%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--muted-2);
+    white-space: nowrap;
+  }
+
+  /* ============ Option E: striped delta ============ */
+  .opt-e .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-e .seg-add {
+    width: 9.61%;
+    background-image:
+      repeating-linear-gradient(
+        135deg,
+        var(--accent) 0 6px,
+        transparent 6px 12px
+      );
+    background-color: var(--accent);
+    background-blend-mode: overlay;
+    opacity: 0.7;
+  }
+
+  /* ============ Option F: dual stacked thin bars ============ */
+  .opt-f .pair { display: flex; flex-direction: column; gap: 3px; }
+  .opt-f .bar { height: 6px; }
+  .opt-f .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-f .seg-after-full { width: 18.70%; background: var(--accent); opacity: 0.6; }
+
+  /* ============ Option G: comparison labels above bar ============ */
+  .opt-g .comparison {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .opt-g .from { font-size: 14px; color: var(--muted-2); }
+  .opt-g .arrow { color: var(--muted); font-size: 12px; }
+  .opt-g .to { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .opt-g .delta-pill {
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+  }
+  .opt-g .seg-current { width: 9.09%; background: var(--accent); }
+  .opt-g .seg-add     { width: 9.61%; background: var(--accent); opacity: 0.45; }
+</style>
+</head>
+<body>
+
+<h1>Odds gauge — single-bar stacked options</h1>
+<p class="intro">
+  All options visualise the same numbers: you currently own <b>10 of 110</b> tickets (9.09%) and
+  are previewing a buy of <b>+13 tickets</b> (post-buy 23 / 123, 18.70%). The new bar should make
+  the current share and the projected share both readable in <em>one</em> bar.
+</p>
+
+<div class="grid">
+
+  <!-- ============================== A ============================== -->
+  <div class="opt opt-a">
+    <h2>A. Solid + Lighter delta</h2>
+    <p class="subtitle">Same accent color for both segments; the new portion is just half-opacity. Minimal change from today's UI. Reads as "more of the same".</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">After buying</span>
+        <span class="accent">18.70%</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-current"></div>
+        <div class="seg seg-add"></div>
+      </div>
+      <div class="footer-row">10 → 23 of 123 tickets <span class="delta">(+13)</span></div>
+    </div>
+  </div>
+
+  <!-- ============================== B ============================== -->
+  <div class="opt opt-b">
+    <h2>B. Two-colour stacked</h2>
+    <p class="subtitle">Mint for what you own, sand-yellow for the additional slice. Strongest visual distinction; reads like a classic two-series stacked bar.</p>
+    <div class="gauge">
+      <div class="legend">
+        <span><span class="dot" style="background: var(--accent);"></span>Current 9.09%</span>
+        <span><span class="dot" style="background: var(--accent-warm);"></span>+9.61% from buy</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-current"></div>
+        <div class="seg seg-add"></div>
+      </div>
+      <div class="footer-row">After buying — 23 of 123 (18.70%)</div>
+    </div>
+  </div>
+
+  <!-- ============================== C ============================== -->
+  <div class="opt opt-c">
+    <h2>C. Inline before → after</h2>
+    <p class="subtitle">Same bar as A but the labels show <code>9.09% → 18.70%</code> in the header so the delta is verbal too. Compact and direct.</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">Your odds</span>
+        <span class="accent">9.09% → 18.70%</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-current"></div>
+        <div class="seg seg-add"></div>
+      </div>
+      <div class="footer-row">10 → 23 of 123 tickets <span class="delta">(+13)</span></div>
+    </div>
+  </div>
+
+  <!-- ============================== D ============================== -->
+  <div class="opt opt-d">
+    <h2>D. Tick marker</h2>
+    <p class="subtitle">One bar fills to the post-buy odds; a white tick marks where you are today. The "gap" between tick and fill end is literally what you gain.</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">After buying</span>
+        <span class="accent">18.70%</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-after"></div>
+        <div class="tick" aria-hidden="true"></div>
+      </div>
+      <div class="footer-row" style="margin-top: 14px;">Now 9.09% (10) · After 18.70% (23 of 123)</div>
+    </div>
+  </div>
+
+  <!-- ============================== E ============================== -->
+  <div class="opt opt-e">
+    <h2>E. Diagonal-stripe delta</h2>
+    <p class="subtitle">Current portion solid; new portion striped over the accent. Texture hints "this isn't yours yet" without changing hue. Slightly busy at very small widths.</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">After buying</span>
+        <span class="accent">18.70%</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-current"></div>
+        <div class="seg seg-add"></div>
+      </div>
+      <div class="footer-row">10 → 23 of 123 tickets <span class="delta">(+13)</span></div>
+    </div>
+  </div>
+
+  <!-- ============================== F ============================== -->
+  <div class="opt opt-f">
+    <h2>F. Stacked twin-thin bars</h2>
+    <p class="subtitle">Two slim bars one under the other (same denominator scale): current on top, post-buy below. Closest to a literal "stacked bar chart". Uses more vertical space.</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">Your odds</span>
+        <span class="accent">9.09% → 18.70%</span>
+      </div>
+      <div class="pair">
+        <div class="bar"><div class="seg seg-current"></div></div>
+        <div class="bar"><div class="seg seg-after-full"></div></div>
+      </div>
+      <div class="footer-row">Now 10 / 110 · After 23 / 123 <span class="delta">(+13)</span></div>
+    </div>
+  </div>
+
+  <!-- ============================== G ============================== -->
+  <div class="opt opt-g">
+    <h2>G. Big delta headline</h2>
+    <p class="subtitle">Headline shows <code>9.09 → 18.70%</code> with a "+9.61%" pill. Bar underneath uses the A treatment. Most marketing-y; clearest "what do I gain" reading.</p>
+    <div class="gauge">
+      <div class="label-row">
+        <span class="muted">After buying 13 tickets</span>
+      </div>
+      <div class="comparison">
+        <span class="from">9.09%</span>
+        <span class="arrow">→</span>
+        <span class="to">18.70%</span>
+        <span class="delta-pill">+9.61%</span>
+      </div>
+      <div class="bar">
+        <div class="seg seg-current"></div>
+        <div class="seg seg-add"></div>
+      </div>
+      <div class="footer-row">10 → 23 of 123 tickets</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

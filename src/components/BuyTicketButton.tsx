@@ -15,7 +15,7 @@ interface Props {
   round: bigint;
   ticketPriceLamports: bigint;
   closed: boolean;
-  accentColor?: string;
+  accent?: string;
   ticketPriceSol?: number;
   /** Fired whenever the qty input changes (empty / out-of-range → 0). Lets
    *  the parent overlay the new odds on the existing WinOdds gauge. */
@@ -30,7 +30,7 @@ export function BuyTicketButton({
   round,
   ticketPriceLamports,
   closed,
-  accentColor = "var(--lavender)",
+  accent = "var(--lavender)",
   ticketPriceSol = 0.01,
   onQtyChange,
 }: Props) {
@@ -133,7 +133,7 @@ export function BuyTicketButton({
       <button
         type="button"
         onClick={() => setWalletModalVisible(true)}
-        style={{ ["--tear-bg" as never]: accentColor }}
+        style={{ ["--tear-bg" as never]: accent }}
         className="btn-fx fx-tear mt-6 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110"
         title="Connect a wallet to buy"
       >
@@ -192,7 +192,7 @@ export function BuyTicketButton({
               ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} — ${formatSol(total)}`
               : "Enter a quantity"
         }
-        style={{ ["--tear-bg" as never]: accentColor }}
+        style={{ ["--tear-bg" as never]: accent }}
         className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {busy

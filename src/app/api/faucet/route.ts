@@ -10,6 +10,12 @@ import {
 } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
+// Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
+// Dynamic + short maxDuration: each request is fast and never cached.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 const VALID_CODES = new Set(
   (process.env.INVITE_CODES ?? "").split(",").filter(Boolean),
 );

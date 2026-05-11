@@ -10,7 +10,7 @@ interface Props {
   round: bigint;
   ticketPriceLamports: bigint;
   closed: boolean;
-  accentColor?: string;
+  accent?: string;
   ticketPriceSol?: number;
   /** Pool PDA — required for WinOdds to fetch the user's existing tickets. */
   poolAddress: string;
@@ -30,7 +30,7 @@ export function BuyWithOdds({
   round,
   ticketPriceLamports,
   closed,
-  accentColor,
+  accent,
   ticketPriceSol,
   poolAddress,
   totalTickets,
@@ -43,7 +43,7 @@ export function BuyWithOdds({
         round={round}
         ticketPriceLamports={ticketPriceLamports}
         closed={closed}
-        accentColor={accentColor}
+        accent={accent}
         ticketPriceSol={ticketPriceSol}
         onQtyChange={setPreviewQty}
       />
@@ -51,7 +51,7 @@ export function BuyWithOdds({
         <WinOdds
           poolAddress={poolAddress}
           totalTickets={totalTickets}
-          accentColor={accentColor}
+          accent={accent}
           previewQty={previewQty}
         />
       </div>

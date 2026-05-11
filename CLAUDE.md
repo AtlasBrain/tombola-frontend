@@ -38,3 +38,34 @@ If that's clean, the commit is shippable. There's no test suite yet — phase 5 
 This user is **new to frontend** but technically rigorous (12-step Solana program build with audit-ready discipline in the companion repo). Explain frontend concepts in terms of analogues they know (React effects ≈ subscriptions, useState ≈ a tiny reactive store). Never condescend; never over-explain syntax they can read. When introducing a new concept, lead with WHY not HOW.
 
 Match the established communication style: short, technical, file paths and line numbers, no narration of internal deliberation.
+
+---
+
+## Major features added 2026-05-10 → 2026-05-12
+
+### Keeper (raffle auto-resolution) — fully cloud-resident
+- Code: `src/lib/keeper/{wallet,scan,commit,settle,tx,logger}.ts` (server-only); route at `src/app/api/keeper/tick/route.ts`.
+- Fired every minute by **cron-job.org** ("WinnerSelector" job) sending `Authorization: Bearer <CRON_SECRET>` to the route. Daily Vercel cron in `vercel.json` is a safety-net (Hobby plan limit).
+- Required env vars on Vercel: `KEEPER_KEYPAIR`, `CRON_SECRET`, `SOLANA_RPC_URL`. KV vars auto-injected by Upstash marketplace.
+- **Critical constraint** (`vrf.rs:60` on-chain): `clock_slot == reveal_slot`. Reveal+settle MUST be one tx. Keeper `simulateTransaction(revealIx)` first to learn the value, picks winning batch from sim, then sends `[revealIx, settleIx]` atomically.
+- Recovery path: when randomness `value` is non-zero on entry (stale reveal from a previous slot), keeper sends fresh `commitIx`, sleeps 6s for slot delay, then atomic reveal+settle.
+- The legacy `beta/keeper/` standalone-Node service is now dead; do not edit.
+
+### Profile + friends system
+- Page: `/u/[handle]` where handle is wallet pubkey OR claimed pseudo (case-insensitive).
+- Storage: Upstash KV via Vercel Marketplace. Schema in `src/lib/profile-store.ts` + `src/lib/friend-store.ts`.
+- Auth: every mutation = client signs `tombola:<context>:<nonce>` via `signMessage`; server verifies with `tweetnacl`, consumes the nonce (single-use, 5-min TTL).
+- `src/lib/pseudo-cache.ts` is the canonical pattern for wallet→pseudo lookups across the app. Use the same shape for new wallet-keyed lookups.
+
+## On-chain account sizes (used as `dataSize` filters across the codebase)
+- PublicPool = 150  · PrivatePool = 216  · TicketBatch = 89.
+- TicketBatch field offsets: `pool` at 8, `owner` at 40.
+- PROTOCOL_FEE_BPS = 50 (0.5%) — matches `programs/raffle/src/constants.rs` in the companion repo.
+
+## Tech-debt hotspots (audit 2026-05-12 — see memory `ref_tech_debt_hotspots.md`)
+- `bytesToBase58` / `base58ToBytes` reimplemented in 6 files → use the existing `bs58` dep.
+- `unwrapOption<T>` reimplemented in 5 files → needs `src/lib/codec/option.ts`.
+- `TICKET_BATCH_SIZE` / `PRIVATE_POOL_SIZE` / `PUBLIC_POOL_SIZE` declared in 7+ files → needs `src/lib/constants.ts`.
+- `CreatorDashboard.tsx` (681), `BuyerDashboard.tsx` (597), `ProfileCard.tsx` (577) all worth splitting into a hook + presentational components.
+- No rate-limiting on API routes (`@upstash/ratelimit` is the drop-in).
+- `src/lib/keeper/scan.ts` fetches every PrivatePool each tick — add a state-byte `memcmp` filter.

@@ -3,6 +3,16 @@
 const LAMPORTS_PER_SOL = 1_000_000_000n;
 
 /**
+ * Truncate a base58 wallet/pubkey for compact display: `XXXX…YYYY` where
+ * the first 4 and last 4 chars survive. Strings ≤10 chars are returned as-is.
+ * Single source of truth — was duplicated in 5 files prior to 2026-05-12.
+ */
+export function shortAddress(addr: string): string {
+  if (addr.length <= 10) return addr;
+  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
+}
+
+/**
  * Format lamports as `X.XXX SOL`. Uses 4 decimals max; trims trailing zeros
  * so 1_000_000_000 → "1 SOL", 1_500_000_000 → "1.5 SOL", 10_000_000 → "0.01 SOL".
  */

@@ -14,6 +14,12 @@ import {
   type FriendAction,
 } from "@/lib/friend-store";
 
+// Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
+// Dynamic + short maxDuration: each request is fast and never cached.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 10;
+
 interface PostBody {
   wallet: string;
   target: string;

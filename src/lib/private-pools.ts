@@ -108,6 +108,7 @@ import {
   createSolanaRpc,
   getAddressEncoder,
 } from "@solana/kit";
+import { encodeBase58 } from "./base58";
 
 // 8 disc + 208 fields = 216. Verified against live devnet PrivatePool
 // FChacWqQR77V9h9sGnTbDkoiJMugTfg7qRaPzSkKWWe4 (size 216). If a future
@@ -137,7 +138,7 @@ export async function findMyPrivatePools(args: {
         {
           memcmp: {
             offset: 8n,
-            bytes: addressToBase58(creatorBytes),
+            bytes: encodeBase58(creatorBytes),
           },
         },
       ],
@@ -149,19 +150,3 @@ export async function findMyPrivatePools(args: {
   return result.map((r) => ({ address: r.pubkey }));
 }
 
-function addressToBase58(bytes: Uint8Array): string {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let num = 0n;
-  for (const b of bytes) num = (num << 8n) | BigInt(b);
-  let out = "";
-  while (num > 0n) {
-    out = ALPHABET[Number(num % 58n)] + out;
-    num /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    out = "1" + out;
-  }
-  return out;
-}

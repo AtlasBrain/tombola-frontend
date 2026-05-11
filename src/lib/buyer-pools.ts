@@ -11,6 +11,7 @@ import {
   getAddressEncoder,
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { encodeBase58 } from "./base58";
 
 const TICKET_BATCH_SIZE = 89n;
 const POOL_OFFSET = 8n;
@@ -75,7 +76,7 @@ export async function findMyParticipations(args: {
   const ownerBytes = new Uint8Array(
     getAddressEncoder().encode(args.walletAddress as Address),
   );
-  const ownerBase58 = bytesToBase58(ownerBytes);
+  const ownerBase58 = encodeBase58(ownerBytes);
 
   // Step 1: my batches across every pool.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -265,23 +266,6 @@ function unwrapOption<T>(
       : null;
   }
   return coerce(raw);
-}
-
-function bytesToBase58(bytes: Uint8Array): string {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let num = 0n;
-  for (const b of bytes) num = (num << 8n) | BigInt(b);
-  let out = "";
-  while (num > 0n) {
-    out = ALPHABET[Number(num % 58n)] + out;
-    num /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    out = "1" + out;
-  }
-  return out;
 }
 
 // ------------ pure aggregations (testable) ----------------

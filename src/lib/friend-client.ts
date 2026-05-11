@@ -4,7 +4,7 @@
 // signMessage("tombola:friend:<action>:<target>:<nonce>") → POST /api/friends.
 
 import type { WalletContextState } from "@solana/wallet-adapter-react";
-import bs58 from "bs58";
+import { encodeBase58 } from "./base58";
 
 export type FriendAction = "request" | "accept" | "reject" | "unfriend";
 
@@ -14,13 +14,6 @@ export type Relationship =
   | "pending-out"
   | "pending-in"
   | "friends";
-
-function bs58Encode(bytes: Uint8Array): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lib = bs58 as any;
-  const encode = (lib.default?.encode ?? lib.encode) as (b: Uint8Array) => string;
-  return encode(bytes);
-}
 
 async function getNonce(wallet: string): Promise<string> {
   const res = await fetch(`/api/profile/nonce/${encodeURIComponent(wallet)}`, {
@@ -77,7 +70,7 @@ export async function sendFriendAction({
     `tombola:friend:${action}:${target}:${nonce}`,
   );
   const signature = await signMessage(message);
-  const signatureBase58 = bs58Encode(signature);
+  const signatureBase58 = encodeBase58(signature);
 
   const res = await fetch("/api/friends", {
     method: "POST",

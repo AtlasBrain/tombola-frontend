@@ -17,6 +17,12 @@ import {
   type ProfileRow,
 } from "@/lib/profile-store";
 
+// Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
+// Dynamic + short maxDuration: each request is fast and never cached.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 10;
+
 const X_HANDLE_RE = /^[A-Za-z0-9_]{1,15}$/;
 
 interface PutBody {

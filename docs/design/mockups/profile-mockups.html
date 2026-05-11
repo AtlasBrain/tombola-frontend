@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wallet profile — mockup options</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #0d0d0e;
+    --card-2: #14141a;
+    --border: #1f1f23;
+    --divider: #2a2a2f;
+    --ink: #f5f5f5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --mint: #88cfc4;
+    --lavender: #c9b5dc;
+    --coral: #e89999;
+    --sand: #e8d89e;
+    --lime: #d4e84a;
+    --rose: #e8a5c0;
+    --gold: #e8c969;
+    --track: #18181b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 32px 120px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    min-height: 100vh;
+  }
+  .mono { font-family: ui-monospace, "Space Mono", Menlo, monospace; }
+  .display {
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    color: var(--muted-2);
+    font-size: 13px;
+    margin: 0 0 32px;
+    max-width: 780px;
+    line-height: 1.55;
+  }
+  .opt {
+    margin: 0 auto 56px;
+    max-width: 1100px;
+  }
+  .opt > .head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .opt > .head > h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .opt > .head > p {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0;
+  }
+  /* ============================ Profile card primitives ============================ */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; }
+  .label { font-family: ui-monospace, Menlo, monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ============ Avatar ============ */
+  .av {
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), var(--lavender));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .av-64 { width: 64px; height: 64px; font-size: 24px; }
+  .av-96 { width: 96px; height: 96px; font-size: 32px; }
+  .av-120 { width: 120px; height: 120px; font-size: 40px; border: 3px solid var(--bg); }
+
+  /* Identicon-ish — for "no PFP set" fallback */
+  .identicon-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    width: 100%;
+    height: 100%;
+    gap: 2px;
+    padding: 6px;
+    background: #1a1a1d;
+  }
+  .identicon-grid > div { background: var(--lavender); border-radius: 1px; }
+  .identicon-grid > div.off { background: transparent; }
+
+  /* ============================ OPTION A — Compact sidebar card ============================ */
+  .opt-a .layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+  .opt-a .right-stub { color: var(--muted); font-size: 12px; padding: 24px; border: 1px dashed var(--border); border-radius: 12px; text-align: center; }
+  .opt-a .row { display: flex; align-items: center; gap: 14px; }
+  .opt-a h3 { margin: 0; font-size: 18px; font-weight: 600; }
+  .opt-a .addr { color: var(--muted-2); }
+  .opt-a .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+  .opt-a .stat { background: var(--card-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .opt-a .stat .val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ============================ OPTION B — Full profile page ============================ */
+  .opt-b .banner {
+    height: 120px;
+    border-radius: 16px 16px 0 0;
+    background:
+      radial-gradient(50% 80% at 20% 30%, var(--lavender) 0%, transparent 60%),
+      radial-gradient(40% 70% at 80% 50%, var(--mint) 0%, transparent 60%),
+      radial-gradient(50% 90% at 50% 100%, var(--coral) 0%, transparent 60%),
+      #14141a;
+  }
+  .opt-b .profile {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+    padding: 0 24px 24px;
+    position: relative;
+  }
+  .opt-b .av-anchor { margin-top: -60px; display: flex; align-items: flex-end; gap: 18px; }
+  .opt-b .id-block { padding-bottom: 12px; }
+  .opt-b .id-block h3 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
+  .opt-b .id-block .sub { color: var(--muted-2); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .opt-b .verify { color: var(--mint); }
+  .opt-b .actions { margin-left: auto; padding-bottom: 12px; display: flex; gap: 8px; }
+  .opt-b .btn { background: var(--card-2); border: 1px solid var(--border); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: 12px; cursor: pointer; transition: 0.15s ease; }
+  .opt-b .btn:hover { border-color: var(--muted); }
+  .opt-b .btn-primary { background: var(--mint); color: #000; border-color: transparent; font-weight: 600; }
+  .opt-b .bio { margin-top: 16px; color: var(--muted-2); font-size: 14px; max-width: 60ch; }
+  .opt-b .meta-row {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+  .opt-b .meta-row a { color: var(--muted-2); }
+  .opt-b .meta-row a:hover { color: var(--mint); }
+  .opt-b .stats-grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .opt-b .stat-tile {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .opt-b .stat-tile .label { margin-bottom: 6px; }
+  .opt-b .stat-tile .val { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .opt-b .stat-tile .delta { font-size: 11px; margin-top: 4px; }
+  .opt-b .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .opt-b .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .opt-b .badge.locked { opacity: 0.35; }
+
+  /* Activity feed inside option B */
+  .opt-b .feed {
+    margin-top: 24px;
+    padding: 18px 20px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .opt-b .feed h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-2); }
+  .opt-b .feed li { list-style: none; display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; font-family: ui-monospace, Menlo, monospace; }
+  .opt-b .feed li:last-child { border-bottom: 0; }
+  .opt-b .feed .when { color: var(--muted); font-size: 11px; }
+
+  /* ============================ OPTION C — Trader dashboard ============================ */
+  .opt-c .top {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .opt-c h3 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .opt-c .sub { color: var(--muted-2); font-size: 13px; margin-top: 4px; }
+  .opt-c .net {
+    text-align: right;
+  }
+  .opt-c .net .label { display: block; margin-bottom: 4px; }
+  .opt-c .net .val {
+    font-size: 32px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .opt-c .net .val.pos { color: var(--mint); }
+  .opt-c .net .val.neg { color: var(--coral); }
+  .opt-c .net .delta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .opt-c .grid {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .opt-c .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .opt-c .stat .label { margin-bottom: 8px; }
+  .opt-c .stat .val { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .opt-c .stat .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .opt-c .panels { margin-top: 16px; display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .opt-c .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .opt-c .panel h4 { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-2); }
+  .opt-c .panel ul { margin: 0; padding: 0; list-style: none; }
+  .opt-c .panel li { padding: 7px 0; font-family: ui-monospace, Menlo, monospace; font-size: 12px; display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); }
+  .opt-c .panel li:last-child { border-bottom: 0; }
+  .opt-c .panel .win { color: var(--mint); }
+  .opt-c .panel .loss { color: var(--muted-2); }
+  /* heatmap */
+  .opt-c .heat {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 3px;
+  }
+  .opt-c .heat > div {
+    aspect-ratio: 1;
+    background: var(--track);
+    border-radius: 2px;
+  }
+  .opt-c .heat .h1 { background: rgba(136, 207, 196, 0.2); }
+  .opt-c .heat .h2 { background: rgba(136, 207, 196, 0.45); }
+  .opt-c .heat .h3 { background: rgba(136, 207, 196, 0.7); }
+  .opt-c .heat .h4 { background: var(--mint); }
+  .opt-c .heat-foot { font-size: 10px; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between; }
+
+  /* Features list at the bottom */
+  .features {
+    margin: 64px auto 0;
+    max-width: 1100px;
+    padding: 28px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    background: #0c0c0e;
+  }
+  .features h2 { margin: 0 0 14px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .features .group { margin-top: 18px; }
+  .features .group h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mint); margin: 0 0 8px; }
+  .features ul { margin: 0; padding-left: 18px; color: var(--muted-2); font-size: 13px; line-height: 1.7; }
+  .features ul li code { background: var(--card-2); padding: 1px 5px; border-radius: 3px; font-size: 12px; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<h1>Wallet profile — three options</h1>
+<p class="lede">
+  Same data (avatar, pseudo, wallet, stats, badges, activity), three different surfaces.
+  All numbers come from on-chain state — they're computed from the user's TicketBatch /
+  PrivatePool accounts. Pseudo + avatar are the only off-chain bits (stored where, TBD —
+  see Architecture notes at the bottom).
+</p>
+
+<!-- =============================== OPTION A =============================== -->
+<section class="opt opt-a">
+  <div class="head">
+    <h2>A. Compact sidebar card</h2>
+    <p>Sticks to the right side of a pool page or dashboard — small surface, signal-dense.</p>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <div class="row">
+        <div class="av av-64">M</div>
+        <div>
+          <h3>marwan.sol</h3>
+          <div class="mono addr">EaAL…pLBt ↗</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Tickets bought</div>
+          <div class="val">214</div>
+        </div>
+        <div class="stat">
+          <div class="label">Pools entered</div>
+          <div class="val">17</div>
+        </div>
+        <div class="stat">
+          <div class="label">Wins</div>
+          <div class="val" style="color: var(--mint);">3</div>
+        </div>
+        <div class="stat">
+          <div class="label">Net</div>
+          <div class="val" style="color: var(--mint);">+4.21 SOL</div>
+        </div>
+      </div>
+
+      <div class="pill-row" style="display:flex; gap:6px; margin-top:16px; flex-wrap: wrap;">
+        <span class="pill" style="background: rgba(136,207,196,0.15); color: var(--mint);">★ FIRST WIN</span>
+        <span class="pill" style="background: rgba(201,181,220,0.15); color: var(--lavender);">10+ POOLS</span>
+        <span class="pill" style="background: rgba(232,201,105,0.15); color: var(--gold);">WHALE</span>
+      </div>
+    </div>
+
+    <div class="right-stub">
+      The rest of the page (pool detail, ticket history, etc.) lives here.<br>
+      The profile sidebar is intentionally narrow.
+    </div>
+  </div>
+</section>
+
+<!-- =============================== OPTION B =============================== -->
+<section class="opt opt-b">
+  <div class="head">
+    <h2>B. Full profile page</h2>
+    <p>Standalone page at <code>/u/marwan.sol</code> — the canonical home for a wallet.</p>
+  </div>
+
+  <div class="banner"></div>
+  <div class="profile">
+    <div class="av-anchor">
+      <div class="av av-120">M</div>
+      <div class="id-block">
+        <h3>marwan.sol <span class="verify mono" style="font-size: 14px;">✓ verified</span></h3>
+        <div class="sub">
+          <span class="mono">EaAL…pLBt</span>
+          <span>·</span>
+          <span>Member since Mar 2026</span>
+          <span>·</span>
+          <a href="#" class="mono">Solscan ↗</a>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn">Follow</button>
+        <button class="btn">Share</button>
+        <button class="btn btn-primary">Edit profile</button>
+      </div>
+    </div>
+
+    <p class="bio">
+      Building Tombola. Long Solana, long base rates. Public pool degen and private pool host.
+      DMs open.
+    </p>
+
+    <div class="meta-row">
+      <a href="#">𝕏 @marwan</a>
+      <a href="#">github.com/marwan</a>
+      <span>📍 Dubai</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-tile">
+        <div class="label">Lifetime tickets</div>
+        <div class="val">214</div>
+        <div class="delta" style="color: var(--mint);">+34 this week</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">SOL spent</div>
+        <div class="val">2.14</div>
+        <div class="delta" style="color: var(--muted);">across 17 pools</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Pools won</div>
+        <div class="val" style="color: var(--mint);">3</div>
+        <div class="delta" style="color: var(--muted);">17.6% win rate</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Net PnL</div>
+        <div class="val" style="color: var(--mint);">+4.21</div>
+        <div class="delta" style="color: var(--muted);">all-time SOL</div>
+      </div>
+    </div>
+
+    <div class="pill-row">
+      <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+      <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools entered</span>
+      <span class="badge"><span style="color: var(--gold);">$</span> Whale (200+ tickets)</span>
+      <span class="badge"><span style="color: var(--mint);">⏱</span> Speed runner (won in 8s)</span>
+      <span class="badge locked">⊕ Streak ×5 — locked</span>
+      <span class="badge locked">⊕ Top creator — locked</span>
+    </div>
+
+    <div class="feed">
+      <h4>Recent activity</h4>
+      <ul>
+        <li>
+          <span>Bought 13 tickets · Weekly Round #2</span>
+          <span class="when">3 mins ago</span>
+        </li>
+        <li>
+          <span style="color: var(--mint);">🏆 Won 1.02 SOL · Private FHDQ…A9WH</span>
+          <span class="when">1 hour ago</span>
+        </li>
+        <li>
+          <span>Created private pool · 4raVP6Dx…</span>
+          <span class="when">2 days ago</span>
+        </li>
+        <li>
+          <span>Bought 5 tickets · Triweekly Round #1</span>
+          <span class="when">5 days ago</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== OPTION C =============================== -->
+<section class="opt opt-c">
+  <div class="head">
+    <h2>C. Trader dashboard</h2>
+    <p>Wallet-as-portfolio. Stats-first, no banner / no bio — built for power users.</p>
+  </div>
+
+  <div class="top">
+    <div class="av av-96">M</div>
+    <div>
+      <h3>marwan.sol</h3>
+      <div class="sub mono">EaAL…pLBt · #14 on the all-time leaderboard</div>
+    </div>
+    <div class="net">
+      <span class="label">Net PnL</span>
+      <div class="val pos num">+4.21 SOL</div>
+      <div class="delta">+1.84 last 30d</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="stat">
+      <div class="label">Pools entered</div>
+      <div class="val num">17</div>
+      <div class="sub">3 won · 14 lost</div>
+    </div>
+    <div class="stat">
+      <div class="label">Tickets</div>
+      <div class="val num">214</div>
+      <div class="sub">avg 12.6 / pool</div>
+    </div>
+    <div class="stat">
+      <div class="label">SOL spent</div>
+      <div class="val num">2.14</div>
+      <div class="sub">all-time</div>
+    </div>
+    <div class="stat">
+      <div class="label">SOL won</div>
+      <div class="val num" style="color: var(--mint);">6.35</div>
+      <div class="sub">best 4.84 SOL</div>
+    </div>
+    <div class="stat">
+      <div class="label">Win rate</div>
+      <div class="val num">17.6%</div>
+      <div class="sub">vs 8.9% expected</div>
+    </div>
+    <div class="stat">
+      <div class="label">Streak</div>
+      <div class="val num">×3</div>
+      <div class="sub">losses in a row</div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <h4>Recent rounds</h4>
+      <ul>
+        <li><span>Weekly #2 · 13 tickets</span><span class="loss">Pending</span></li>
+        <li><span>Private FHDQ…A9WH · 26 tickets</span><span class="win">Won +0.85</span></li>
+        <li><span>Triweekly #1 · 5 tickets</span><span class="loss">Lost −0.05</span></li>
+        <li><span>Monthly #1 · 20 tickets</span><span class="loss">Lost −0.20</span></li>
+        <li><span>Private 4raV…FNB4 · 1 ticket</span><span class="loss">Pending</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h4>Activity · last 14 weeks</h4>
+      <div class="heat">
+        <!-- 14×7 = 98 cells -->
+        <div></div><div class="h1"></div><div></div><div class="h2"></div><div></div><div></div><div></div>
+        <div></div><div></div><div class="h3"></div><div></div><div class="h1"></div><div></div><div></div>
+        <div class="h1"></div><div></div><div></div><div></div><div class="h2"></div><div></div><div class="h3"></div>
+        <div></div><div></div><div class="h2"></div><div></div><div></div><div class="h4"></div><div></div>
+        <div class="h1"></div><div></div><div></div><div></div><div class="h1"></div><div></div><div></div>
+        <div></div><div class="h1"></div><div></div><div class="h2"></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div class="h3"></div><div></div><div class="h1"></div><div class="h4"></div>
+        <div></div><div></div><div></div><div></div><div class="h2"></div><div></div><div></div>
+        <div class="h1"></div><div></div><div class="h2"></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div class="h1"></div><div></div><div></div><div></div>
+        <div class="h2"></div><div></div><div></div><div></div><div></div><div class="h3"></div><div></div>
+        <div></div><div></div><div class="h1"></div><div></div><div class="h2"></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div class="h4"></div><div></div>
+        <div class="h1"></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="heat-foot"><span>14 weeks ago</span><span>today</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== Feature checklist =============================== -->
+<section class="features">
+  <h2>Feature inventory — pick what to ship</h2>
+
+  <div class="group">
+    <h3>Identity (must-have)</h3>
+    <ul>
+      <li><b>Pseudo</b> — display name. Self-set. Uniqueness check needed. Fallback to <code>EaAL…pLBt</code>.</li>
+      <li><b>Avatar</b> — three flavours:
+        <code>(a)</code> generated identicon from wallet (always works, zero storage),
+        <code>(b)</code> NFT PFP — pick from NFTs the wallet currently holds (must own; auto-falls back if sold),
+        <code>(c)</code> uploaded image to Vercel Blob.</li>
+      <li><b>Wallet address</b> — always shown, copyable, Solscan-linked.</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <h3>Stats — derived from on-chain (no storage needed)</h3>
+    <ul>
+      <li>Lifetime tickets bought, SOL spent, pools entered, pools won, total SOL won, biggest single win, net PnL, win rate vs. expected rate.</li>
+      <li>Creator stats (if they've launched pools): pools created, total tickets sold, fees collected, average fill rate.</li>
+      <li>Streak counter — consecutive plays or consecutive wins/losses.</li>
+      <li>Leaderboard rank — already have a leaderboard, just link to the user's position.</li>
+      <li>Activity heatmap — buys per day, last 14 weeks (cheap to compute, very legible).</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <h3>Optional — gamification</h3>
+    <ul>
+      <li>Badges / achievements — "first win", "10 pools entered", "200+ tickets", "fastest settle", "lost 5 in a row" (dark humour OK).</li>
+      <li>Title — auto-assigned from badges, e.g. "Whale", "Lucky", "Degen".</li>
+      <li>Follow other wallets + activity feed of who you follow.</li>
+      <li>Referral code — invite codes that credit the inviter when the invitee buys.</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <h3>Optional — social</h3>
+    <ul>
+      <li>Bio (140 chars).</li>
+      <li>Linked social handles — <code>𝕏</code>, GitHub, Telegram. Verification: sign a Tombola-issued nonce with wallet, post the nonce on Twitter, we scrape it.</li>
+      <li>Country / timezone display (self-set, optional).</li>
+      <li>Banner image (subtle; default to a gradient).</li>
+      <li>Pinned pool — creator's featured pool or buyer's biggest win.</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <h3>Architecture decisions to settle</h3>
+    <ul>
+      <li><b>Where do pseudo + bio + linked-handles live?</b>
+        On-chain (a <code>UserProfile</code> PDA per wallet, ~200 bytes, costs ~0.002 SOL rent per user)
+        — censorship-resistant, no backend, decentralised vibes.
+        Off-chain (Upstash KV via Vercel) — zero gas, faster updates, but a Tombola server has to be up.
+        <br><b>Recommendation:</b> off-chain to start (fast iteration), migrate to PDA later if it matters.</li>
+      <li><b>How do we prevent pseudo squatting?</b>
+        First-come first-served + minimum-tickets-bought-to-claim threshold? Or premium reservation (claim costs 0.01 SOL)?</li>
+      <li><b>NFT PFP gating</b> — keep it simple by accepting any NFT the wallet owns, OR restrict to a Tombola-issued PFP collection so it stays on-brand.</li>
+      <li><b>Account opt-out</b> — anyone can browse <code>/u/EaAL…pLBt</code> by raw wallet, but profile owner can hide their stats. (Recommendation: opt-out, not opt-in. Reputation is most useful when on by default.)</li>
+    </ul>
+  </div>
+
+  <div class="group">
+    <h3>What I'd ship in v1 (smallest interesting slice)</h3>
+    <ul>
+      <li>Option <b>A</b> (compact card) embedded in the existing creator/buyer dashboards + on the pool detail pages where the buyer's address appears.</li>
+      <li>Identicon avatar by default + optional NFT PFP picker.</li>
+      <li>Self-set pseudo stored in Upstash KV. Uniqueness check via the same KV.</li>
+      <li>Five stats: tickets bought, pools entered, wins, win rate, net PnL — all on-chain derived.</li>
+      <li>3 badges max in v1 (first win / 10 pools / whale). More can come later.</li>
+      <li>NO bio / NO linked-socials / NO heatmap / NO follow graph in v1 — defer.</li>
+    </ul>
+  </div>
+</section>
+
+</body>
+</html>

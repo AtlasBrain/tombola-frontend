@@ -25,7 +25,7 @@ interface Props {
   totalTickets: bigint;
   /** When set, "you"-row highlight + section heading use this hex/CSS color
    *  instead of emerald. Spent-amount cells stay accent-colored too. */
-  accentColor?: string;
+  accent?: string;
   /** When true, section heading is rendered as font-display uppercase to
    *  match the landing-page typography. Default false (legacy public page). */
   displayHeading?: boolean;
@@ -54,7 +54,7 @@ export function RecentBuysTable({
   // Default mint — every page that calls this without an explicit accent
   // (e.g. caller falls back) used to render emerald, which is not in the
   // brand palette. Mint is the safe brand fallback.
-  accentColor = "#88cfc4",
+  accent = "#88cfc4",
   displayHeading = false,
 }: Props) {
   const { connection } = useConnection();
@@ -115,14 +115,14 @@ export function RecentBuysTable({
   const hasMine = myAddr ? sorted.some((b) => b.owner === myAddr) : false;
 
   // Pre-compute colored styles once so JSX stays readable.
-  const youRowStyle = accentColor
-    ? { background: `${accentColor}0d` }
+  const youRowStyle = accent
+    ? { background: `${accent}0d` }
     : undefined;
-  const youBadgeStyle = accentColor
-    ? { background: `${accentColor}33`, color: accentColor }
+  const youBadgeStyle = accent
+    ? { background: `${accent}33`, color: accent }
     : undefined;
-  const youOwnerStyle = accentColor ? { color: accentColor } : undefined;
-  const spentAccent = accentColor ?? undefined;
+  const youOwnerStyle = accent ? { color: accent } : undefined;
+  const spentAccent = accent ?? undefined;
 
   return (
     <section className="mb-12">

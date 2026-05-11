@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM_ID } from "@tombola/sdk";
 import { explorerAddressUrl } from "@/lib/explorer-url";
-import { formatSol } from "@/lib/format";
+import { formatSol, shortAddress} from "@/lib/format";
 import {
   computeLifetimeStats,
   filterCounts,
@@ -68,10 +68,6 @@ function poolDisplayName(p: PoolMembership): string {
     return `${POOL_KIND_LABELS[p.publicPoolType] ?? "Public"} #${p.publicRound?.toString() ?? "?"}`;
   }
   return `Private`;
-}
-
-function shortAddr(addr: string): string {
-  return addr.length <= 10 ? addr : `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 function pctStr(my: bigint, total: bigint): string {
@@ -488,7 +484,7 @@ function PoolRow({
               rel="noreferrer"
               className="hover:text-neutral-300"
             >
-              {shortAddr(pool.poolAddress)} ↗
+              {shortAddress(pool.poolAddress)} ↗
             </a>
             {pool.state === "Resolved" && pool.winner && !pool.iWon && (
               <>
@@ -499,7 +495,7 @@ function PoolRow({
                   rel="noreferrer"
                   className="hover:text-neutral-300"
                 >
-                  {shortAddr(pool.winner)} ↗
+                  {shortAddress(pool.winner)} ↗
                 </a>
               </>
             )}

@@ -20,6 +20,7 @@ import {
 } from "@solana/kit";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { fetchBuySignatures } from "./fetch-buy-signatures";
+import { encodeBase58 } from "./base58";
 
 const TICKET_BATCH_SIZE = 89n;
 const OWNER_OFFSET = 40;
@@ -30,24 +31,6 @@ export interface WeeklyActivity {
   weeks: number[];
   /** Sum of buys in the last 7 days. */
   last7d: number;
-}
-
-/** Re-implement bs58 encode for the memcmp filter — keeps this module dep-light. */
-function bytesToBase58(bytes: Uint8Array): string {
-  const ALPHABET =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let n = 0n;
-  for (const b of bytes) n = (n << 8n) | BigInt(b);
-  let out = "";
-  while (n > 0n) {
-    out = ALPHABET[Number(n % 58n)] + out;
-    n /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    out = "1" + out;
-  }
-  return out || "1";
 }
 
 export async function fetchWalletActivity(args: {
@@ -70,7 +53,7 @@ export async function fetchWalletActivity(args: {
   const walletBytes = new Uint8Array(
     getAddressEncoder().encode(wallet as Address),
   );
-  const walletBase58 = bytesToBase58(walletBytes);
+  const walletBase58 = encodeBase58(walletBytes);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const batchAccounts = (await (rpc.getProgramAccounts as any)(
     programId as Address,

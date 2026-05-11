@@ -8,6 +8,12 @@
 import { NextResponse } from "next/server";
 import { getFriendCount, getFriendLists } from "@/lib/friend-store";
 
+// Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
+// Dynamic + short maxDuration: each request is fast and never cached.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 10;
+
 interface RouteCtx { params: Promise<{ wallet: string }>; }
 
 export async function GET(_req: Request, ctx: RouteCtx) {

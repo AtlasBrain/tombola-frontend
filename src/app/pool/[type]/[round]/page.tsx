@@ -8,7 +8,7 @@ import { RecentBuysTable } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
 import { PreviousWinnerLine } from "@/components/PreviousWinnerLine";
 import { explorerAddressUrl } from "@/lib/explorer-url";
-import { formatSol, formatTickets } from "@/lib/format";
+import { formatSol, formatTickets, shortAddress} from "@/lib/format";
 import {
   getPoolDetail,
   poolTypeFromSlug,
@@ -29,11 +29,6 @@ const POOL_ACCENT: Record<PoolView["kind"], string> = {
   Triweekly: "#88cfc4",
   Monthly: "#e8d89e",
 };
-
-function shortAddress(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-}
 
 interface Params {
   type: string;
@@ -126,7 +121,7 @@ export default async function PoolDetailPage({
           totalPotLamports={prevDetail.pool.totalPotLamports}
           poolTypeSlug={type}
           prevRound={prevDetail.pool.round}
-          accentColor={accent}
+          accent={accent}
         />
       )}
 
@@ -222,7 +217,7 @@ export default async function PoolDetailPage({
               closed={closed}
               poolAddress={pool.poolAddress}
               totalTickets={pool.totalTickets}
-              accentColor={accent}
+              accent={accent}
             />
           )}
         </div>
@@ -254,7 +249,7 @@ export default async function PoolDetailPage({
           spentLamports: b.spentLamports,
         }))}
         totalTickets={pool.totalTickets}
-        accentColor={accent}
+        accent={accent}
       />
     </div>
   );

@@ -7,16 +7,9 @@
 // The signature is verified server-side (see profile-auth.ts). No JWTs.
 
 import type { WalletContextState } from "@solana/wallet-adapter-react";
-import bs58 from "bs58";
+import { encodeBase58 } from "./base58";
 
 const MESSAGE_PREFIX = "tombola:profile-edit:";
-
-function bs58Encode(bytes: Uint8Array): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lib = bs58 as any;
-  const encode = (lib.default?.encode ?? lib.encode) as (b: Uint8Array) => string;
-  return encode(bytes);
-}
 
 export interface ProfileRow {
   wallet: string;
@@ -72,7 +65,7 @@ export async function editProfile({
   const nonce = await getNonce(wallet);
   const message = new TextEncoder().encode(MESSAGE_PREFIX + nonce);
   const signature = await signMessage(message);
-  const signatureBase58 = bs58Encode(signature);
+  const signatureBase58 = encodeBase58(signature);
 
   const res = await fetch("/api/profile/me", {
     method: "PUT",

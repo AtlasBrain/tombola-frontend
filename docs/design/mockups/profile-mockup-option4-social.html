@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wallet profile — Option 4 + Social + Friends</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #0d0d0e;
+    --card-2: #14141a;
+    --border: #1f1f23;
+    --divider: #2a2a2f;
+    --ink: #f5f5f5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --mint: #88cfc4;
+    --lavender: #c9b5dc;
+    --coral: #e89999;
+    --gold: #e8c969;
+    --rose: #e8a5c0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 32px 120px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+    min-height: 100vh;
+  }
+  .mono { font-family: ui-monospace, "Space Mono", Menlo, monospace; }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    color: var(--muted-2);
+    font-size: 13px;
+    margin: 0 0 32px;
+    max-width: 820px;
+    line-height: 1.55;
+  }
+  .opt {
+    margin: 0 auto 56px;
+    max-width: 760px;
+  }
+  .opt > .head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .opt > .head > h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .opt > .head > p {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .label {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .pos { color: var(--mint); }
+  .neg { color: var(--coral); }
+
+  .av {
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), var(--lavender));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-family: ui-sans-serif, "Space Grotesk", system-ui;
+  }
+  .av-56 { width: 56px; height: 56px; font-size: 22px; }
+  .av-64 { width: 64px; height: 64px; font-size: 24px; }
+  .av-72 { width: 72px; height: 72px; font-size: 28px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+  .pseudo { font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .addr { font-size: 11px; color: var(--muted-2); letter-spacing: 0.04em; }
+  .rank-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(232, 201, 105, 0.12);
+    color: var(--gold);
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* X handle — small inline link */
+  .x-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted-2);
+    text-decoration: none;
+    font-size: 11px;
+  }
+  .x-link:hover { color: var(--ink); }
+  .x-link svg { width: 11px; height: 11px; fill: currentColor; }
+  .x-link.verified::after {
+    content: "✓";
+    color: var(--mint);
+    margin-left: 2px;
+  }
+
+  /* Action buttons (Add friend / Edit profile) */
+  .btn {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.15s ease;
+    font-family: ui-monospace, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn-primary {
+    background: var(--mint);
+    color: #000;
+    border-color: transparent;
+    font-weight: 700;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-friends {
+    background: rgba(136, 207, 196, 0.08);
+    border-color: rgba(136, 207, 196, 0.3);
+    color: var(--mint);
+  }
+  .btn-pending {
+    background: rgba(232, 201, 105, 0.08);
+    border-color: rgba(232, 201, 105, 0.3);
+    color: var(--gold);
+    cursor: default;
+  }
+  .btn-icon { width: 12px; height: 12px; }
+
+  .top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .id-stack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .id-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .id-row-2 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .pnl { text-align: right; }
+  .pnl .label { display: block; margin-bottom: 2px; }
+  .pnl .val { font-size: 22px; font-weight: 700; line-height: 1; }
+
+  .stats {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .stat .label { display: block; margin-bottom: 4px; font-size: 9px; }
+  .stat .val { font-size: 16px; font-weight: 700; line-height: 1; }
+  .stat .sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .activity {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .activity .head-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .sparkbar {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 28px;
+  }
+  .sparkbar > div {
+    flex: 1;
+    background: var(--mint);
+    border-radius: 2px;
+    opacity: 0.85;
+  }
+  .footer-row {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* Section header */
+  .var-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--card-2);
+    color: var(--muted-2);
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Option 4 + social + friends</h1>
+<p class="lede">
+  Same card as option 4 (header + 4 stats + 14-week sparkbar + badges), now with an X handle and a
+  friend-request CTA. Showing four placements + four button states (not friends / pending / accepted /
+  own profile) so you can see how each layout copes with each case.
+</p>
+
+<!-- ============================ Variant A ============================ -->
+<section class="opt">
+  <div class="head">
+    <h2>A. Right-rail actions</h2>
+    <p>X handle stays inline with the address. Friend-request CTA sits next to the PnL block on the right edge — same pattern as a typical social profile header.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#" title="Verified via Tombola sign-and-tweet">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @marwan
+          </a>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn btn-primary">+ Add friend</button>
+        <div class="pnl">
+          <span class="label">Net PnL</span>
+          <div class="val num pos">+4.21 SOL</div>
+        </div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Tickets</span><div class="val num">214</div><div class="sub">17 pools</div></div>
+      <div class="stat"><span class="label">Wins</span><div class="val num pos">3</div><div class="sub">17.6% rate</div></div>
+      <div class="stat"><span class="label">Spent</span><div class="val num">2.14 SOL</div><div class="sub">all-time</div></div>
+      <div class="stat"><span class="label">Won</span><div class="val num pos">6.35 SOL</div><div class="sub">best 4.84</div></div>
+    </div>
+    <div class="activity">
+      <div class="head-row">
+        <span class="label">Activity · 14 weeks</span>
+        <span class="label" style="color: var(--mint);">+34 last 7d</span>
+      </div>
+      <div class="sparkbar">
+        <div style="height: 12%; opacity: 0.6;"></div><div style="height: 30%;"></div><div style="height: 8%; opacity: 0.5;"></div><div style="height: 55%;"></div><div style="height: 22%;"></div><div style="height: 5%; opacity: 0.3;"></div><div style="height: 40%;"></div><div style="height: 60%;"></div><div style="height: 18%;"></div><div style="height: 35%;"></div><div style="height: 80%;"></div><div style="height: 25%;"></div><div style="height: 50%;"></div><div style="height: 100%;"></div>
+      </div>
+    </div>
+    <div class="footer-row">
+      <div class="badges">
+        <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+        <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+        <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+      </div>
+      <span class="label">42 friends</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ Variant B ============================ -->
+<section class="opt">
+  <div class="head">
+    <h2>B. Action below identity, X & friends count inline</h2>
+    <p>X handle and friends count sit on a third meta row under the identity. The Add-friend button replaces the PnL hero's right edge with a compact stacked layout.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <span class="addr mono">EaAL…pLBt ↗</span>
+        <div class="id-row-2" style="margin-top: 2px;">
+          <a class="x-link verified" href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @marwan
+          </a>
+          <span class="label">·</span>
+          <span class="label">42 friends</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+        <div class="pnl">
+          <span class="label">Net PnL</span>
+          <div class="val num pos">+4.21 SOL</div>
+        </div>
+        <button class="btn btn-primary">+ Add friend</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Tickets</span><div class="val num">214</div><div class="sub">17 pools</div></div>
+      <div class="stat"><span class="label">Wins</span><div class="val num pos">3</div><div class="sub">17.6% rate</div></div>
+      <div class="stat"><span class="label">Spent</span><div class="val num">2.14 SOL</div><div class="sub">all-time</div></div>
+      <div class="stat"><span class="label">Won</span><div class="val num pos">6.35 SOL</div><div class="sub">best 4.84</div></div>
+    </div>
+    <div class="activity">
+      <div class="head-row">
+        <span class="label">Activity · 14 weeks</span>
+        <span class="label" style="color: var(--mint);">+34 last 7d</span>
+      </div>
+      <div class="sparkbar">
+        <div style="height: 12%; opacity: 0.6;"></div><div style="height: 30%;"></div><div style="height: 8%; opacity: 0.5;"></div><div style="height: 55%;"></div><div style="height: 22%;"></div><div style="height: 5%; opacity: 0.3;"></div><div style="height: 40%;"></div><div style="height: 60%;"></div><div style="height: 18%;"></div><div style="height: 35%;"></div><div style="height: 80%;"></div><div style="height: 25%;"></div><div style="height: 50%;"></div><div style="height: 100%;"></div>
+      </div>
+    </div>
+    <div class="footer-row">
+      <div class="badges">
+        <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+        <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+        <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ Variant C ============================ -->
+<section class="opt">
+  <div class="head">
+    <h2>C. Friends as a 5th stat tile</h2>
+    <p>Stats strip expands from 4 to 5 tiles — friend count gets equal billing with tickets/wins/spent/won. CTA + X stay in the header. Cleanest if friends are first-class.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @marwan
+          </a>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-primary">+ Add friend</button>
+        <div class="pnl">
+          <span class="label">Net PnL</span>
+          <div class="val num pos">+4.21 SOL</div>
+        </div>
+      </div>
+    </div>
+    <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="stat"><span class="label">Tickets</span><div class="val num">214</div><div class="sub">17 pools</div></div>
+      <div class="stat"><span class="label">Wins</span><div class="val num pos">3</div><div class="sub">17.6% rate</div></div>
+      <div class="stat"><span class="label">Spent</span><div class="val num">2.14</div><div class="sub">SOL</div></div>
+      <div class="stat"><span class="label">Won</span><div class="val num pos">6.35</div><div class="sub">SOL</div></div>
+      <div class="stat"><span class="label">Friends</span><div class="val num">42</div><div class="sub">3 mutual</div></div>
+    </div>
+    <div class="activity">
+      <div class="head-row">
+        <span class="label">Activity · 14 weeks</span>
+        <span class="label" style="color: var(--mint);">+34 last 7d</span>
+      </div>
+      <div class="sparkbar">
+        <div style="height: 12%; opacity: 0.6;"></div><div style="height: 30%;"></div><div style="height: 8%; opacity: 0.5;"></div><div style="height: 55%;"></div><div style="height: 22%;"></div><div style="height: 5%; opacity: 0.3;"></div><div style="height: 40%;"></div><div style="height: 60%;"></div><div style="height: 18%;"></div><div style="height: 35%;"></div><div style="height: 80%;"></div><div style="height: 25%;"></div><div style="height: 50%;"></div><div style="height: 100%;"></div>
+      </div>
+    </div>
+    <div class="footer-row">
+      <div class="badges">
+        <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+        <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+        <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ Variant D ============================ -->
+<section class="opt">
+  <div class="head">
+    <h2>D. Compact — single action button replaces PnL block</h2>
+    <p>For when the card is embedded somewhere PnL is shown elsewhere. PnL moves into the stats strip; the right edge becomes a single tall Add-friend button with the friends count below.</p>
+  </div>
+  <div class="card">
+    <div class="top">
+      <div class="av av-64">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="rank-pill">★ #14 all-time</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @marwan
+          </a>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+        <button class="btn btn-primary">+ Add friend</button>
+        <span class="label">42 friends</span>
+      </div>
+    </div>
+    <div class="stats" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="stat"><span class="label">Net PnL</span><div class="val num pos">+4.21</div><div class="sub">SOL</div></div>
+      <div class="stat"><span class="label">Tickets</span><div class="val num">214</div><div class="sub">17 pools</div></div>
+      <div class="stat"><span class="label">Wins</span><div class="val num pos">3</div><div class="sub">17.6%</div></div>
+      <div class="stat"><span class="label">Spent</span><div class="val num">2.14</div><div class="sub">SOL</div></div>
+      <div class="stat"><span class="label">Won</span><div class="val num pos">6.35</div><div class="sub">SOL</div></div>
+    </div>
+    <div class="activity">
+      <div class="head-row">
+        <span class="label">Activity · 14 weeks</span>
+        <span class="label" style="color: var(--mint);">+34 last 7d</span>
+      </div>
+      <div class="sparkbar">
+        <div style="height: 12%; opacity: 0.6;"></div><div style="height: 30%;"></div><div style="height: 8%; opacity: 0.5;"></div><div style="height: 55%;"></div><div style="height: 22%;"></div><div style="height: 5%; opacity: 0.3;"></div><div style="height: 40%;"></div><div style="height: 60%;"></div><div style="height: 18%;"></div><div style="height: 35%;"></div><div style="height: 80%;"></div><div style="height: 25%;"></div><div style="height: 50%;"></div><div style="height: 100%;"></div>
+      </div>
+    </div>
+    <div class="footer-row">
+      <div class="badges">
+        <span class="badge"><span style="color: var(--gold);">★</span> First win</span>
+        <span class="badge"><span style="color: var(--lavender);">◆</span> 10+ pools</span>
+        <span class="badge"><span style="color: var(--gold);">$</span> Whale</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ Friend-button state matrix ============================ -->
+<section class="opt" style="max-width: 1000px;">
+  <div class="head">
+    <h2>Button states · friend-request lifecycle</h2>
+    <p>The button text + colour shifts depending on the relationship between the viewer and the profile they're looking at. Below are all four states using variant A's layout.</p>
+  </div>
+
+  <!-- State 1: Strangers -->
+  <div class="card" style="margin-bottom: 12px;">
+    <div class="top">
+      <div class="av av-56">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="var-tag">State · not friends</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@marwan</a>
+        </div>
+      </div>
+      <button class="btn btn-primary">+ Add friend</button>
+    </div>
+  </div>
+
+  <!-- State 2: Pending sent -->
+  <div class="card" style="margin-bottom: 12px;">
+    <div class="top">
+      <div class="av av-56">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="var-tag">State · request sent</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@marwan</a>
+        </div>
+      </div>
+      <button class="btn btn-pending">⋯ Request sent</button>
+    </div>
+  </div>
+
+  <!-- State 3: Friends -->
+  <div class="card" style="margin-bottom: 12px;">
+    <div class="top">
+      <div class="av av-56">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="var-tag">State · friends</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@marwan</a>
+        </div>
+      </div>
+      <button class="btn btn-friends">✓ Friends</button>
+    </div>
+  </div>
+
+  <!-- State 4: Own profile -->
+  <div class="card">
+    <div class="top">
+      <div class="av av-56">M</div>
+      <div class="id-stack">
+        <div class="id-row">
+          <span class="pseudo">marwan.sol</span>
+          <span class="var-tag">State · own profile</span>
+        </div>
+        <div class="id-row-2">
+          <span class="addr mono">EaAL…pLBt ↗</span>
+          <a class="x-link verified" href="#"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@marwan</a>
+        </div>
+      </div>
+      <button class="btn">⚙ Edit profile</button>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

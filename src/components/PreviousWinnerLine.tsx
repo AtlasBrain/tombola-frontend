@@ -19,7 +19,7 @@ interface Props {
   poolTypeSlug: string;
   prevRound: bigint;
   /** Optional accent color for the wallet/tx links. */
-  accentColor?: string;
+  accent?: string;
 }
 
 /**
@@ -37,7 +37,7 @@ export function PreviousWinnerLine({
   totalPotLamports,
   poolTypeSlug,
   prevRound,
-  accentColor,
+  accent = "#88cfc4",
 }: Props) {
   const { connection } = useConnection();
   const [settleSig, setSettleSig] = useState<string | null>(null);
@@ -62,7 +62,6 @@ export function PreviousWinnerLine({
   }, [connection, prevPoolAddress]);
 
   const rpcUrl = connection.rpcEndpoint;
-  const accent = accentColor ?? "#88cfc4";
 
   return (
     <div
