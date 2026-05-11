@@ -10,6 +10,10 @@ import { formatSol } from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";
 import { fetchWalletStats, type WalletStats } from "@/lib/wallet-stats";
 import {
+  fetchWalletActivity,
+  type WeeklyActivity,
+} from "@/lib/wallet-activity";
+import {
   getFriendLists,
   getFriendState,
   sendFriendAction,
@@ -139,6 +143,30 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
         if (!cancelled) setStats(s);
       } catch {
         // RPC blip — leave stats null so the dashes stay visible.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, profile.wallet]);
+
+  // 14-week buy activity for the sparkbar. Independent from the stats fetch
+  // because it requires N getSignaturesForAddress calls (one per batch) and
+  // we don't want to block the headline numbers behind those.
+  const [activity, setActivity] = useState<WeeklyActivity | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setActivity(null);
+    (async () => {
+      try {
+        const a = await fetchWalletActivity({
+          rpcUrl: connection.rpcEndpoint,
+          programId: PROGRAM_ID,
+          wallet: profile.wallet,
+        });
+        if (!cancelled) setActivity(a);
+      } catch {
+        // Leave null; the bar grid stays in its muted "pending" state.
       }
     })();
     return () => {
@@ -304,25 +332,59 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
               />
             </div>
 
-            {/* Activity sparkbar — Phase 4 wires real data. Placeholder grid
-                stays so the layout is the final shape. */}
+            {/* Activity sparkbar — 14 weekly bars, oldest to newest.
+                Heights normalised to the wallet's peak week so a low-volume
+                wallet's pattern still reads, while a whale's biggest week
+                still hits 100%. Zero-buy weeks render as a 1-pixel hairline
+                so the column position is visible. */}
             <div className="mt-4 border-t border-dashed border-neutral-800 pt-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                   Activity · 14 weeks
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
-                  · pending
+                <span
+                  className="font-mono text-[10px] uppercase tracking-widest"
+                  style={{
+                    color:
+                      activity && activity.last7d > 0 ? MINT : "#737373",
+                  }}
+                >
+                  {activity
+                    ? activity.last7d > 0
+                      ? `+${activity.last7d} last 7d`
+                      : "no buys last 7d"
+                    : "loading…"}
                 </span>
               </div>
               <div className="flex h-7 items-end gap-0.5">
-                {Array.from({ length: 14 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-sm bg-neutral-900"
-                    style={{ height: "30%" }}
-                  />
-                ))}
+                {(() => {
+                  const weeks = activity?.weeks ?? Array(14).fill(0);
+                  const peak = Math.max(1, ...weeks);
+                  return weeks.map((count, i) => {
+                    const pct = (count / peak) * 100;
+                    return (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-sm transition-all duration-300"
+                        title={
+                          activity
+                            ? count === 0
+                              ? "0 buys"
+                              : `${count} buy${count === 1 ? "" : "s"} · ${13 - i} weeks ago`
+                            : "loading"
+                        }
+                        style={{
+                          height: count === 0 ? "2px" : `${Math.max(8, pct)}%`,
+                          background:
+                            count === 0
+                              ? "#262626"
+                              : MINT,
+                          opacity: count === 0 ? 1 : 0.5 + (pct / 100) * 0.5,
+                        }}
+                      />
+                    );
+                  });
+                })()}
               </div>
             </div>
 
