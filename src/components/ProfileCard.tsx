@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useEffect, useState } from "react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PROGRAM_ID } from "@tombola/sdk";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { explorerAddressUrl } from "@/lib/explorer-url";
+import { formatSol } from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";
+import { fetchWalletStats, type WalletStats } from "@/lib/wallet-stats";
 
 interface Props {
   profile: ProfileRow;
@@ -34,24 +37,36 @@ function shortAddr(addr: string): string {
  * initiated.
  */
 export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
+  const { connection } = useConnection();
   const { publicKey } = useWallet();
   const viewer = publicKey?.toBase58() ?? null;
   const isOwner = viewer !== null && viewer === profile.wallet;
   const [editOpen, setEditOpen] = useState(false);
 
-  // PHASE 2 will swap these placeholders for real stats derived from
-  // getProgramAccounts. For now they're zeros — visible only on the owner's
-  // own public profile so they can SEE that the layout will host them later.
-  const stats = {
-    netPnLSol: 0,
-    tickets: 0,
-    pools: 0,
-    wins: 0,
-    winRate: 0,
-    spent: 0,
-    won: 0,
-    bestWin: 0,
-  };
+  // Real on-chain stats. Stays null until the first fetch resolves; the UI
+  // shows muted dashes during that brief load. Refetch when the wallet
+  // changes (different profile) OR after the user saves a profile edit
+  // (cheap; the user expects the card to feel live).
+  const [stats, setStats] = useState<WalletStats | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setStats(null);
+    (async () => {
+      try {
+        const s = await fetchWalletStats({
+          rpcUrl: connection.rpcEndpoint,
+          programId: PROGRAM_ID,
+          wallet: profile.wallet,
+        });
+        if (!cancelled) setStats(s);
+      } catch {
+        // RPC blip — leave stats null so the dashes stay visible.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, profile.wallet]);
 
   const initial =
     (profile.pseudo?.charAt(0) ?? profile.wallet.charAt(0) ?? "?").toUpperCase();
@@ -114,15 +129,26 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
                   <span className="block font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                     Net PnL
                   </span>
-                  <span
-                    className="font-display text-xl font-bold tabular-nums leading-none"
-                    style={{
-                      color: stats.netPnLSol >= 0 ? MINT : "#e89999",
-                    }}
-                  >
-                    {stats.netPnLSol >= 0 ? "+" : ""}
-                    {stats.netPnLSol.toFixed(2)} SOL
-                  </span>
+                  {stats ? (
+                    <span
+                      className="font-display text-xl font-bold tabular-nums leading-none"
+                      style={{
+                        color:
+                          stats.netPnLLamports >= 0n ? MINT : "#e89999",
+                      }}
+                    >
+                      {stats.netPnLLamports >= 0n ? "+" : "−"}
+                      {formatSol(
+                        stats.netPnLLamports < 0n
+                          ? -stats.netPnLLamports
+                          : stats.netPnLLamports,
+                      )}
+                    </span>
+                  ) : (
+                    <span className="font-display text-xl font-bold tabular-nums leading-none text-neutral-600">
+                      —
+                    </span>
+                  )}
                 </div>
                 <ActionButton
                   isOwner={isOwner}
@@ -152,10 +178,38 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
               </p>
             )}
             <div className="mt-4 grid grid-cols-4 gap-2.5">
-              <StatTile label="Tickets" value={stats.tickets.toString()} sub={`${stats.pools} pools`} />
-              <StatTile label="Wins" value={stats.wins.toString()} valueColor={MINT} sub={`${stats.winRate.toFixed(1)}% rate`} />
-              <StatTile label="Spent" value={`${stats.spent.toFixed(2)} SOL`} sub="all-time" />
-              <StatTile label="Won" value={`${stats.won.toFixed(2)} SOL`} valueColor={MINT} sub={`best ${stats.bestWin.toFixed(2)}`} />
+              <StatTile
+                label="Tickets"
+                value={stats ? stats.tickets.toString() : "—"}
+                sub={stats ? `${stats.pools} pool${stats.pools === 1 ? "" : "s"}` : "loading"}
+              />
+              <StatTile
+                label="Wins"
+                value={stats ? stats.wins.toString() : "—"}
+                valueColor={MINT}
+                sub={
+                  stats
+                    ? stats.resolvedPools > 0
+                      ? `${stats.winRatePct.toFixed(1)}% rate`
+                      : "no resolved"
+                    : "loading"
+                }
+              />
+              <StatTile
+                label="Spent"
+                value={stats ? formatSol(stats.spentLamports) : "—"}
+                sub="all-time"
+              />
+              <StatTile
+                label="Won"
+                value={stats ? formatSol(stats.wonLamports) : "—"}
+                valueColor={MINT}
+                sub={
+                  stats && stats.bestWinLamports > 0n
+                    ? `best ${formatSol(stats.bestWinLamports)}`
+                    : "no wins yet"
+                }
+              />
             </div>
 
             {/* Activity sparkbar — Phase 4 wires real data. Placeholder grid
