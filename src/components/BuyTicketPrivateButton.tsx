@@ -21,10 +21,27 @@ interface Props {
   closed: boolean;
   accentColor?: string;
   ticketPriceSol?: number;
+  /** Total tickets sold so far (across all buyers). Used to compute the
+   *  live odds preview: post-buy odds = (myCurrent + qty) / (total + qty). */
+  totalTickets?: bigint;
+  /** Connected wallet's currently-owned tickets in this pool. Defaults to 0
+   *  if the page hasn't computed it yet — odds preview still renders, it just
+   *  treats the buyer as a newcomer. */
+  myCurrentTickets?: bigint;
+  /** Soft UI cap on tickets per buy. Defaults to MAX_QTY_HARD. The hard cap
+   *  is enforced on-chain by `buy_ticket_private` against pool's total_tickets
+   *  bound; this prop lets the creator hint a smaller cap for fairness UI
+   *  (e.g. "max 10 per buyer"). NOT a security guarantee — a determined
+   *  buyer could call the program directly. */
+  maxTicketsPerBuy?: number;
+  /** Called after a successful buy. Lets the parent bump a reload key so
+   *  the page state refetches immediately (LivePoolWatcher's router.refresh
+   *  is a no-op on a client-component page). */
+  onPurchased?: () => void;
 }
 
 const MIN_QTY = 1;
-const MAX_QTY = 100;
+const MAX_QTY_HARD = 100;
 
 export function BuyTicketPrivateButton({
   poolAddress,
@@ -32,14 +49,21 @@ export function BuyTicketPrivateButton({
   closed,
   accentColor = "var(--mint)",
   ticketPriceSol,
+  totalTickets,
+  myCurrentTickets,
+  maxTicketsPerBuy = MAX_QTY_HARD,
+  onPurchased,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
   const { setVisible: setWalletModalVisible } = useWalletModal();
   const { push: pushToast } = useToast();
-  const [qty, setQty] = useState(1);
+  // qty = NaN represents the "input is temporarily empty" state while the user
+  // is typing. Clamped to MIN/MAX on blur. See onQtyChange / onQtyBlur below.
+  const [qty, setQty] = useState<number>(1);
   const [busy, setBusy] = useState(false);
   const [whitelisted, setWhitelisted] = useState<boolean | null>(null);
+  const MAX_QTY = Math.max(MIN_QTY, Math.min(MAX_QTY_HARD, maxTicketsPerBuy));
 
   // Whitelisted PDA check (re-derived per (pool, wallet) tuple)
   useEffect(() => {
@@ -110,6 +134,7 @@ export function BuyTicketPrivateButton({
         body: `${formatSol(ticketPriceLamports * BigInt(qty))} · private pool`,
         href: `/pool/private/${poolAddress}`,
       });
+      onPurchased?.();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       pushToast("error", msg.slice(0, 100));
@@ -125,6 +150,7 @@ export function BuyTicketPrivateButton({
     qty,
     ticketPriceLamports,
     pushToast,
+    onPurchased,
   ]);
 
   const priceSolDisplay =
@@ -175,44 +201,94 @@ export function BuyTicketPrivateButton({
     );
   }
 
-  const total = ticketPriceLamports * BigInt(qty);
+  const qtyValid =
+    Number.isFinite(qty) && qty >= MIN_QTY && qty <= MAX_QTY;
+  const total = qtyValid ? ticketPriceLamports * BigInt(qty) : 0n;
+
+  // Live odds preview — computed when totalTickets is known. Treats unknown
+  // myCurrentTickets as 0 (fresh buyer). After buying, the buyer would own
+  // (mine + qty) of (total + qty) tickets — that's what we show.
+  const mine = myCurrentTickets ?? 0n;
+  const tot = totalTickets ?? null;
+  const showOdds = qtyValid && tot !== null;
+  const postOwned = mine + BigInt(qty);
+  const postTotal = (tot ?? 0n) + BigInt(qty);
+  const postOddsPct =
+    showOdds && postTotal > 0n
+      ? (Number(postOwned * 10_000n) / Number(postTotal)) / 100
+      : null;
+
+  function onQtyChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // Empty input is a valid "still typing" state — store NaN, render "", clamp on blur.
+    const raw = e.target.value.replace(/[^\d]/g, "");
+    if (raw === "") {
+      setQty(NaN);
+      return;
+    }
+    setQty(Number(raw));
+  }
+  function onQtyBlur() {
+    if (!Number.isFinite(qty) || qty < MIN_QTY) setQty(MIN_QTY);
+    else if (qty > MAX_QTY) setQty(MAX_QTY);
+  }
 
   return (
     <div className="mt-6 flex flex-col gap-3">
       <label className="flex flex-col gap-1">
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-neutral-500">
           <span>Quantity ({MIN_QTY}–{MAX_QTY})</span>
-          <span className="tabular-nums">= {formatSol(total)}</span>
+          <span className="tabular-nums">
+            {qtyValid ? `= ${formatSol(total)}` : "—"}
+          </span>
         </div>
         <input
           id="qty"
           type="number"
+          inputMode="numeric"
           min={MIN_QTY}
           max={MAX_QTY}
-          value={qty}
-          onChange={(e) =>
-            setQty(
-              Math.max(
-                MIN_QTY,
-                Math.min(MAX_QTY, Number(e.target.value) || 1),
-              ),
-            )
-          }
+          step={1}
+          value={Number.isFinite(qty) ? qty : ""}
+          onChange={onQtyChange}
+          onBlur={onQtyBlur}
           disabled={busy}
           className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-[color:var(--mint)]/40 focus:ring-2 focus:ring-[color:var(--mint)]/20 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Number of tickets to buy"
         />
+        {showOdds && postOddsPct !== null && (
+          <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            After buying:{" "}
+            <span className="tabular-nums text-neutral-300">
+              {postOwned.toString()} / {postTotal.toString()}
+            </span>{" "}
+            ={" "}
+            <span
+              className="tabular-nums"
+              style={{ color: accentColor }}
+            >
+              {postOddsPct.toFixed(postOddsPct < 1 ? 2 : 1)}%
+            </span>{" "}
+            chance to win
+          </p>
+        )}
       </label>
       <button
         type="button"
         onClick={onClick}
-        disabled={busy}
+        disabled={busy || !qtyValid}
         style={{ ["--tear-bg" as never]: accentColor }}
         className="btn-fx fx-tear mt-0 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {busy
-          ? "BUYING…"
-          : <>BUY {qty} TICKET{qty === 1 ? "" : "S"} <span className="font-mono opacity-70">· {formatSol(total)}</span></>}
+        {busy ? (
+          "BUYING…"
+        ) : !qtyValid ? (
+          "Enter a quantity"
+        ) : (
+          <>
+            BUY {qty} TICKET{qty === 1 ? "" : "S"}{" "}
+            <span className="font-mono opacity-70">· {formatSol(total)}</span>
+          </>
+        )}
       </button>
     </div>
   );

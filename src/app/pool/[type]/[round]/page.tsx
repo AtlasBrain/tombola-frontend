@@ -220,6 +220,11 @@ export default async function PoolDetailPage({
             round={pool.round}
             ticketPriceLamports={pool.ticketPriceLamports}
             closed={closed}
+            totalTickets={pool.totalTickets}
+            batches={batches.map((b) => ({
+              owner: b.owner,
+              quantity: b.quantity,
+            }))}
           />
           {pool.poolAddress && (
             <div className="mt-4">

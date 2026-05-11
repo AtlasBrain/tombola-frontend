@@ -17,6 +17,15 @@ interface Props {
   closed: boolean;
   accentColor?: string;
   ticketPriceSol?: number;
+  /** Total tickets sold so far in this round. Used for the live odds preview. */
+  totalTickets?: bigint;
+  /** Either pass `myCurrentTickets` directly OR pass `batches` and let the
+   *  button reduce it client-side using the connected wallet. Public pool
+   *  page passes batches because it's a server component without access to
+   *  publicKey. */
+  myCurrentTickets?: bigint;
+  /** Minimal batch view used to compute `myCurrentTickets` when not provided. */
+  batches?: ReadonlyArray<{ owner: string; quantity: bigint }>;
 }
 
 const MIN_QTY = 1;
@@ -29,6 +38,9 @@ export function BuyTicketButton({
   closed,
   accentColor = "var(--lavender)",
   ticketPriceSol = 0.01,
+  totalTickets,
+  myCurrentTickets,
+  batches,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
@@ -164,6 +176,42 @@ export function BuyTicketButton({
           className="w-full rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-100 tabular-nums outline-none transition focus:border-[#c9b5dc]/40 focus:ring-2 focus:ring-[#c9b5dc]/20 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Number of tickets to buy"
         />
+        {(() => {
+          // Live odds preview — only renders when the caller passed totalTickets.
+          if (totalTickets === undefined) return null;
+          if (!qtyValid) return null;
+          // Compute caller's existing tickets either from prop or by reducing
+          // batches against the connected wallet.
+          let mine = myCurrentTickets;
+          if (mine === undefined && batches && publicKey) {
+            const me = publicKey.toBase58();
+            let n = 0n;
+            for (const b of batches) if (b.owner === me) n += b.quantity;
+            mine = n;
+          }
+          if (mine === undefined) mine = 0n;
+          const postOwned = mine + BigInt(qty);
+          const postTotal = totalTickets + BigInt(qty);
+          if (postTotal === 0n) return null;
+          const pct =
+            Number(postOwned * 10_000n) / Number(postTotal) / 100;
+          return (
+            <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+              After buying:{" "}
+              <span className="tabular-nums text-neutral-300">
+                {postOwned.toString()} / {postTotal.toString()}
+              </span>{" "}
+              ={" "}
+              <span
+                className="tabular-nums"
+                style={{ color: accentColor }}
+              >
+                {pct.toFixed(pct < 1 ? 2 : 1)}%
+              </span>{" "}
+              chance to win
+            </p>
+          );
+        })()}
       </label>
       <button
         type="button"

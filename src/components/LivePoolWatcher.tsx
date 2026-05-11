@@ -12,6 +12,11 @@ interface Props {
    *  collapse to a single router.refresh() — keeps us from hammering the server
    *  when a buy_ticket tx mutates pool + ticket batch in the same slot. */
   debounceMs?: number;
+  /** Optional client-side handler. Called (debounced) on every account-change
+   *  notification, after the router.refresh kick. Needed by client-component
+   *  pages whose state isn't a server component — router.refresh is a no-op
+   *  for them, so they pass a callback that bumps a reload key. */
+  onChange?: () => void;
 }
 
 /**
@@ -31,9 +36,14 @@ export function LivePoolWatcher({
   addresses,
   rpcUrl,
   debounceMs = 300,
+  onChange,
 }: Props) {
   const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Keep the latest onChange in a ref so the effect doesn't re-subscribe each
+  // time the parent's render produces a new function identity.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   useEffect(() => {
     if (addresses.length === 0) return;
@@ -49,6 +59,7 @@ export function LivePoolWatcher({
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         router.refresh();
+        onChangeRef.current?.();
       }, debounceMs);
     }
 

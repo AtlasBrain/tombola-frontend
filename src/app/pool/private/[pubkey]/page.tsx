@@ -1,6 +1,6 @@
 "use client";
 import { use, useEffect, useMemo, useState } from "react";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   address as toAddress,
   createSolanaRpc,
@@ -87,9 +87,15 @@ export default function PrivatePoolPage({
 }) {
   const { pubkey } = use(params);
   const { connection } = useConnection();
+  const { publicKey } = useWallet();
   const [pool, setPool] = useState<PoolData | null>(null);
   const [batches, setBatches] = useState<BatchRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  // Bumped by LivePoolWatcher.onChange and by BuyTicketPrivateButton.onPurchased
+  // to retrigger the data-fetch effect. router.refresh is a no-op on this
+  // client-only page, so we need a local signal.
+  const [reloadKey, setReloadKey] = useState(0);
+  const bumpReload = () => setReloadKey((k) => k + 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,7 +166,7 @@ export default function PrivatePoolPage({
     return () => {
       cancelled = true;
     };
-  }, [connection, pubkey]);
+  }, [connection, pubkey, reloadKey]);
 
   // Buyers = unique TicketBatch.owner count. Recompute when the batch list
   // mutates (e.g. someone buys mid-page).
@@ -169,6 +175,17 @@ export default function PrivatePoolPage({
     for (const b of batches) set.add(b.owner);
     return set.size;
   }, [batches]);
+
+  // Sum of the connected wallet's existing tickets across all their batches.
+  // Used for the live odds preview in BuyTicketPrivateButton: after buying,
+  // odds = (mine + qty) / (totalTickets + qty).
+  const myCurrentTickets = useMemo(() => {
+    const me = publicKey?.toBase58();
+    if (!me) return 0n;
+    let n = 0n;
+    for (const b of batches) if (b.owner === me) n += b.quantity;
+    return n;
+  }, [batches, publicKey]);
 
   if (err) {
     return (
@@ -212,7 +229,11 @@ export default function PrivatePoolPage({
   return (
     <>
       <Header />
-      <LivePoolWatcher addresses={[pubkey]} rpcUrl={connection.rpcEndpoint} />
+      <LivePoolWatcher
+        addresses={[pubkey]}
+        rpcUrl={connection.rpcEndpoint}
+        onChange={bumpReload}
+      />
       <main className="mx-auto max-w-3xl px-6 py-12">
         {/* === HEADER CARD =========================================== */}
         <article className="grad-private rounded-3xl border border-neutral-800 bg-neutral-950 p-7">
@@ -297,6 +318,9 @@ export default function PrivatePoolPage({
               closed={closed}
               accentColor={PRIVATE_ACCENT}
               ticketPriceSol={ticketPriceSol}
+              totalTickets={pool.totalTickets}
+              myCurrentTickets={myCurrentTickets}
+              onPurchased={bumpReload}
             />
           )}
 

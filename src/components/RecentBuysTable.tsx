@@ -71,6 +71,21 @@ export function RecentBuysTable({
   const hiddenCount = Math.max(0, sorted.length - DEFAULT_LIMIT);
   const myAddr = publicKey?.toBase58() ?? null;
 
+  // Per-owner aggregate ticket count. The Odds column shows the OWNER's
+  // total chance to win (their cumulative tickets / pool total), repeated
+  // on each of their rows — a quick read of who has the biggest stake.
+  const ticketsByOwner = useMemo(() => {
+    const m = new Map<string, bigint>();
+    for (const b of batches) m.set(b.owner, (m.get(b.owner) ?? 0n) + b.quantity);
+    return m;
+  }, [batches]);
+  function oddsPctFor(owner: string): number | null {
+    if (totalTickets <= 0n) return null;
+    const owned = ticketsByOwner.get(owner) ?? 0n;
+    if (owned <= 0n) return null;
+    return Number(owned * 10_000n) / Number(totalTickets) / 100;
+  }
+
   // Fetch sigs for whatever's currently visible. When the user expands to
   // "Show all" we top-up sigs for the additional batches in a second call.
   useEffect(() => {
@@ -146,6 +161,7 @@ export function RecentBuysTable({
                 <tr className="text-left text-xs uppercase tracking-wider text-neutral-500">
                   <th className="px-6 pt-4 pb-2 font-medium">Buyer</th>
                   <th className="pt-4 pb-2 font-medium">Tickets</th>
+                  <th className="pt-4 pb-2 font-medium">Odds</th>
                   <th className="pt-4 pb-2 font-medium">Range</th>
                   <th className="pt-4 pb-2 font-medium">When</th>
                   <th className="pt-4 pb-2 font-medium">Spent</th>
@@ -190,6 +206,18 @@ export function RecentBuysTable({
                       </td>
                       <td className="py-3 pr-4 font-medium tabular-nums text-neutral-200">
                         {b.quantity.toString()}
+                      </td>
+                      <td
+                        className="py-3 pr-4 tabular-nums"
+                        style={mine ? youOwnerStyle : { color: "#9ca3af" }}
+                        title={`${ticketsByOwner.get(b.owner)?.toString() ?? "0"} of ${totalTickets.toString()} total tickets`}
+                      >
+                        {(() => {
+                          const pct = oddsPctFor(b.owner);
+                          return pct === null
+                            ? "—"
+                            : `${pct.toFixed(pct < 1 ? 2 : 1)}%`;
+                        })()}
                       </td>
                       <td className="py-3 pr-4 tabular-nums text-neutral-500">
                         #{b.firstTicketId.toString()}–#{b.lastTicketId.toString()}
