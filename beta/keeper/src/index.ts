@@ -30,7 +30,7 @@ async function runTick(ctx: {
       if (entry.action === "commit") {
         await commitPool(entry, ctx.keeperKp, ctx.connection, ctx.rpcUrl, ctx.cluster);
       } else {
-        await settlePool(entry, ctx.keeperKp, ctx.connection, ctx.rpcUrl);
+        await settlePool(entry, ctx.keeperKp, ctx.connection, ctx.rpcUrl, ctx.cluster);
       }
     } catch (err) {
       logError(entry.address, `${entry.action} failed`, err);

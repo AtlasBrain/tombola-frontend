@@ -4,7 +4,12 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
-import { Randomness, AnchorUtils } from "@switchboard-xyz/on-demand";
+import {
+  Randomness,
+  AnchorUtils,
+  ON_DEMAND_DEVNET_QUEUE,
+  ON_DEMAND_MAINNET_QUEUE,
+} from "@switchboard-xyz/on-demand";
 import {
   address,
   createKeyPairSignerFromBytes,
@@ -161,6 +166,7 @@ export async function settlePool(
   keeperKp: Keypair,
   connection: Connection,
   rpcUrl: string,
+  cluster: "devnet" | "mainnet" = "devnet",
 ): Promise<void> {
   const poolAddress = entry.address;
   log(poolAddress, "checking oracle reveal…");
@@ -180,6 +186,50 @@ export async function settlePool(
   // Reconstruct Randomness from stored pubkey.
   const switchboardProgram = await AnchorUtils.loadProgramFromConnection(connection);
   const randomness = new Randomness(switchboardProgram, new PublicKey(vrfAddr));
+
+  // Recovery path: if the randomness account has already been revealed in a
+  // past slot (e.g. left over from a buggy keeper run where reveal and settle
+  // weren't atomic), the contract's `clock_slot == reveal_slot` check
+  // (vrf.rs:60) is now permanently false — we cannot settle from the existing
+  // state. Switchboard allows re-commit on an already-revealed account: it
+  // resets seed_slot to current, zeros the value, and starts a fresh
+  // commit→reveal cycle. We send that commit tx, wait for the slot delay,
+  // then fall through to the normal atomic reveal+settle below.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const randData = (await randomness.loadData()) as any;
+  const valueArr = Array.from(
+    (randData?.value ?? []) as Iterable<number>,
+  );
+  const alreadyRevealed = valueArr.some((b) => b !== 0);
+  if (alreadyRevealed) {
+    log(
+      poolAddress,
+      "randomness already revealed in a past slot — recommitting to restart the cycle",
+    );
+    const queuePk =
+      cluster === "devnet" ? ON_DEMAND_DEVNET_QUEUE : ON_DEMAND_MAINNET_QUEUE;
+    try {
+      const recommitIx = await randomness.commitIx(
+        queuePk,
+        keeperKp.publicKey,
+        undefined,
+      );
+      const sig = await sendAndConfirm(connection, [recommitIx], [keeperKp]);
+      log(poolAddress, `recommit confirmed: ${sig} — waiting for slot delay`);
+      // Switchboard's commit specifies a slot ~few ahead for reveal. Wait
+      // long enough that the slothash for that slot is in the SlotHashes
+      // sysvar. ~6 seconds = ~15 slots at devnet pace, well past the
+      // default delay.
+      await new Promise((r) => setTimeout(r, 6000));
+    } catch (err) {
+      logError(
+        poolAddress,
+        "recommit failed (keeper may not be the randomness authority — try a different KEEPER_KEYPAIR)",
+        err,
+      );
+      return;
+    }
+  }
 
   // Build revealIx and simulate to learn the value reveal will produce.
   // The contract enforces clock_slot == reveal_slot (vrf.rs:60), so reveal and
