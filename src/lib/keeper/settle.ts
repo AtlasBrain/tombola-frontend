@@ -42,9 +42,11 @@ import { RaffleClient, PROGRAM_ID, generated } from "@tombola/sdk";
 import { kitIxToWeb3, sendAndConfirm } from "./tx";
 import { log, logError } from "./logger";
 import type { ActionablePool } from "./scan";
+import {
+  TICKET_BATCH_POOL_OFFSET as POOL_FIELD_OFFSET,
+  TICKET_BATCH_SIZE_N as TICKET_BATCH_SIZE,
+} from "../constants";
 
-const TICKET_BATCH_SIZE = 89;
-const POOL_FIELD_OFFSET = 8;
 // On-chain RandomnessAccountData layout — must match programs/raffle/src/vrf.rs.
 const RANDOMNESS_VALUE_OFFSET = 152;
 const RANDOMNESS_VALUE_LEN = 32;

@@ -12,13 +12,18 @@ import {
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
+import { unwrapOption } from "./codec/option";
 
-const TICKET_BATCH_SIZE = 89n;
-const POOL_OFFSET = 8n;
-const OWNER_OFFSET = 40n;
+import {
+  PRIVATE_POOL_SIZE_N as PRIVATE_POOL_SIZE,
+  PUBLIC_POOL_SIZE_N as PUBLIC_POOL_SIZE,
+  TICKET_BATCH_OWNER_OFFSET,
+  TICKET_BATCH_POOL_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "./constants";
 
-const PUBLIC_POOL_SIZE = 150;
-const PRIVATE_POOL_SIZE = 216;
+const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
+const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 export type PoolKindForBuyer = "public" | "private";
 
@@ -253,20 +258,6 @@ const STATE_LABEL: Record<0 | 1 | 2, PoolStateLabel> = {
   1: "AwaitingVrf",
   2: "Resolved",
 };
-
-function unwrapOption<T>(
-  raw: unknown,
-  coerce: (v: unknown) => T,
-): T | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object" && raw !== null && "__option" in raw) {
-    const opt = raw as { __option: "Some" | "None"; value?: unknown };
-    return opt.__option === "Some" && opt.value !== undefined
-      ? coerce(opt.value)
-      : null;
-  }
-  return coerce(raw);
-}
 
 // ------------ pure aggregations (testable) ----------------
 

@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { address as toAddress, createSolanaRpc } from "@solana/kit";
 import { PROGRAM_ID, generated } from "@tombola/sdk";
+import {
+  TICKET_BATCH_OWNER_OFFSET,
+  TICKET_BATCH_POOL_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "@/lib/constants";
 
 interface Props {
   /** PublicPool PDA. Required — odds only render for live (non-mock) pools. */
@@ -19,9 +24,8 @@ interface Props {
 }
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + …
-const TICKET_BATCH_SIZE = 89n;
-const POOL_OFFSET = 8n;
-const OWNER_OFFSET = 40n;
+const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
+const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 /**
  * Per-card "your odds" badge — shown when wallet is connected and the user

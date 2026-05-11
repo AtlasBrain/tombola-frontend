@@ -33,13 +33,14 @@ import {
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
-
-const TICKET_BATCH_SIZE = 89n;
-const PUBLIC_POOL_SIZE = 150;
-const PRIVATE_POOL_SIZE = 216;
-// Offset of `owner` inside TicketBatch (after 8-byte discriminator + pool pubkey).
-const OWNER_OFFSET = 40;
-const PROTOCOL_FEE_BPS = 50n;
+import { unwrapOption } from "./codec/option";
+import {
+  PROTOCOL_FEE_BPS,
+  PRIVATE_POOL_SIZE_N as PRIVATE_POOL_SIZE,
+  PUBLIC_POOL_SIZE_N as PUBLIC_POOL_SIZE,
+  TICKET_BATCH_OWNER_OFFSET as OWNER_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "./constants";
 
 export interface WalletStats {
   /** Wallet's total tickets across every pool. */
@@ -88,17 +89,6 @@ interface MinimalPool {
   state: number;
   winner: string | null;
   creatorFeeBps: number;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function unwrapOption<T>(raw: any, coerce: (v: unknown) => T): T | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object" && raw !== null && "__option" in raw) {
-    return raw.__option === "Some" && raw.value !== undefined
-      ? coerce(raw.value)
-      : null;
-  }
-  return coerce(raw);
 }
 
 export async function fetchWalletStats(args: {

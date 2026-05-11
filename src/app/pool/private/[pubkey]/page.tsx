@@ -17,9 +17,12 @@ import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
+import {
+  TICKET_BATCH_POOL_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "@/lib/constants";
 
-const TICKET_BATCH_SIZE = 89n;
-const POOL_OFFSET = 8n;
+const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
 const PRIVATE_ACCENT = "#88cfc4"; // mint — see globals.css .grad-private + spec proposal 03
 
 interface PoolData {

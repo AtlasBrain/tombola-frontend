@@ -6,6 +6,10 @@ import { address as toAddress, createSolanaRpc } from "@solana/kit";
 import { PROGRAM_ID, generated, type PoolTypeValue } from "@tombola/sdk";
 import type { PoolView } from "@/lib/mock-pools";
 import { formatSol, formatTickets } from "@/lib/format";
+import {
+  TICKET_BATCH_OWNER_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "@/lib/constants";
 
 interface Props {
   pools: PoolView[];
@@ -22,8 +26,7 @@ interface MyTicketsAgg {
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + ...
 // memcmp filters by owner at offset 40; dataSize 89 = TicketBatch fixed size.
-const TICKET_BATCH_SIZE = 89n;
-const OWNER_OFFSET = 40n;
+const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 export function MyTickets({ pools }: Props) {
   const { connection } = useConnection();

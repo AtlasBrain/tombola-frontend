@@ -16,8 +16,8 @@
 
 import { type Address, createSolanaRpc } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { PRIVATE_POOL_SIZE } from "./constants";
 
-const PRIVATE_POOL_SIZE = 216n;
 const REDEEMED_CODE_SIZE = 105n;
 
 export interface GlobalPrivateStats {

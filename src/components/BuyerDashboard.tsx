@@ -15,6 +15,7 @@ import {
   type BuyerFilter,
   type PoolMembership,
 } from "@/lib/buyer-pools";
+import { Metric, Stat } from "@/components/ui/Stat";
 
 // Brand palette tokens — match globals.css :root accents
 const ACCENT_LAVENDER = "#c9b5dc";
@@ -288,37 +289,6 @@ function LifetimeStats({
   );
 }
 
-function Stat({
-  label,
-  value,
-  sub,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  valueColor?: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-        {label}
-      </div>
-      <div
-        className="mt-1 font-display text-2xl uppercase tabular-nums"
-        style={{ color: valueColor ?? "#f5f5f5" }}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function FilterChips({
   counts,
   filter,
@@ -566,28 +536,3 @@ function PoolRow({
   );
 }
 
-function Metric({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-}) {
-  return (
-    <div>
-      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-        {label}
-      </div>
-      <div className="mt-0.5 font-display text-lg uppercase tabular-nums text-neutral-100">
-        {value}
-      </div>
-      {sub && (
-        <div className="font-mono text-[10px] tabular-nums text-neutral-500">
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-}

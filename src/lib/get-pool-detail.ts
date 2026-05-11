@@ -8,6 +8,11 @@ import {
   type PoolTypeValue,
 } from "@tombola/sdk";
 import type { PoolView, PoolKind, PoolState } from "./mock-pools";
+import { unwrapOption } from "./codec/option";
+import {
+  TICKET_BATCH_POOL_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "./constants";
 
 const KIND_BY_TYPE: Record<PoolTypeValue, PoolKind> = {
   [PoolType.Weekly]: "Weekly",
@@ -55,8 +60,7 @@ export interface PoolDetail {
 
 // TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + ...
 // The `pool` field at offset 8 is what we filter on for "all batches in pool X".
-const TICKET_BATCH_SIZE = 89n;
-const POOL_OFFSET = 8n;
+const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
 
 /**
  * Fetch a pool + all its TicketBatch accounts, sorted by ticket-id ascending.
@@ -157,16 +161,3 @@ export async function getPoolDetail(
   return { pool, batches, winner, winningTicketId };
 }
 
-function unwrapOption<T>(
-  raw: unknown,
-  coerce: (v: unknown) => T,
-): T | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object" && raw !== null && "__option" in raw) {
-    const opt = raw as { __option: "Some" | "None"; value?: unknown };
-    return opt.__option === "Some" && opt.value !== undefined
-      ? coerce(opt.value)
-      : null;
-  }
-  return coerce(raw);
-}

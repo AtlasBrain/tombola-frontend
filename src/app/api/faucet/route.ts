@@ -8,7 +8,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { Redis } from "@upstash/redis";
+import { getRedis } from "@/lib/kv/redis";
 
 // Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
 // Dynamic + short maxDuration: each request is fast and never cached.
@@ -28,21 +28,16 @@ const RPC_URL =
 
 // Upstash Redis for durable used-code tracking (survives redeploys).
 // Falls back to in-process Map if env vars aren't set — fine for local dev,
-// not for production (resets on each cold start).
-let redis: Redis | null = null;
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
-}
+// not for production (resets on each cold start, useless under multi-region).
 const memUsed = new Set<string>();
 
 async function isUsed(code: string): Promise<boolean> {
+  const redis = getRedis();
   if (redis) return !!(await redis.get(`tombola:faucet:used:${code}`));
   return memUsed.has(code);
 }
 async function markUsed(code: string, wallet: string): Promise<void> {
+  const redis = getRedis();
   if (redis) {
     await redis.set(`tombola:faucet:used:${code}`, wallet, {
       ex: 365 * 24 * 3600,
@@ -52,6 +47,7 @@ async function markUsed(code: string, wallet: string): Promise<void> {
   }
 }
 async function unmarkUsed(code: string): Promise<void> {
+  const redis = getRedis();
   if (redis) await redis.del(`tombola:faucet:used:${code}`);
   else memUsed.delete(code);
 }

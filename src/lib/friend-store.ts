@@ -15,22 +15,10 @@
 //
 // All mutations are wallet-signature gated (see verifyFriendAction below).
 
-import { Redis } from "@upstash/redis";
 import nacl from "tweetnacl";
 import { decodeBase58 } from "./base58";
 import { consumeNonce } from "./profile-store";
-
-let redis: Redis | null = null;
-function getRedis(): Redis | null {
-  if (redis !== null) return redis;
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-  redis = new Redis({ url, token });
-  return redis;
-}
+import { getRedis } from "./kv/redis";
 
 const EDGE_PREFIX = "edge:";
 const ACCEPTED_PREFIX = "friend-accepted:";

@@ -6,8 +6,8 @@
 import "server-only";
 import { type Address, createSolanaRpc } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { PRIVATE_POOL_SIZE_N as PRIVATE_POOL_SIZE } from "../constants";
 
-const PRIVATE_POOL_SIZE = 216;
 const STUCK_THRESHOLD_SEC = 3_600n;
 
 export type PoolAction = "commit" | "settle" | "stuck";

@@ -12,8 +12,9 @@ import {
 } from "@solana/kit";
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
+import { unwrapOption } from "./codec/option";
+import { PRIVATE_POOL_SIZE } from "./constants";
 
-const PRIVATE_POOL_SIZE = 216n;
 const CREATOR_OFFSET = 8n; // first field after 8-byte discriminator
 
 export interface CreatorPoolSummary {
@@ -64,17 +65,6 @@ function accessModeLabel(am: any): "Whitelist" | "OneCodePerTicket" {
     return am.__kind === "WhitelistMode" ? "Whitelist" : "OneCodePerTicket";
   }
   return "Whitelist";
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function unwrapOption<T>(raw: any, coerce: (v: unknown) => T): T | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object" && raw !== null && "__option" in raw) {
-    return raw.__option === "Some" && raw.value !== undefined
-      ? coerce(raw.value)
-      : null;
-  }
-  return coerce(raw);
 }
 
 export async function fetchCreatorStats(args: {

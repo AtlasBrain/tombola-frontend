@@ -20,6 +20,7 @@ import {
   type Relationship,
 } from "@/lib/friend-client";
 import { useToast } from "@/components/Toast";
+import { StatTile } from "@/components/ui/Stat";
 
 interface Props {
   profile: ProfileRow;
@@ -523,37 +524,6 @@ function ActionButton({
     >
       + Add friend
     </button>
-  );
-}
-
-function StatTile({
-  label,
-  value,
-  sub,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  valueColor?: string;
-}) {
-  return (
-    <div>
-      <span className="block font-mono text-[9px] uppercase tracking-widest text-neutral-500">
-        {label}
-      </span>
-      <div
-        className="mt-1 font-display text-base font-bold tabular-nums leading-none"
-        style={valueColor ? { color: valueColor } : undefined}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div className="mt-1 font-mono text-[10px] text-neutral-600">
-          {sub}
-        </div>
-      )}
-    </div>
   );
 }
 

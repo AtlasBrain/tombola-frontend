@@ -18,9 +18,9 @@
 
 import { type Address, createSolanaRpc } from "@solana/kit";
 import { generated } from "@tombola/sdk";
+import { unwrapOption } from "./codec/option";
+import { PUBLIC_POOL_SIZE, TICKET_BATCH_SIZE } from "./constants";
 
-const PUBLIC_POOL_SIZE = 150n;
-const TICKET_BATCH_SIZE = 89n;
 const TOP_N = 10;
 
 export interface WinnerRow {
@@ -43,17 +43,6 @@ export interface Leaderboard {
   resolvedRoundsCount: number;
   /** Total ticket batches scanned. */
   ticketBatchesCount: number;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function unwrapOption<T>(raw: any, coerce: (v: unknown) => T): T | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object" && raw !== null && "__option" in raw) {
-    return raw.__option === "Some" && raw.value !== undefined
-      ? coerce(raw.value)
-      : null;
-  }
-  return coerce(raw);
 }
 
 export async function fetchLeaderboard(args: {

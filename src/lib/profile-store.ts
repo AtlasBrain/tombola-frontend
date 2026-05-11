@@ -8,33 +8,12 @@
 // All mutations require a wallet signature over a server-issued nonce; see
 // `src/lib/profile-auth.ts`. This file is the bare KV layer — no auth here.
 
-import { Redis } from "@upstash/redis";
+import { getRedis } from "./kv/redis";
 
 const PROFILE_PREFIX = "profile:";
 const PSEUDO_PREFIX = "pseudo:";
 const NONCE_PREFIX = "nonce:";
 const NONCE_TTL_SEC = 300;
-
-/** Lazy-init Redis client so build-time / lint-time importers don't crash on
- *  missing env vars. Returns null when Upstash isn't configured (local dev
- *  without env). Callers must handle null gracefully — fall back to empty
- *  profile is fine.
- *
- *  We accept both naming conventions because Vercel's Upstash Marketplace
- *  integration injects `KV_REST_API_URL` / `KV_REST_API_TOKEN` (legacy KV
- *  branding), while a direct Upstash signup uses `UPSTASH_REDIS_REST_URL` /
- *  `UPSTASH_REDIS_REST_TOKEN`. Either pair works. */
-let redis: Redis | null = null;
-function getRedis(): Redis | null {
-  if (redis !== null) return redis;
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-  redis = new Redis({ url, token });
-  return redis;
-}
 
 export interface ProfileRow {
   /** Base58 wallet pubkey — the canonical id, set on first save. */

@@ -15,6 +15,11 @@ import { explorerAddressUrl } from "@/lib/explorer-url";
 import { WalletLink } from "@/components/WalletLink";
 import { formatSol, shortAddress} from "@/lib/format";
 import { CreatePoolModal } from "@/components/CreatePoolModal";
+import {
+  TICKET_BATCH_POOL_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "@/lib/constants";
+import { Metric, Stat } from "@/components/ui/Stat";
 
 const MINT = "#88cfc4";
 
@@ -40,8 +45,7 @@ interface PoolRow {
   winner: string | null;
 }
 
-const TICKET_BATCH_SIZE = 89n;
-const POOL_OFFSET = 8n;
+const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
 
 function feeFor(totalPot: bigint, feeBps: number): bigint {
   return (totalPot * BigInt(feeBps)) / 10_000n;
@@ -415,37 +419,6 @@ function SummaryStats(props: {
   );
 }
 
-function Stat({
-  label,
-  value,
-  sub,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  valueColor?: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-        {label}
-      </div>
-      <div
-        className="mt-1 font-display text-2xl uppercase tabular-nums"
-        style={{ color: valueColor ?? "#f5f5f5" }}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function PoolsSection({
   title,
   pools,
@@ -644,33 +617,3 @@ function RedemptionMetricCell({
   );
 }
 
-function Metric({
-  label,
-  value,
-  sub,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  valueColor?: string;
-}) {
-  return (
-    <div>
-      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-        {label}
-      </div>
-      <div
-        className="mt-0.5 font-display text-lg uppercase tabular-nums"
-        style={{ color: valueColor ?? "#f5f5f5" }}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div className="font-mono text-[10px] tabular-nums text-neutral-500">
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-}

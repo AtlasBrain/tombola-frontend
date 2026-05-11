@@ -21,9 +21,11 @@ import {
 import { Connection, PublicKey } from "@solana/web3.js";
 import { fetchBuySignatures } from "./fetch-buy-signatures";
 import { encodeBase58 } from "./base58";
+import {
+  TICKET_BATCH_OWNER_OFFSET as OWNER_OFFSET,
+  TICKET_BATCH_SIZE,
+} from "./constants";
 
-const TICKET_BATCH_SIZE = 89n;
-const OWNER_OFFSET = 40;
 const WEEK_SEC = 7 * 24 * 60 * 60;
 
 export interface WeeklyActivity {
