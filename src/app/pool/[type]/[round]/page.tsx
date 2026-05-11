@@ -6,6 +6,7 @@ import { FlashOnChange } from "@/components/FlashOnChange";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { RecentBuysTable } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
+import { PreviousWinnerLine } from "@/components/PreviousWinnerLine";
 import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, formatTickets } from "@/lib/format";
@@ -63,6 +64,17 @@ export default async function PoolDetailPage({
 
   const { pool, batches, winner, winningTicketId } = detail;
   const closed = pool.state !== "Open";
+
+  // Fetch the previous round so we can render a "Previous winner" line on
+  // active (non-Resolved) public pool pages. Only attempt it when there is
+  // a meaningful previous round (round > 1) AND the current round itself
+  // isn't already Resolved (Resolved pools use WinnerBanner instead).
+  const prevDetail =
+    pool.state !== "Resolved" && round > 1n
+      ? await getPoolDetail(poolType, round - 1n)
+      : null;
+  const prevWinner =
+    prevDetail && prevDetail.pool.state === "Resolved" ? prevDetail.winner : null;
   const ticketsForOneSol = (1_000_000_000n / pool.ticketPriceLamports).toString();
   const accent = POOL_ACCENT[pool.kind];
 
@@ -107,6 +119,17 @@ export default async function PoolDetailPage({
           ← All pools
         </Link>
       </div>
+
+      {prevDetail && prevWinner && prevDetail.pool.poolAddress && (
+        <PreviousWinnerLine
+          prevPoolAddress={prevDetail.pool.poolAddress}
+          winner={prevWinner}
+          totalPotLamports={prevDetail.pool.totalPotLamports}
+          poolTypeSlug={type}
+          prevRound={prevDetail.pool.round}
+          accentColor={accent}
+        />
+      )}
 
       <header className="mb-12">
         <div className="flex items-start justify-between gap-4">
