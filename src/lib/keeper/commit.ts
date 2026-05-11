@@ -74,11 +74,24 @@ export async function commitPool(
       [keeperKp],
     );
   } catch (err) {
-    logError(
-      poolAddress,
-      `commitDrawPrivate bundle failed — orphaned randomness account: ${randomness.pubkey.toBase58()} (reclaim rent manually)`,
-      err,
-    );
+    // Step-B failed AFTER we already paid rent for the Switchboard randomness
+    // account in Step A. Best-effort close to reclaim the rent — wrapped in
+    // its own try/catch because if the close also fails we still want to
+    // surface the original commit error to the cron tick.
+    try {
+      const closeIx = await randomness.closeIx();
+      await sendAndConfirm(connection, [closeIx], [keeperKp]);
+      log(
+        poolAddress,
+        `commit bundle failed; closed orphan randomness ${randomness.pubkey.toBase58()} (rent reclaimed)`,
+      );
+    } catch (closeErr) {
+      logError(
+        poolAddress,
+        `commitDrawPrivate bundle failed AND closeIx failed — orphaned randomness account: ${randomness.pubkey.toBase58()} (reclaim rent manually)`,
+        closeErr,
+      );
+    }
     throw err;
   }
 

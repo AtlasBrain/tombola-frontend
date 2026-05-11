@@ -27,5 +27,24 @@ export const TICKET_BATCH_POOL_OFFSET = 8;
  *  After 8-byte discriminator + pool(32). */
 export const TICKET_BATCH_OWNER_OFFSET = 40;
 
+/** Byte offset of the `state` enum field inside a PrivatePool account.
+ *  Anchor layout (see vendor/sdk/generated/accounts/privatePool.ts):
+ *    8  discriminator
+ *    32 creator
+ *    8  poolId
+ *    8  openTime
+ *    8  closeTime
+ *    8  ticketPrice
+ *    2  creatorFeeBps
+ *    1  accessMode
+ *    32 merkleRoot
+ *    8  totalTickets
+ *    8  totalPot
+ *    => state at offset 123 (single-byte enum: 0=Open, 1=AwaitingVrf, 2=Resolved)
+ *
+ *  Used by the keeper to memcmp-filter only actionable states (saves an RPC
+ *  full-table scan every tick once we have many Resolved pools). */
+export const PRIVATE_POOL_STATE_OFFSET = 123;
+
 /** Protocol fee in basis points. Mirror of `PROTOCOL_FEE_BPS` in constants.rs. */
 export const PROTOCOL_FEE_BPS = 50n;
