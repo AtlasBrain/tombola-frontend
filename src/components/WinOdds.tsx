@@ -126,17 +126,78 @@ export function WinOdds({
     }
   }
 
-  // The post-buy bar visualises two segments stacked side-by-side: the user's
-  // CURRENT share (solid accent) and the ADDED slice they'd gain by buying
-  // (lighter accent). Together they fill `postPct`. Showing the existing
-  // share inside the preview bar makes the delta visually unambiguous.
-  const previewBaseWidth = userTickets > 0n && postPct !== null
-    ? Math.min(postPct, currentPct)
-    : 0;
-  const previewAddWidth = postPct !== null
-    ? Math.max(0, postPct - previewBaseWidth)
-    : 0;
+  // Delta (the slice the buyer would gain). Computed from the % values rather
+  // than from owned/total bigints so it always matches the on-screen rounding.
+  const deltaPct =
+    postPct !== null ? Math.max(0, postPct - currentPct) : 0;
 
+  // ──────── PREVIEW MODE (Option G — "before → after" headline + single bar)
+  if (validPreview && postPct !== null) {
+    return (
+      <div
+        className="flex flex-col gap-1.5 rounded-lg border px-3 py-2.5"
+        style={{
+          borderColor: `${accent}33`,
+          background: `${accent}0d`,
+        }}
+      >
+        <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+          After buying {previewQty} ticket{previewQty === 1 ? "" : "s"}
+        </div>
+
+        {/* "Before → after" headline. Sized down from a previous mockup — the
+            new figure is the headline, the current % is reference, the pill
+            shows the gain. */}
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-mono text-sm tabular-nums text-neutral-400">
+            {currentPctTimes100.toFixed(2)}%
+          </span>
+          <span className="text-xs text-neutral-600">→</span>
+          <span
+            className="font-display text-base font-bold tabular-nums leading-none"
+            style={{ color: accent }}
+          >
+            {postPct.toFixed(2)}%
+          </span>
+          <span
+            className="ml-0.5 inline-block rounded-full px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none tabular-nums"
+            style={{ background: accent, color: "#000" }}
+          >
+            +{deltaPct.toFixed(2)}%
+          </span>
+        </div>
+
+        {/* Single bar — solid current + lighter delta — totals to postPct. */}
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
+          <div className="flex h-full w-full">
+            {currentPct > 0 && (
+              <div
+                className="h-full transition-all duration-200"
+                style={{ width: `${currentPct}%`, background: accent }}
+              />
+            )}
+            {deltaPct > 0 && (
+              <div
+                className="h-full transition-all duration-200"
+                style={{
+                  width: `${deltaPct}%`,
+                  background: accent,
+                  opacity: 0.45,
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
+          {userTickets.toString()} → {postOwned.toString()} of{" "}
+          {postTotal.toString()} ticket{postTotal === 1n ? "" : "s"}
+        </div>
+      </div>
+    );
+  }
+
+  // ──────── IDLE MODE (no preview) — original single bar
   return (
     <div
       className="flex flex-col gap-1 rounded-lg border px-3 py-2"
@@ -145,80 +206,22 @@ export function WinOdds({
         background: `${accent}0d`,
       }}
     >
-      {/* Row 1 — current odds. Shown whenever the user owns tickets, AND
-          also when they're previewing a buy (so first-time buyers can see
-          their 0% baseline next to the projected post-buy odds). The only
-          time this row is omitted is when the user has tickets but isn't
-          previewing — that's the standalone-gauge case where the second
-          row doesn't exist either, and we just show the single bar. */}
-      {(userTickets > 0n || validPreview) && (
-        <>
-          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-            <span className="text-neutral-500">
-              {validPreview ? "Current odds" : "Your odds"}
-            </span>
-            <span className="tabular-nums" style={{ color: accent }}>
-              {currentPctTimes100.toFixed(2)}%
-            </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${currentPct}%`, background: accent }}
-            />
-          </div>
-          <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
-            {userTickets.toString()} of {totalTickets.toString()} ticket
-            {totalTickets === 1n ? "" : "s"}
-          </div>
-        </>
-      )}
-
-      {/* Row 2 — live "after buying" projection. Only when the user is
-          typing a valid qty in a sibling buy button. */}
-      {validPreview && postPct !== null && (
-        <>
-          <div className="mt-1 border-t border-neutral-800/60" />
-          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
-            <span className="text-neutral-500">After buying</span>
-            <span className="tabular-nums" style={{ color: accent }}>
-              {postPct.toFixed(2)}%
-            </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
-            {/* Two segments — solid current + lighter added — separated by a
-                hairline so the delta reads at a glance even on dense bars. */}
-            <div className="flex h-full w-full">
-              {previewBaseWidth > 0 && (
-                <div
-                  className="h-full transition-all duration-200"
-                  style={{
-                    width: `${previewBaseWidth}%`,
-                    background: accent,
-                  }}
-                />
-              )}
-              {previewAddWidth > 0 && (
-                <div
-                  className="h-full transition-all duration-200"
-                  style={{
-                    width: `${previewAddWidth}%`,
-                    background: accent,
-                    opacity: 0.5,
-                  }}
-                />
-              )}
-            </div>
-          </div>
-          <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
-            {postOwned.toString()} of {postTotal.toString()} ticket
-            {postTotal === 1n ? "" : "s"}{" "}
-            <span style={{ color: accent }}>
-              (+{previewQty})
-            </span>
-          </div>
-        </>
-      )}
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+        <span className="text-neutral-500">Your odds</span>
+        <span className="tabular-nums" style={{ color: accent }}>
+          {currentPctTimes100.toFixed(2)}%
+        </span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${currentPct}%`, background: accent }}
+        />
+      </div>
+      <div className="font-mono text-[10px] tabular-nums uppercase tracking-widest text-neutral-500">
+        {userTickets.toString()} of {totalTickets.toString()} ticket
+        {totalTickets === 1n ? "" : "s"}
+      </div>
     </div>
   );
 }

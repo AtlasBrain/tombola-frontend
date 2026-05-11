@@ -222,6 +222,7 @@ export default async function PoolDetailPage({
               closed={closed}
               poolAddress={pool.poolAddress}
               totalTickets={pool.totalTickets}
+              accentColor={accent}
             />
           )}
         </div>
