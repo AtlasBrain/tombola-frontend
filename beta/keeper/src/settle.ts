@@ -2,6 +2,7 @@ import {
   Connection,
   Keypair,
   PublicKey,
+  Transaction,
 } from "@solana/web3.js";
 import { Randomness, AnchorUtils } from "@switchboard-xyz/on-demand";
 import {
@@ -50,21 +51,59 @@ export function findWinningBatch(
   );
 }
 
+// On-chain RandomnessAccountData layout (must match programs/raffle/src/vrf.rs):
+//   8..40: authority   40..72: queue   72..104: seed_slothash
+//   104..112: seed_slot   112..144: oracle   144..152: reveal_slot
+//   152..184: value [32]
+const RANDOMNESS_VALUE_OFFSET = 152;
+const RANDOMNESS_VALUE_LEN = 32;
+
 /**
- * Read the 32-byte `value` from the randomness account and return it as a u64
- * (first 8 bytes, little-endian). Returns null if the account hasn't been
- * revealed yet (all zeros).
+ * Simulate a revealIx tx and return what the `value` field of the randomness
+ * account would be after it ran (decoded as u64 LE from first 8 bytes). Returns
+ * null if simulation fails or the post-state value is zero.
+ *
+ * The contract requires `clock_slot == reveal_slot` (vrf.rs:60), so we cannot
+ * reveal in one tx and settle in another. The keeper must:
+ *   1. simulate revealIx to learn the value the reveal would produce
+ *   2. compute the winning batch using that value
+ *   3. send `[revealIx, settleIx]` atomically
  */
-async function readRevealedValue(
-  randomness: Randomness,
+async function simulateReveal(
+  connection: Connection,
+  sbRevealIx: import("@solana/web3.js").TransactionInstruction,
+  randomnessPubkey: PublicKey,
+  feePayer: Keypair,
 ): Promise<bigint | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (await randomness.loadData()) as any;
-  const value = data?.value ?? [];
-  const arr = Array.from(value as Iterable<number>);
-  if (!arr.some((b) => b !== 0)) return null;
+  const tx = new Transaction().add(sbRevealIx);
+  tx.feePayer = feePayer.publicKey;
+  const { blockhash } = await connection.getLatestBlockhash("confirmed");
+  tx.recentBlockhash = blockhash;
+  tx.sign(feePayer);
+
+  // Legacy-Transaction overload: third arg is includeAccounts pubkeys to capture.
+  const sim = await connection.simulateTransaction(tx, undefined, [
+    randomnessPubkey,
+  ]);
+  if (sim.value.err) {
+    throw new Error(
+      `reveal simulation failed: ${JSON.stringify(sim.value.err)} logs=${(sim.value.logs ?? []).slice(-5).join(" | ")}`,
+    );
+  }
+  const simAccount = sim.value.accounts?.[0];
+  if (!simAccount) return null;
+  const [b64] = simAccount.data as [string, string];
+  const buf = Buffer.from(b64, "base64");
+  if (buf.length < RANDOMNESS_VALUE_OFFSET + RANDOMNESS_VALUE_LEN) return null;
+  const value = buf.subarray(
+    RANDOMNESS_VALUE_OFFSET,
+    RANDOMNESS_VALUE_OFFSET + RANDOMNESS_VALUE_LEN,
+  );
+  let nonZero = false;
+  for (let i = 0; i < value.length; i++) if (value[i] !== 0) { nonZero = true; break; }
+  if (!nonZero) return null;
   let n = 0n;
-  for (let i = 0; i < 8; i++) n |= BigInt(arr[i] & 0xff) << (8n * BigInt(i));
+  for (let i = 0; i < 8; i++) n |= BigInt(value[i] & 0xff) << (8n * BigInt(i));
   return n;
 }
 
@@ -142,34 +181,34 @@ export async function settlePool(
   const switchboardProgram = await AnchorUtils.loadProgramFromConnection(connection);
   const randomness = new Randomness(switchboardProgram, new PublicKey(vrfAddr));
 
-  // Step 1: ensure randomness `value` is populated. In Switchboard On-Demand
-  // the `value` field stays zero until *we* send revealIx; it's not pushed by
-  // an external oracle. If it's still zero we try to send revealIx now.
-  let revealedValue = await readRevealedValue(randomness);
-  if (revealedValue === null) {
-    log(poolAddress, "value not populated — sending revealIx");
-    try {
-      const sbRevealIx = await randomness.revealIx(keeperKp.publicKey);
-      const sig = await sendAndConfirm(connection, [sbRevealIx], [keeperKp]);
-      log(poolAddress, `revealIx confirmed: ${sig}`);
-    } catch (err) {
-      log(
-        poolAddress,
-        `revealIx failed (slot not advanced or oracle not ready) — will retry next tick: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return;
-    }
-    revealedValue = await readRevealedValue(randomness);
-    if (revealedValue === null) {
-      logError(
-        poolAddress,
-        "revealIx confirmed but value still zero",
-        new Error("post-reveal value is zero"),
-      );
-      return;
-    }
+  // Build revealIx and simulate to learn the value reveal will produce.
+  // The contract enforces clock_slot == reveal_slot (vrf.rs:60), so reveal and
+  // settle must be in the same tx — but we need the value before sending in
+  // order to compute the winning batch. Simulation gets us both.
+  const sbRevealIx = await randomness.revealIx(keeperKp.publicKey);
+  let revealedValue: bigint | null;
+  try {
+    revealedValue = await simulateReveal(
+      connection,
+      sbRevealIx,
+      new PublicKey(vrfAddr),
+      keeperKp,
+    );
+  } catch (err) {
+    log(
+      poolAddress,
+      `reveal sim failed (will retry next tick): ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return;
   }
-  log(poolAddress, `revealed value: ${revealedValue}`);
+  if (revealedValue === null) {
+    log(
+      poolAddress,
+      "reveal simulation returned zero value — slot not yet advanced; retry next tick",
+    );
+    return;
+  }
+  log(poolAddress, `simulated revealed value: ${revealedValue}`);
 
   const totalTickets = entry.pool.totalTickets;
   if (totalTickets === 0n) {
@@ -198,8 +237,6 @@ export async function settlePool(
     `winning batch: ${winningBatch.batchAddress}, winner: ${winningBatch.owner}`,
   );
 
-  // Step 2: send settleDrawPrivate. The randomness account is already revealed
-  // on-chain, so the on-chain settle ix reads `value` directly.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rpc = createSolanaRpc(rpcUrl as any);
   const client = new RaffleClient({ rpc });
@@ -217,6 +254,14 @@ export async function settlePool(
     randomnessAccount: address(vrfAddr),
   });
 
-  await sendAndConfirm(connection, [kitIxToWeb3(settleIx)], [keeperKp]);
-  log(poolAddress, `settleDrawPrivate confirmed — winner: ${winningBatch.owner}`);
+  // Atomic: reveal + settle in one tx, satisfying clock_slot == reveal_slot.
+  await sendAndConfirm(
+    connection,
+    [sbRevealIx, kitIxToWeb3(settleIx)],
+    [keeperKp],
+  );
+  log(
+    poolAddress,
+    `settleDrawPrivate confirmed — winner: ${winningBatch.owner}`,
+  );
 }
