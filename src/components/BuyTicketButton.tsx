@@ -44,12 +44,18 @@ export function BuyTicketButton({
 
   const qtyValid = qty >= MIN_QTY && qty <= MAX_QTY;
   const total = qtyValid ? BigInt(qty) * ticketPriceLamports : 0n;
+  // The qty input is only visible to a connected buyer on an open round; in
+  // every other branch we render a substitute button (Round closed / Connect
+  // wallet). Emit 0 in those cases so a sibling WinOdds gauge stays in idle
+  // mode rather than showing a stuck "after buying 1 ticket" preview the
+  // user can't interact with.
+  const qtyVisible = !closed && !!publicKey;
 
   // Push qty up so a parent can overlay it on the WinOdds gauge. Declared
   // BEFORE the early returns to satisfy React's hook-order rule.
   useEffect(() => {
-    onQtyChange?.(qtyValid ? qty : 0);
-  }, [qty, qtyValid, onQtyChange]);
+    onQtyChange?.(qtyVisible && qtyValid ? qty : 0);
+  }, [qty, qtyValid, qtyVisible, onQtyChange]);
 
   const onClick = useCallback(async () => {
     if (!publicKey || !signTransaction) return;

@@ -61,13 +61,17 @@ export function BuyTicketPrivateButton({
   const MAX_QTY = Math.max(MIN_QTY, Math.min(MAX_QTY_HARD, maxTicketsPerBuy));
   const qtyValid =
     Number.isFinite(qty) && qty >= MIN_QTY && qty <= MAX_QTY;
+  // The qty input is only visible to a connected, whitelisted buyer on an
+  // open round. In every other branch we render a substitute (Round closed,
+  // Connect, Checking whitelist…, Not whitelisted). Emit 0 in those cases so
+  // a sibling gauge stays in idle mode rather than showing a stuck preview.
+  const qtyVisible = !closed && !!publicKey && whitelisted === true;
 
   // Push qty up so a parent can overlay it on the WinOdds gauge. Declared
   // BEFORE the early returns so hook order stays stable across renders.
-  // Invalid/empty qty is reported as 0 — the gauge treats that as "no preview".
   useEffect(() => {
-    onQtyChange?.(qtyValid ? qty : 0);
-  }, [qty, qtyValid, onQtyChange]);
+    onQtyChange?.(qtyVisible && qtyValid ? qty : 0);
+  }, [qty, qtyValid, qtyVisible, onQtyChange]);
 
   // Whitelisted PDA check (re-derived per (pool, wallet) tuple)
   useEffect(() => {
