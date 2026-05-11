@@ -29,10 +29,11 @@ describe("classifyPool", () => {
     expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("settle");
   });
 
-  it("returns 'stuck' for AwaitingVrf pool past stuck threshold", () => {
-    // closeTime = now - 3700s
+  it("returns 'settle' for AwaitingVrf pool regardless of how old close_time is", () => {
+    // close_time is no longer used to gate state-1 pools; waitForReveal in
+    // settle.ts handles staleness with a bounded 10s poll.
     const closeTime = now - 4_000n;
-    expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("stuck");
+    expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("settle");
   });
 
   it("returns null for resolved pool", () => {
@@ -43,9 +44,9 @@ describe("classifyPool", () => {
     expect(classifyPool({ ...BASE, state: 0, closeTime: now }, now, STUCK_THRESHOLD)).toBe("commit");
   });
 
-  it("returns 'stuck' when nowSec equals exactly the stuck threshold (exact boundary)", () => {
+  it("returns 'settle' when nowSec equals exactly the old stuck threshold (no longer stuck)", () => {
     const closeTime = now - STUCK_THRESHOLD;
-    expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("stuck");
+    expect(classifyPool({ ...BASE, state: 1, closeTime }, now, STUCK_THRESHOLD)).toBe("settle");
   });
 
   it("returns 'settle' for AwaitingVrf pool with zero tickets (settled anyway)", () => {

@@ -29,8 +29,14 @@ export function classifyPool(
     return null;
   }
   if (pool.state === 1) {
-    const stuckAt = pool.closeTime + stuckThresholdSec;
-    return nowSec >= stuckAt ? "stuck" : "settle";
+    // Always attempt settle. waitForReveal in settle.ts bounds polling at 10s,
+    // so stale state-1 pools cost a single short tick and then move on.
+    // stuckThresholdSec is retained in the signature for backwards compatibility
+    // with tests but is no longer used — the original threshold incorrectly
+    // measured age from close_time instead of commit_time and skipped freshly
+    // committed pools whose close_time was hours old.
+    void stuckThresholdSec;
+    return "settle";
   }
   return null; // state 2 (Resolved) or unknown
 }
