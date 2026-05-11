@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { createSolanaRpc, type Address } from "@solana/kit";
+import { createSolanaRpc, isSome, type Address, type Option } from "@solana/kit";
 import { PROGRAM_ID, generated } from "@tombola/sdk";
 import { findMyPrivatePools } from "@/lib/private-pools";
 import { loadAllCodesForWallet } from "@/lib/private-pool-storage";
@@ -34,6 +34,9 @@ interface PoolRow {
   /** Lifetime fee accrual on this pool. Paid at settle for Resolved pools;
    *  pending for Open / AwaitingVrf. */
   feeLamports: bigint;
+  /** Winner wallet address. Set only when state == Resolved AND a winner
+   *  exists (voided rounds with zero tickets have winner == None). */
+  winner: string | null;
 }
 
 const TICKET_BATCH_SIZE = 89n;
@@ -134,6 +137,11 @@ export function CreatorDashboard() {
           found.map(async ({ address }) => {
             const pool = await fetchPrivatePool(rpc, address as Address);
             const fee = feeFor(pool.data.totalPot, pool.data.creatorFeeBps);
+            // Kit decodes Option<Address> as { __option: 'Some', value } | { __option: 'None' }.
+            // Only show a winner when state is Resolved and the option is Some — zero-ticket
+            // voided pools keep state=2 but winner=None.
+            const winnerOpt = pool.data.winner as Option<Address>;
+            const winner = isSome(winnerOpt) ? String(winnerOpt.value) : null;
             const row: PoolRow = {
               poolAddress: String(address),
               ticketPriceLamports: pool.data.ticketPrice,
@@ -147,6 +155,7 @@ export function CreatorDashboard() {
               participants: null,
               redemption: null,
               feeLamports: fee,
+              winner,
             };
             return row;
           }),
@@ -514,6 +523,20 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
             >
               {shortAddr(pool.poolAddress)} ↗
             </a>
+            {pool.state === 2 && pool.winner && (
+              <>
+                {" · winner "}
+                <a
+                  href={explorerAddressUrl(pool.winner, rpcUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-neutral-300"
+                  style={{ color: MINT }}
+                >
+                  {shortAddr(pool.winner)} ↗
+                </a>
+              </>
+            )}
             {" · "}
             {pool.accessMode === "Whitelist" ? "Whitelist" : "1 code / ticket"}
             {" · "}
@@ -558,8 +581,12 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
         ) : pool.state === 2 ? (
           <Metric
             label="Resolved"
-            value="✓"
-            sub={`${pool.totalTickets.toString()} tickets sold`}
+            value={pool.winner ? "🏆" : "✓"}
+            sub={
+              pool.winner
+                ? `winner ${shortAddr(pool.winner)}`
+                : `${pool.totalTickets.toString()} tickets sold (voided)`
+            }
           />
         ) : pool.state === 1 ? (
           <Metric label="Drawing" value="◷" sub="winner being picked" />
