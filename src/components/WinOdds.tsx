@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { address as toAddress, createSolanaRpc } from "@solana/kit";
+import { createSolanaRpc } from "@solana/kit";
 import { PROGRAM_ID, generated } from "@tombola/sdk";
 import {
-  TICKET_BATCH_OWNER_OFFSET,
-  TICKET_BATCH_POOL_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "@/lib/constants";
+  decodeAccountBytes,
+  fetchTicketBatches,
+} from "@/lib/solana/program-queries";
 
 interface Props {
   /** PublicPool PDA. Required — odds only render for live (non-mock) pools. */
@@ -22,10 +21,6 @@ interface Props {
    *  alongside the existing one — live as the input changes. */
   previewQty?: number;
 }
-
-// TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + …
-const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
-const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 /**
  * Per-card "your odds" badge — shown when wallet is connected and the user
@@ -54,37 +49,17 @@ export function WinOdds({
       try {
         const rpc = createSolanaRpc(connection.rpcEndpoint);
         const owner = publicKey.toBase58();
-        const accounts = (await rpc
-          .getProgramAccounts(toAddress(PROGRAM_ID), {
-            encoding: "base64",
-            filters: [
-              { dataSize: TICKET_BATCH_SIZE },
-              {
-                memcmp: {
-                  offset: POOL_OFFSET,
-                  bytes: poolAddress as never,
-                  encoding: "base58",
-                },
-              },
-              {
-                memcmp: {
-                  offset: OWNER_OFFSET,
-                  bytes: owner as never,
-                  encoding: "base58",
-                },
-              },
-            ],
-          })
-          .send()) as unknown as readonly {
-          pubkey: string;
-          account: { data: readonly [string, "base64"] };
-        }[];
+        const accounts = await fetchTicketBatches({
+          rpc,
+          programId: PROGRAM_ID,
+          pool: poolAddress,
+          owner,
+        });
 
         const decoder = generated.getTicketBatchDecoder();
         let total = 0n;
         for (const acc of accounts) {
-          const [b64] = acc.account.data;
-          const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+          const bytes = decodeAccountBytes(acc);
           const batch = decoder.decode(bytes);
           total += batch.lastTicketId - batch.firstTicketId + 1n;
         }

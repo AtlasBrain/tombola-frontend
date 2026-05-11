@@ -5,6 +5,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { createSolanaRpc, type Address } from "@solana/kit";
 import { PROGRAM_ID } from "@tombola/sdk";
+import { fetchTicketBatches } from "@/lib/solana/program-queries";
 import { LivePoolWatcher } from "./LivePoolWatcher";
 import { AdminDashboardStats } from "./AdminDashboardStats";
 import { AdminRedemptionStatus } from "./AdminRedemptionStatus";
@@ -87,25 +88,16 @@ export function AdminDashboard({ poolAddress }: Props) {
         const { fetchAllMaybeTicketBatch } = await import(
           "@tombola/sdk/generated"
         );
-        // getProgramAccounts with memcmp on TicketBatch.pool (offset 8 = first
-        // field after 8-byte discriminator). dataSize = 89 = 8 disc + 32 pool +
-        // 32 owner + 8 first + 8 last + 1 bump. Kit's RPC returns the bare
-        // array (no { value } wrapper) when withContext isn't set; an earlier
-        // version of this code wrongly destructured `.value` and silently
-        // bottomed out to participants=[] in the catch.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const programAccounts = (await (rpc.getProgramAccounts as any)(
-          PROGRAM_ID as Address,
-          {
-            commitment: "confirmed",
-            encoding: "base64",
-            filters: [
-              { dataSize: BigInt(89) },
-              { memcmp: { offset: 8n, bytes: poolAddress as Address } },
-            ],
-          },
-        ).send()) as ReadonlyArray<{ pubkey: Address }>;
-        const addresses = programAccounts.map((p) => p.pubkey);
+        // Fetch every TicketBatch whose `pool` field matches this pool PDA.
+        // Kit's RPC returns the bare array (no { value } wrapper) when
+        // withContext isn't set; an earlier version of this code wrongly
+        // destructured `.value` and silently bottomed out to participants=[].
+        const programAccounts = await fetchTicketBatches({
+          rpc,
+          programId: PROGRAM_ID,
+          pool: poolAddress,
+        });
+        const addresses = programAccounts.map((p) => p.pubkey as Address);
         const accs = await fetchAllMaybeTicketBatch(rpc, addresses);
         const byOwner = new Map<string, { tickets: bigint; spent: bigint }>();
         for (const a of accs) {

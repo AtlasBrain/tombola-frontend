@@ -13,9 +13,7 @@ import {
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
 import { unwrapOption } from "./codec/option";
-import { PRIVATE_POOL_SIZE } from "./constants";
-
-const CREATOR_OFFSET = 8n; // first field after 8-byte discriminator
+import { decodeAccountBytes, fetchPrivatePools } from "./solana/program-queries";
 
 export interface CreatorPoolSummary {
   poolAddress: string;
@@ -79,28 +77,17 @@ export async function fetchCreatorStats(args: {
   const creatorBase58 = encodeBase58(creatorBytes);
 
   // Scan PrivatePool accounts where creator field == this address.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = (await (rpc.getProgramAccounts as any)(
-    args.programId as Address,
-    {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [
-        { dataSize: PRIVATE_POOL_SIZE },
-        { memcmp: { offset: CREATOR_OFFSET, bytes: creatorBase58 } },
-      ],
-    },
-  ).send()) as ReadonlyArray<{
-    pubkey: Address;
-    account: { data: readonly [string, "base64"] };
-  }>;
+  const result = await fetchPrivatePools({
+    rpc,
+    programId: args.programId,
+    creator: creatorBase58,
+  });
 
   const decoder = generated.getPrivatePoolDecoder();
   const pools: CreatorPoolSummary[] = [];
   for (const acc of result) {
     try {
-      const [b64] = acc.account.data;
-      const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+      const bytes = decodeAccountBytes(acc);
       const p = decoder.decode(bytes);
       const fee =
         (p.totalPot * BigInt(p.creatorFeeBps)) / 10_000n;

@@ -21,10 +21,7 @@ import {
 import { Connection, PublicKey } from "@solana/web3.js";
 import { fetchBuySignatures } from "./fetch-buy-signatures";
 import { encodeBase58 } from "./base58";
-import {
-  TICKET_BATCH_OWNER_OFFSET as OWNER_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "./constants";
+import { fetchTicketBatches } from "./solana/program-queries";
 
 const WEEK_SEC = 7 * 24 * 60 * 60;
 
@@ -56,18 +53,11 @@ export async function fetchWalletActivity(args: {
     getAddressEncoder().encode(wallet as Address),
   );
   const walletBase58 = encodeBase58(walletBytes);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batchAccounts = (await (rpc.getProgramAccounts as any)(
-    programId as Address,
-    {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [
-        { dataSize: TICKET_BATCH_SIZE },
-        { memcmp: { offset: OWNER_OFFSET, bytes: walletBase58 } },
-      ],
-    },
-  ).send()) as ReadonlyArray<{ pubkey: Address }>;
+  const batchAccounts = await fetchTicketBatches({
+    rpc,
+    programId,
+    owner: walletBase58,
+  });
   if (batchAccounts.length === 0) return empty;
 
   // 2. Each batch -> the buy tx that created it. Reuses the same helper

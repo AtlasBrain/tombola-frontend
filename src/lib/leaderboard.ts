@@ -19,7 +19,8 @@
 import { type Address, createSolanaRpc } from "@solana/kit";
 import { generated } from "@tombola/sdk";
 import { unwrapOption } from "./codec/option";
-import { PUBLIC_POOL_SIZE, TICKET_BATCH_SIZE } from "./constants";
+import { TICKET_BATCH_SIZE } from "./constants";
+import { fetchPublicPools } from "./solana/program-queries";
 
 const TOP_N = 10;
 
@@ -54,17 +55,10 @@ export async function fetchLeaderboard(args: {
   // Two parallel scans — one for PublicPool accounts (winners), one for
   // TicketBatch accounts (buyers).
   const [poolsResult, batchesResult] = await Promise.allSettled([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (rpc.getProgramAccounts as any)(args.programId as Address, {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [{ dataSize: PUBLIC_POOL_SIZE }],
-    }).send() as Promise<
-      ReadonlyArray<{
-        pubkey: Address;
-        account: { data: readonly [string, "base64"] };
-      }>
-    >,
+    fetchPublicPools({ rpc, programId: args.programId }),
+    // All-batches scan — typed helpers in solana/program-queries require a
+    // pool or owner filter to avoid accidental wide scans. Leaderboard
+    // explicitly wants every batch, so call directly here.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (rpc.getProgramAccounts as any)(args.programId as Address, {
       commitment: "confirmed",

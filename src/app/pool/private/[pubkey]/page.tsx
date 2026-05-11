@@ -2,7 +2,6 @@
 import { use, useEffect, useMemo, useState } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import {
-  address as toAddress,
   createSolanaRpc,
   type Address,
 } from "@solana/kit";
@@ -18,11 +17,10 @@ import { WinOdds } from "@/components/WinOdds";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import {
-  TICKET_BATCH_POOL_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "@/lib/constants";
+  decodeAccountBytes,
+  fetchTicketBatches,
+} from "@/lib/solana/program-queries";
 
-const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
 const PRIVATE_ACCENT = "#88cfc4"; // mint — see globals.css .grad-private + spec proposal 03
 
 interface PoolData {
@@ -122,29 +120,15 @@ export default function PrivatePoolPage({
 
         // Fetch all TicketBatch accounts whose `pool` field == this pool PDA.
         // Same memcmp filter as the public-pool detail server fetch.
-        const result = (await rpc
-          .getProgramAccounts(toAddress(PROGRAM_ID), {
-            encoding: "base64",
-            filters: [
-              { dataSize: TICKET_BATCH_SIZE },
-              {
-                memcmp: {
-                  offset: POOL_OFFSET,
-                  bytes: pubkey as never,
-                  encoding: "base58",
-                },
-              },
-            ],
-          })
-          .send()) as unknown as readonly {
-          pubkey: string;
-          account: { data: readonly [string, "base64"] };
-        }[];
+        const result = await fetchTicketBatches({
+          rpc,
+          programId: PROGRAM_ID,
+          pool: pubkey,
+        });
 
         const decoder = generated.getTicketBatchDecoder();
         const rows: BatchRow[] = result.map((accInfo) => {
-          const [b64] = accInfo.account.data;
-          const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+          const bytes = decodeAccountBytes(accInfo);
           const b = decoder.decode(bytes);
           const quantity = b.lastTicketId - b.firstTicketId + 1n;
           return {

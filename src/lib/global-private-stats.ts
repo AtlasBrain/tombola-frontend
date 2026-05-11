@@ -16,7 +16,7 @@
 
 import { type Address, createSolanaRpc } from "@solana/kit";
 import { generated } from "@tombola/sdk";
-import { PRIVATE_POOL_SIZE } from "./constants";
+import { fetchPrivatePools } from "./solana/program-queries";
 
 const REDEEMED_CODE_SIZE = 105n;
 
@@ -40,17 +40,9 @@ export async function fetchGlobalPrivateStats(args: {
   // Run both program-account scans in parallel — they're independent and the
   // homepage section can render either result alone if one errors.
   const [poolsResult, redeemedResult] = await Promise.allSettled([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (rpc.getProgramAccounts as any)(args.programId as Address, {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [{ dataSize: PRIVATE_POOL_SIZE }],
-    }).send() as Promise<
-      ReadonlyArray<{
-        pubkey: Address;
-        account: { data: readonly [string, "base64"] };
-      }>
-    >,
+    fetchPrivatePools({ rpc, programId: args.programId }),
+    // RedeemedCode account scan — typed helpers don't cover this account
+    // type (only used here), so inline the raw call.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (rpc.getProgramAccounts as any)(args.programId as Address, {
       commitment: "confirmed",

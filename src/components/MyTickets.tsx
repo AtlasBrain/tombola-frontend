@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { address as toAddress, createSolanaRpc } from "@solana/kit";
+import { createSolanaRpc } from "@solana/kit";
 import { PROGRAM_ID, generated, type PoolTypeValue } from "@tombola/sdk";
 import type { PoolView } from "@/lib/mock-pools";
 import { formatSol, formatTickets } from "@/lib/format";
 import {
-  TICKET_BATCH_OWNER_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "@/lib/constants";
+  decodeAccountBytes,
+  fetchTicketBatches,
+} from "@/lib/solana/program-queries";
 
 interface Props {
   pools: PoolView[];
@@ -23,10 +23,6 @@ interface MyTicketsAgg {
   tickets: bigint;
   totalSpentLamports: bigint;
 }
-
-// TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + ...
-// memcmp filters by owner at offset 40; dataSize 89 = TicketBatch fixed size.
-const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 export function MyTickets({ pools }: Props) {
   const { connection } = useConnection();
@@ -46,21 +42,11 @@ export function MyTickets({ pools }: Props) {
       try {
         const rpc = createSolanaRpc(connection.rpcEndpoint);
         const owner = publicKey.toBase58();
-        const result = await rpc
-          .getProgramAccounts(toAddress(PROGRAM_ID), {
-            encoding: "base64",
-            filters: [
-              { dataSize: TICKET_BATCH_SIZE },
-              {
-                memcmp: {
-                  offset: OWNER_OFFSET,
-                  bytes: owner as never,
-                  encoding: "base58",
-                },
-              },
-            ],
-          })
-          .send();
+        const result = await fetchTicketBatches({
+          rpc,
+          programId: PROGRAM_ID,
+          owner,
+        });
 
         const decoder = generated.getTicketBatchDecoder();
         const poolToView = new Map<string, PoolView>();
@@ -69,12 +55,8 @@ export function MyTickets({ pools }: Props) {
         }
         const aggByPool = new Map<string, MyTicketsAgg>();
 
-        for (const acc of result as readonly {
-          pubkey: string;
-          account: { data: readonly [string, "base64"] };
-        }[]) {
-          const [b64] = acc.account.data;
-          const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+        for (const acc of result) {
+          const bytes = decodeAccountBytes(acc);
           const batch = decoder.decode(bytes);
           const poolAddr = String(batch.pool);
           const pv = poolToView.get(poolAddr);

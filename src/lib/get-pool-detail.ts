@@ -1,5 +1,5 @@
 import "server-only";
-import { address as toAddress, createSolanaRpc } from "@solana/kit";
+import { createSolanaRpc } from "@solana/kit";
 import {
   PROGRAM_ID,
   PoolType,
@@ -9,10 +9,7 @@ import {
 } from "@tombola/sdk";
 import type { PoolView, PoolKind, PoolState } from "./mock-pools";
 import { unwrapOption } from "./codec/option";
-import {
-  TICKET_BATCH_POOL_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "./constants";
+import { decodeAccountBytes, fetchTicketBatches } from "./solana/program-queries";
 
 const KIND_BY_TYPE: Record<PoolTypeValue, PoolKind> = {
   [PoolType.Weekly]: "Weekly",
@@ -58,10 +55,6 @@ export interface PoolDetail {
   winningTicketId: bigint | null;
 }
 
-// TicketBatch on-chain layout: discriminator(8) + pool(32) + owner(32) + ...
-// The `pool` field at offset 8 is what we filter on for "all batches in pool X".
-const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
-
 /**
  * Fetch a pool + all its TicketBatch accounts, sorted by ticket-id ascending.
  *
@@ -99,33 +92,16 @@ export async function getPoolDetail(
   };
 
   // Fetch all TicketBatches whose `pool` field matches this pool's PDA.
-  // Cast through `unknown` because Kit's `getProgramAccounts` return type
-  // varies by overload (with/without `withContext`); we know our call shape
-  // returns the bare array.
-  const accounts = (await rpc
-    .getProgramAccounts(toAddress(PROGRAM_ID), {
-      encoding: "base64",
-      filters: [
-        { dataSize: TICKET_BATCH_SIZE },
-        {
-          memcmp: {
-            offset: POOL_OFFSET,
-            bytes: String(poolAddress) as never,
-            encoding: "base58",
-          },
-        },
-      ],
-    })
-    .send()) as unknown as readonly {
-    pubkey: string;
-    account: { data: readonly [string, "base64"] };
-  }[];
+  const accounts = await fetchTicketBatches({
+    rpc,
+    programId: PROGRAM_ID,
+    pool: String(poolAddress),
+  });
 
   const decoder = generated.getTicketBatchDecoder();
   const batches: TicketBatchView[] = accounts
     .map((acc) => {
-      const [b64] = acc.account.data;
-      const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+      const bytes = decodeAccountBytes(acc);
       const batch = decoder.decode(bytes);
       const quantity = batch.lastTicketId - batch.firstTicketId + 1n;
       return {

@@ -43,9 +43,9 @@ import { kitIxToWeb3, sendAndConfirm } from "./tx";
 import { log, logError } from "./logger";
 import type { ActionablePool } from "./scan";
 import {
-  TICKET_BATCH_POOL_OFFSET as POOL_FIELD_OFFSET,
-  TICKET_BATCH_SIZE_N as TICKET_BATCH_SIZE,
-} from "../constants";
+  decodeAccountBytes,
+  fetchTicketBatches,
+} from "../solana/program-queries";
 
 // On-chain RandomnessAccountData layout — must match programs/raffle/src/vrf.rs.
 const RANDOMNESS_VALUE_OFFSET = 152;
@@ -119,36 +119,16 @@ async function fetchBatches(
 ): Promise<BatchView[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rpc = createSolanaRpc(rpcUrl as any);
-  type RpcAny = Record<string, (...args: unknown[]) => { send(): Promise<unknown> }>;
-  const accounts = (await (rpc as unknown as RpcAny)["getProgramAccounts"](
-    PROGRAM_ID as Address,
-    {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [
-        { dataSize: TICKET_BATCH_SIZE },
-        {
-          memcmp: {
-            offset: POOL_FIELD_OFFSET,
-            bytes: poolAddress as never,
-            encoding: "base58",
-          },
-        },
-      ],
-    },
-  ).send()) as ReadonlyArray<{
-    pubkey: string;
-    account: { data: readonly [string, "base64"] };
-  }>;
-  if (!Array.isArray(accounts)) {
-    throw new Error("getProgramAccounts returned unexpected shape");
-  }
+  const accounts = await fetchTicketBatches({
+    rpc,
+    programId: PROGRAM_ID,
+    pool: poolAddress,
+  });
 
   const decoder = generated.getTicketBatchDecoder();
   return accounts
     .map((acc) => {
-      const [b64] = acc.account.data;
-      const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+      const bytes = decodeAccountBytes(acc);
       const batch = decoder.decode(bytes);
       return {
         batchAddress: String(acc.pubkey),

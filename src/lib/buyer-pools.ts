@@ -13,17 +13,12 @@ import {
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
 import { unwrapOption } from "./codec/option";
+import { decodeAccountBytes, fetchTicketBatches } from "./solana/program-queries";
 
 import {
   PRIVATE_POOL_SIZE_N as PRIVATE_POOL_SIZE,
   PUBLIC_POOL_SIZE_N as PUBLIC_POOL_SIZE,
-  TICKET_BATCH_OWNER_OFFSET,
-  TICKET_BATCH_POOL_OFFSET,
-  TICKET_BATCH_SIZE,
 } from "./constants";
-
-const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
-const OWNER_OFFSET = BigInt(TICKET_BATCH_OWNER_OFFSET);
 
 export type PoolKindForBuyer = "public" | "private";
 
@@ -84,29 +79,18 @@ export async function findMyParticipations(args: {
   const ownerBase58 = encodeBase58(ownerBytes);
 
   // Step 1: my batches across every pool.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batches = (await (rpc.getProgramAccounts as any)(
-    args.programId as Address,
-    {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [
-        { dataSize: TICKET_BATCH_SIZE },
-        { memcmp: { offset: OWNER_OFFSET, bytes: ownerBase58 } },
-      ],
-    },
-  ).send()) as ReadonlyArray<{
-    pubkey: Address;
-    account: { data: readonly [string, "base64"] };
-  }>;
+  const batches = await fetchTicketBatches({
+    rpc,
+    programId: args.programId,
+    owner: ownerBase58,
+  });
 
   if (batches.length === 0) return [];
 
   // Decode each batch + group by pool
   const myBatchesByPool = new Map<string, MyBatch[]>();
   for (const acc of batches) {
-    const [b64] = acc.account.data;
-    const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+    const bytes = decodeAccountBytes(acc);
     const b = TICKET_BATCH_DECODER.decode(bytes);
     const poolAddress = String(b.pool);
     const quantity = b.lastTicketId - b.firstTicketId + 1n;
@@ -163,25 +147,14 @@ export async function* iterateParticipantCounts(args: {
   const rpc = createSolanaRpc(args.rpcUrl);
   for (const poolAddress of args.poolAddresses) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = (await (rpc.getProgramAccounts as any)(
-        args.programId as Address,
-        {
-          commitment: "confirmed",
-          encoding: "base64",
-          filters: [
-            { dataSize: TICKET_BATCH_SIZE },
-            { memcmp: { offset: POOL_OFFSET, bytes: poolAddress as Address } },
-          ],
-        },
-      ).send()) as ReadonlyArray<{
-        pubkey: Address;
-        account: { data: readonly [string, "base64"] };
-      }>;
+      const result = await fetchTicketBatches({
+        rpc,
+        programId: args.programId,
+        pool: poolAddress,
+      });
       const owners = new Set<string>();
       for (const acc of result) {
-        const [b64] = acc.account.data;
-        const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+        const bytes = decodeAccountBytes(acc);
         owners.add(String(TICKET_BATCH_DECODER.decode(bytes).owner));
       }
       yield { poolAddress, count: owners.size };

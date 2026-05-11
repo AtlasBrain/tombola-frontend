@@ -34,12 +34,11 @@ import {
 import { generated } from "@tombola/sdk";
 import { encodeBase58 } from "./base58";
 import { unwrapOption } from "./codec/option";
+import { decodeAccountBytes, fetchTicketBatches } from "./solana/program-queries";
 import {
   PROTOCOL_FEE_BPS,
   PRIVATE_POOL_SIZE_N as PRIVATE_POOL_SIZE,
   PUBLIC_POOL_SIZE_N as PUBLIC_POOL_SIZE,
-  TICKET_BATCH_OWNER_OFFSET as OWNER_OFFSET,
-  TICKET_BATCH_SIZE,
 } from "./constants";
 
 export interface WalletStats {
@@ -105,21 +104,11 @@ export async function fetchWalletStats(args: {
   );
   const walletBase58 = encodeBase58(walletBytes);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batchAccounts = (await (rpc.getProgramAccounts as any)(
-    programId as Address,
-    {
-      commitment: "confirmed",
-      encoding: "base64",
-      filters: [
-        { dataSize: TICKET_BATCH_SIZE },
-        { memcmp: { offset: OWNER_OFFSET, bytes: walletBase58 } },
-      ],
-    },
-  ).send()) as ReadonlyArray<{
-    pubkey: Address;
-    account: { data: readonly [string, "base64"] };
-  }>;
+  const batchAccounts = await fetchTicketBatches({
+    rpc,
+    programId,
+    owner: walletBase58,
+  });
 
   if (batchAccounts.length === 0) return EMPTY;
 
@@ -127,8 +116,7 @@ export async function fetchWalletStats(args: {
   const batches: MinimalBatch[] = [];
   for (const acc of batchAccounts) {
     try {
-      const [b64] = acc.account.data;
-      const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+      const bytes = decodeAccountBytes(acc);
       const b = batchDecoder.decode(bytes);
       batches.push({
         pool: String(b.pool),

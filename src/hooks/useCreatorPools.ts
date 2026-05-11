@@ -13,12 +13,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Connection } from "@solana/web3.js";
-import {
-  createSolanaRpc,
-  isSome,
-  type Address,
-  type Option,
-} from "@solana/kit";
+import { createSolanaRpc, isSome, type Address, type Option } from "@solana/kit";
 import { PROGRAM_ID, generated } from "@tombola/sdk";
 import { findMyPrivatePools } from "@/lib/private-pools";
 import { loadAllCodesForWallet } from "@/lib/private-pool-storage";
@@ -27,11 +22,9 @@ import {
   type RedemptionMetric,
 } from "@/lib/creator-pools";
 import {
-  TICKET_BATCH_POOL_OFFSET,
-  TICKET_BATCH_SIZE,
-} from "@/lib/constants";
-
-const POOL_OFFSET = BigInt(TICKET_BATCH_POOL_OFFSET);
+  decodeAccountBytes,
+  fetchTicketBatches,
+} from "@/lib/solana/program-queries";
 
 export interface CreatorPoolRow {
   poolAddress: string;
@@ -148,30 +141,14 @@ export function useCreatorPools(
         for (const row of baseRows) {
           if (cancelled) return;
           try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = (await (rpc.getProgramAccounts as any)(
-              PROGRAM_ID as Address,
-              {
-                commitment: "confirmed",
-                encoding: "base64",
-                filters: [
-                  { dataSize: TICKET_BATCH_SIZE },
-                  {
-                    memcmp: {
-                      offset: POOL_OFFSET,
-                      bytes: row.poolAddress as Address,
-                    },
-                  },
-                ],
-              },
-            ).send()) as ReadonlyArray<{
-              pubkey: Address;
-              account: { data: readonly [string, "base64"] };
-            }>;
+            const result = await fetchTicketBatches({
+              rpc,
+              programId: PROGRAM_ID,
+              pool: row.poolAddress,
+            });
             const owners = new Set<string>();
             for (const acc of result) {
-              const [b64] = acc.account.data;
-              const bytes = Uint8Array.from(Buffer.from(b64, "base64"));
+              const bytes = decodeAccountBytes(acc);
               owners.add(String(decoder.decode(bytes).owner));
             }
             if (cancelled) return;
