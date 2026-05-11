@@ -4,17 +4,12 @@ import { useEffect, useState } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PROGRAM_ID } from "@tombola/sdk";
 import { Header } from "@/components/Header";
-import { explorerAddressUrl } from "@/lib/explorer-url";
+import { WalletLink } from "@/components/WalletLink";
 import { formatSol } from "@/lib/format";
 import { fetchLeaderboard, type Leaderboard } from "@/lib/leaderboard";
 
 const LAVENDER = "#c9b5dc";
 const MINT = "#88cfc4";
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-}
 
 export const dynamic = "force-dynamic";
 
@@ -157,14 +152,11 @@ function WinnerList({ data, rpcUrl }: { data: Leaderboard; rpcUrl: string }) {
             <RankBadge rank={i + 1} accent={MINT} />
             <div className="min-w-0 flex-1">
               <div className="font-mono text-sm text-neutral-200">
-                <a
-                  href={explorerAddressUrl(w.address, rpcUrl)}
-                  target="_blank"
-                  rel="noreferrer"
+                <WalletLink
+                  wallet={w.address}
+                  rpcUrl={rpcUrl}
                   className="hover:text-white"
-                >
-                  {shortAddr(w.address)} ↗
-                </a>
+                />
               </div>
               <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 {w.winsCount} win{w.winsCount === 1 ? "" : "s"}
@@ -207,14 +199,11 @@ function BuyerList({ data, rpcUrl }: { data: Leaderboard; rpcUrl: string }) {
             <RankBadge rank={i + 1} accent={LAVENDER} />
             <div className="min-w-0 flex-1">
               <div className="font-mono text-sm text-neutral-200">
-                <a
-                  href={explorerAddressUrl(b.address, rpcUrl)}
-                  target="_blank"
-                  rel="noreferrer"
+                <WalletLink
+                  wallet={b.address}
+                  rpcUrl={rpcUrl}
                   className="hover:text-white"
-                >
-                  {shortAddr(b.address)} ↗
-                </a>
+                />
               </div>
               <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 {b.poolsParticipatedIn} pool

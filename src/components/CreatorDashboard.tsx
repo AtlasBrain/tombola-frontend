@@ -12,6 +12,7 @@ import {
   type RedemptionMetric,
 } from "@/lib/creator-pools";
 import { explorerAddressUrl } from "@/lib/explorer-url";
+import { WalletLink } from "@/components/WalletLink";
 import { formatSol } from "@/lib/format";
 import { CreatePoolModal } from "@/components/CreatePoolModal";
 
@@ -526,15 +527,12 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
             {pool.state === 2 && pool.winner && (
               <>
                 {" · winner "}
-                <a
-                  href={explorerAddressUrl(pool.winner, rpcUrl)}
-                  target="_blank"
-                  rel="noreferrer"
+                <WalletLink
+                  wallet={pool.winner}
+                  rpcUrl={rpcUrl}
                   className="hover:text-neutral-300"
                   style={{ color: MINT }}
-                >
-                  {shortAddr(pool.winner)} ↗
-                </a>
+                />
               </>
             )}
             {" · "}

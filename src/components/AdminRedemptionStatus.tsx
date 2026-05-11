@@ -7,6 +7,7 @@ import { hashLeaf, PROGRAM_ID, findRedeemedCodePda } from "@tombola/sdk";
 import { fetchMaybeRedeemedCode } from "@tombola/sdk/generated/accounts/redeemedCode";
 import { encodeRedemptionLink } from "@/lib/private-pools";
 import { loadCodesFromStorage, type StoredCodesPayload } from "@/lib/private-pool-storage";
+import { WalletLink } from "@/components/WalletLink";
 
 interface Props {
   poolAddress: string;
@@ -342,15 +343,12 @@ export function AdminRedemptionStatus({
                 {r.code.slice(0, 16)}…
               </code>
               {r.redeemer ? (
-                <a
-                  href={`https://solscan.io/account/${r.redeemer}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="min-w-0 truncate text-[#88cfc4] hover:underline"
-                  title={r.redeemer}
-                >
-                  {r.redeemer.slice(0, 6)}…{r.redeemer.slice(-4)}
-                </a>
+                <WalletLink
+                  wallet={r.redeemer}
+                  rpcUrl={connection.rpcEndpoint}
+                  className="min-w-0 text-[#88cfc4] hover:underline"
+                  label={`${r.redeemer.slice(0, 6)}…${r.redeemer.slice(-4)}`}
+                />
               ) : (
                 <span className="text-neutral-600">—</span>
               )}

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { explorerAddressUrl, explorerTxUrl } from "@/lib/explorer-url";
+import { explorerTxUrl } from "@/lib/explorer-url";
+import { WalletLink } from "@/components/WalletLink";
 import { formatSol } from "@/lib/format";
 import {
   fetchBuySignatures,
@@ -32,11 +33,6 @@ interface Props {
   /** Hex/CSS accent color. When omitted, uses mint as the safe brand
    *  default — emerald is no longer in the palette. */
   accentColor?: string;
-}
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 function isResolved(s: Props["state"]): boolean {
@@ -191,15 +187,11 @@ export function WinnerBanner({
             </h3>
           ) : (
             <p className="mt-1 font-mono text-sm text-neutral-200">
-              <a
-                href={explorerAddressUrl(winner, rpcUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-white"
-                title={winner}
-              >
-                {shortAddr(winner)} ↗
-              </a>
+              <WalletLink
+                wallet={winner}
+                rpcUrl={rpcUrl}
+                className="text-neutral-200 hover:text-white"
+              />
               <span className="ml-2 text-neutral-500">
                 won {formatSol(totalPotLamports)}
               </span>

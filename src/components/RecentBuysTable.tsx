@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { explorerAddressUrl, explorerTxUrl } from "@/lib/explorer-url";
+import { explorerTxUrl } from "@/lib/explorer-url";
+import { WalletLink } from "@/components/WalletLink";
 import { formatSol, formatTickets } from "@/lib/format";
 import {
   fetchBuySignatures,
@@ -31,11 +32,6 @@ interface Props {
 }
 
 const DEFAULT_LIMIT = 10;
-
-function shortAddress(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-}
 
 /**
  * Sort by firstTicketId DESC = most-recent-first (ticket IDs are monotonic
@@ -181,28 +177,26 @@ export function RecentBuysTable({
                       }
                     >
                       <td className="px-6 py-3">
-                        <a
-                          href={explorerAddressUrl(b.owner, rpcUrl)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`font-mono transition-colors ${
+                        <WalletLink
+                          wallet={b.owner}
+                          rpcUrl={rpcUrl}
+                          className={`font-mono ${
                             mine
                               ? "hover:brightness-125"
                               : "text-neutral-300 hover:text-neutral-100"
                           }`}
                           style={mine ? youOwnerStyle : undefined}
-                          title={b.owner}
-                        >
-                          {shortAddress(b.owner)}
-                          {mine && (
-                            <span
-                              className="ml-2 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider"
-                              style={youBadgeStyle}
-                            >
-                              you
-                            </span>
-                          )}
-                        </a>
+                          trailing={
+                            mine ? (
+                              <span
+                                className="ml-1 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider"
+                                style={youBadgeStyle}
+                              >
+                                you
+                              </span>
+                            ) : null
+                          }
+                        />
                       </td>
                       <td className="py-3 pr-4 font-medium tabular-nums text-neutral-200">
                         {b.quantity.toString()}

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { explorerAddressUrl, explorerTxUrl } from "@/lib/explorer-url";
+import { explorerTxUrl } from "@/lib/explorer-url";
+import { WalletLink } from "@/components/WalletLink";
 import { formatSol } from "@/lib/format";
 
 interface Props {
@@ -19,11 +20,6 @@ interface Props {
   prevRound: bigint;
   /** Optional accent color for the wallet/tx links. */
   accentColor?: string;
-}
-
-function shortAddr(addr: string): string {
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
 /**
@@ -86,15 +82,11 @@ export function PreviousWinnerLine({
       >
         Round #{prevRound.toString()} →
       </Link>
-      <a
-        href={explorerAddressUrl(winner, rpcUrl)}
-        target="_blank"
-        rel="noreferrer"
-        className="truncate text-neutral-200 hover:text-white"
-        title={winner}
-      >
-        {shortAddr(winner)} ↗
-      </a>
+      <WalletLink
+        wallet={winner}
+        rpcUrl={rpcUrl}
+        className="text-neutral-200 hover:text-white"
+      />
       <span className="text-neutral-500">
         won {formatSol(totalPotLamports)}
       </span>
