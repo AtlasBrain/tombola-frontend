@@ -30,6 +30,9 @@
     "server-only": "^0.0.1",
     "tweetnacl": "^1.0.3"
   },
+  "overrides": {
+    "postcss": "^8.5.14"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",

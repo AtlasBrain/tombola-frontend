@@ -62,10 +62,28 @@ Match the established communication style: short, technical, file paths and line
 - TicketBatch field offsets: `pool` at 8, `owner` at 40.
 - PROTOCOL_FEE_BPS = 50 (0.5%) — matches `programs/raffle/src/constants.rs` in the companion repo.
 
-## Tech-debt hotspots (audit 2026-05-12 — see memory `ref_tech_debt_hotspots.md`)
-- `bytesToBase58` / `base58ToBytes` reimplemented in 6 files → use the existing `bs58` dep.
-- `unwrapOption<T>` reimplemented in 5 files → needs `src/lib/codec/option.ts`.
-- `TICKET_BATCH_SIZE` / `PRIVATE_POOL_SIZE` / `PUBLIC_POOL_SIZE` declared in 7+ files → needs `src/lib/constants.ts`.
-- `CreatorDashboard.tsx` (681), `BuyerDashboard.tsx` (597), `ProfileCard.tsx` (577) all worth splitting into a hook + presentational components.
-- No rate-limiting on API routes (`@upstash/ratelimit` is the drop-in).
-- `src/lib/keeper/scan.ts` fetches every PrivatePool each tick — add a state-byte `memcmp` filter.
+## Tech-debt hotspots (audit 2026-05-12 — closed items kept for context)
+Resolved (commits `0b9e9a9` → `c077489`):
+- ~~base58 helpers reimplemented~~ → `src/lib/base58.ts` (single source).
+- ~~`unwrapOption<T>` reimplemented~~ → `src/lib/codec/option.ts`.
+- ~~chain-layout constants scattered~~ → `src/lib/constants.ts`.
+- ~~Three dashboards over 500 LOC~~ → data hooks in `src/hooks/use{Profile,Creator,Buyer}*`.
+- ~~No rate-limiting on API routes~~ → `src/lib/kv/ratelimit.ts` wired into profile/friends/faucet.
+- ~~Keeper full-table scan~~ → state-byte memcmp + two parallel scans.
+- ~~`getProgramAccounts as any` everywhere~~ → typed wrappers in `src/lib/solana/program-queries.ts`.
+- ~~ad-hoc useEffect-setState fetches~~ → `@tanstack/react-query` (provider in `WalletProviders`).
+
+Still open:
+- `keeper/settle.ts` carries 6× `as any` for Switchboard interop — needs SDK types or narrowed shims.
+- `useCreatorPools` not yet migrated to react-query (streaming redemption iterator needs care).
+
+## Known npm-audit advisories
+Last reviewed 2026-05-12. Run `npm audit` to refresh.
+
+- **postcss XSS (GHSA-qx2v-qp2m-jg93, moderate)** — patched via `overrides` in `package.json` (force `postcss ^8.5.14`). Build-time only; no user-supplied CSS is ever parsed at runtime, so the practical exploit surface was already zero.
+- **bigint-buffer toBigIntLE buffer overflow (GHSA-3gc7-fjrx-p6mg, 4× high)** — accepted risk, no upstream patch.
+  - Path: `bigint-buffer` ← `@solana/buffer-layout-utils` ← `@solana/spl-token` ← `@switchboard-xyz/on-demand@3.10.1`.
+  - `bigint-buffer 1.1.5` (Oct 2019) is the only published version and is unmaintained.
+  - The exploit requires attacker-controlled binary input to `toBigIntLE()`. Our only call path is parsing Switchboard randomness account data, which is written by the audited Switchboard program — not attacker-controlled.
+  - `npm audit fix --force` suggests downgrading switchboard to 3.3.1 (semver-major DOWN); ignore — npm is being conservative, the older version is also affected and downgrading would break the keeper.
+  - Re-check when `@switchboard-xyz/on-demand` ships a release that no longer transitively requires `@solana/buffer-layout-utils`.
