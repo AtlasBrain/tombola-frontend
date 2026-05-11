@@ -1,0 +1,25 @@
+// Server-only: load the keeper's signing keypair from KEEPER_KEYPAIR env.
+// Same shape as the gen-treasury.mjs output (64-element JSON array of bytes).
+
+import "server-only";
+import { Keypair } from "@solana/web3.js";
+
+export function loadKeeperKeypair(): Keypair {
+  const raw = process.env.KEEPER_KEYPAIR;
+  if (!raw) throw new Error("KEEPER_KEYPAIR env var is not set");
+  let arr: unknown;
+  try {
+    arr = JSON.parse(raw);
+  } catch {
+    throw new Error("KEEPER_KEYPAIR is not valid JSON");
+  }
+  if (!Array.isArray(arr) || arr.length !== 64) {
+    throw new Error(
+      `KEEPER_KEYPAIR must be a 64-element JSON array, got ${Array.isArray(arr) ? `length ${arr.length}` : "non-array"}`,
+    );
+  }
+  if (!(arr as number[]).every((el) => Number.isInteger(el) && el >= 0 && el <= 255)) {
+    throw new Error("KEEPER_KEYPAIR elements must be integers in [0, 255]");
+  }
+  return Keypair.fromSecretKey(Uint8Array.from(arr as number[]));
+}
