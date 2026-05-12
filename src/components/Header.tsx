@@ -4,36 +4,25 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IdentityPill } from "@/components/ui/IdentityPill";
-import { NavMore, type NavMoreItem } from "@/components/ui/NavMore";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchPaletteHost } from "@/components/SearchPaletteHost";
 import { ZeroBalanceBanner } from "@/components/ZeroBalanceBanner";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
-/** Tailwind class deciding when a nav link rolls into the MORE
- *  popover. `xl` ≈ 1280px — below that the link is hidden in the top
- *  bar; the mobile drawer keeps showing it. We also surface the same
- *  link inside the MORE popover so users on mid-width laptops can
- *  still reach it without opening the hamburger. */
-const NARROW_HIDE = "hidden xl:inline-flex";
-
 type NavItem =
-  | { kind: "anchor"; id: string; label: string; narrow?: boolean }
-  | { kind: "link"; href: string; label: string; narrow?: boolean };
+  | { kind: "anchor"; id: string; label: string }
+  | { kind: "link"; href: string; label: string };
 
 // Full nav — only renders on the homepage where the PUBLIC POOLS,
 // HOW IT WORKS and FAQ scroll-anchors actually exist; the subroute
 // version uses cross-page links instead.
-//
-// `narrow: true` flags links that hide behind the MORE popover at
-// widths < xl (≈1280px), keeping the primary 4 always visible.
 const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",          label: "PUBLIC POOLS" },
   { kind: "link",   href: "/create",      label: "CREATE POOL" },
   { kind: "link",   href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link",   href: "/leaderboard", label: "LEADERBOARD" },
-  { kind: "anchor", id: "how",            label: "HOW IT WORKS", narrow: true },
-  { kind: "anchor", id: "faq",            label: "FAQ",          narrow: true },
+  { kind: "anchor", id: "how",            label: "HOW IT WORKS" },
+  { kind: "anchor", id: "faq",            label: "FAQ" },
 ];
 
 // Subroute nav — only real routes (anchors don't exist outside homepage
@@ -45,20 +34,10 @@ const NAV_SUBROUTE: readonly NavItem[] = [
   { kind: "link", href: "/create",      label: "CREATE POOL" },
   { kind: "link", href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link", href: "/leaderboard", label: "LEADERBOARD" },
-  { kind: "link", href: "/#how",        label: "HOW IT WORKS", narrow: true },
-  { kind: "link", href: "/#faq",        label: "FAQ",          narrow: true },
+  { kind: "link", href: "/#how",        label: "HOW IT WORKS" },
+  { kind: "link", href: "/#faq",        label: "FAQ" },
 ];
 
-// MORE popover — overflow + reference links. Always-visible on
-// desktop, no responsive collapse needed. Add future entries here
-// (Roadmap, API, Press kit, etc.) without touching the layout.
-const MORE_ITEMS: readonly NavMoreItem[] = [
-  {
-    label: "GITHUB",
-    href: "https://github.com/AtlasBrain/Project-Tombola",
-    external: true,
-  },
-];
 
 export function Header() {
   const pathname = usePathname();
@@ -74,26 +53,6 @@ export function Header() {
   const navItems = (isHomepage ? NAV_HOMEPAGE : NAV_SUBROUTE).filter(
     (item) => item.kind === "anchor" || item.href !== hideHref,
   );
-
-  // MORE popover contents — narrow nav links surface here too so users
-  // on < xl widths can still reach them without opening the hamburger.
-  // They get `narrowOnly: true` so they don't double-render at ≥ xl
-  // (where they're already visible in the main nav).
-  const moreItems: NavMoreItem[] = [
-    ...navItems
-      .filter((n) => n.narrow)
-      .map<NavMoreItem>((n) => ({
-        label: n.label,
-        href: n.kind === "anchor" ? `#${n.id}` : n.href,
-        narrowOnly: true,
-        // Anchor scroll for in-page nav, no-op otherwise.
-        onClick:
-          n.kind === "anchor" && isHomepage
-            ? () => smoothScrollToId(n.id)
-            : undefined,
-      })),
-    ...MORE_ITEMS,
-  ];
 
   // Mobile menu state — closed by default. Toggled by the hamburger button.
   // Closes automatically when a nav item is tapped (the link / anchor handler
@@ -154,27 +113,27 @@ export function Header() {
             pointer-events-auto restores clicks (parent doesn't disable
             them but the wrapper is non-interactive otherwise). */}
         <nav className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 sm:flex">
-          {navItems.map((item) => {
-            const cls = `nav-link ${item.narrow ? NARROW_HIDE : ""}`;
-            return item.kind === "anchor" ? (
+          {navItems.map((item) =>
+            item.kind === "anchor" ? (
               <a
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={handleScroll(item.id)}
-                className={cls}
+                className="nav-link"
               >
                 {item.label}
               </a>
             ) : (
-              <Link key={item.href} href={item.href} className={cls} onClick={closeMenu}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className="nav-link"
+                onClick={closeMenu}
+              >
                 {item.label}
               </Link>
-            );
-          })}
-          {/* MORE popover: parking spot for overflow + narrow-width
-              collapse of HOW IT WORKS / FAQ. Always renders the
-              referenceLinks; narrowItems only appear at < xl. */}
-          <NavMore items={moreItems} />
+            ),
+          )}
         </nav>
 
         {/* RIGHT: status + CTA + mobile menu toggle */}
