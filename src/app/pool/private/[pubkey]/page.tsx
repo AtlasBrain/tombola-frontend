@@ -299,6 +299,7 @@ export default function PrivatePoolPage({
               ticketPriceSol={ticketPriceSol}
               onPurchased={bumpReload}
               onQtyChange={setPreviewQty}
+              creator={pool.creator}
             />
           )}
 

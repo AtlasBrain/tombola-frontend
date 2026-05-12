@@ -15,6 +15,7 @@ import { decodeBase58 } from "@/lib/base58";
 import { formatSol } from "@/lib/format";
 import { pushNotification } from "@/lib/notifications";
 import { useToast } from "./Toast";
+import { loadCodesFromStorage } from "@/lib/private-pool-storage";
 
 interface Props {
   poolAddress: string;
@@ -22,6 +23,12 @@ interface Props {
   closed: boolean;
   accent?: string;
   ticketPriceSol?: number;
+  /** Creator wallet — when the connected wallet matches, the
+   *  "Not whitelisted" gate is replaced by a one-click self-whitelist
+   *  button that redeems one of the creator's own pool codes. The
+   *  protocol doesn't grant creators an automatic seat on their own
+   *  pool, so this is a UX shim on top of the existing redeem flow. */
+  creator?: string;
   /** Soft UI cap on tickets per buy. Defaults to MAX_QTY_HARD. The hard cap
    *  is enforced on-chain by `buy_ticket_private` against pool's total_tickets
    *  bound; this prop lets the creator hint a smaller cap for fairness UI
@@ -49,6 +56,7 @@ export function BuyTicketPrivateButton({
   maxTicketsPerBuy = MAX_QTY_HARD,
   onPurchased,
   onQtyChange,
+  creator,
 }: Props) {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
@@ -203,6 +211,17 @@ export function BuyTicketPrivateButton({
     );
   }
   if (!whitelisted) {
+    const isCreator =
+      creator !== undefined && publicKey.toBase58() === creator;
+    if (isCreator) {
+      return (
+        <CreatorSelfWhitelist
+          poolAddress={poolAddress}
+          accent={accent}
+          onWhitelisted={() => setWhitelisted(true)}
+        />
+      );
+    }
     return (
       <p className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-400">
         You need an invite code for this pool. Ask the creator for a redemption link.
@@ -267,6 +286,123 @@ export function BuyTicketPrivateButton({
             <span className="font-mono opacity-70">· {formatSol(total)}</span>
           </>
         )}
+      </button>
+    </div>
+  );
+}
+
+/** Creator-only self-whitelist button. Shown above the buy UI when the
+ *  connected wallet IS the pool creator AND no Whitelisted PDA exists
+ *  for them yet. Pulls one of the creator's own pool codes from
+ *  localStorage and runs the existing redeemInviteCodeWhitelist
+ *  instruction — same on-chain path any invitee takes, just initiated
+ *  by the creator using one of their own reserved codes.
+ *
+ *  If localStorage doesn't have codes for this pool (e.g. creator is
+ *  on a different browser), we explain and link to a manual redeem. */
+function CreatorSelfWhitelist({
+  poolAddress,
+  accent,
+  onWhitelisted,
+}: {
+  poolAddress: string;
+  accent: string;
+  onWhitelisted: () => void;
+}) {
+  const { connection } = useConnection();
+  const { publicKey, signTransaction } = useWallet();
+  const { push: pushToast } = useToast();
+  const [busy, setBusy] = useState(false);
+
+  // Look up the codes synchronously — localStorage access is cheap and
+  // the result only changes when the wallet changes.
+  const stored = publicKey
+    ? loadCodesFromStorage(poolAddress, publicKey.toBase58())
+    : null;
+  const hasCodes = !!stored && stored.codes.length > 0;
+
+  const onClick = useCallback(async () => {
+    if (!publicKey || !signTransaction || !stored || stored.codes.length === 0) {
+      return;
+    }
+    setBusy(true);
+    try {
+      // Use the LAST code in the list so it doesn't collide with codes
+      // the creator is likely to allocate to friends from the head of
+      // the list. Both ends of the array are unguessable bearer
+      // strings, but consistent ordering avoids confusion.
+      const code = stored.codes[stored.codes.length - 1];
+      const proof = stored.proofs[code] ?? [];
+
+      const rpc = createSolanaRpc(connection.rpcEndpoint);
+      const client = new RaffleClient({ rpc });
+      const buyerSigner = {
+        address: publicKey.toBase58(),
+      } as unknown as TransactionSigner;
+      const ix = await client.redeemInviteCodeWhitelist({
+        buyer: buyerSigner,
+        pool: poolAddress as never,
+        code,
+        proof,
+      });
+      const tx = new Transaction().add(kitToWeb3(ix));
+      tx.feePayer = publicKey;
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+      tx.recentBlockhash = blockhash;
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+      });
+      await connection.confirmTransaction(
+        { signature: sig, blockhash, lastValidBlockHeight },
+        "confirmed",
+      );
+      pushToast("success", "You're on the whitelist ✓");
+      onWhitelisted();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      pushToast("error", msg.slice(0, 120));
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    publicKey,
+    signTransaction,
+    stored,
+    connection,
+    poolAddress,
+    pushToast,
+    onWhitelisted,
+  ]);
+
+  if (!hasCodes) {
+    return (
+      <p className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-400">
+        You created this pool, but the codes aren&apos;t in this browser —
+        open the original browser session, or paste a redemption link from
+        your saved codes to whitelist yourself.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-[color:var(--mint)]/40 bg-neutral-900/40 p-4">
+      <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+        Creator
+      </p>
+      <p className="mt-1 text-sm text-neutral-200">
+        You created this pool. One click to whitelist yourself with one of
+        your own codes — same on-chain redeem as any invitee.
+      </p>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={busy}
+        style={{ ["--tear-bg" as never]: accent }}
+        className="btn-fx fx-tear mt-3 flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm uppercase text-black transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {busy ? "WHITELISTING…" : "WHITELIST MYSELF"}
       </button>
     </div>
   );

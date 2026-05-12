@@ -20,10 +20,14 @@
 import { NextResponse } from "next/server";
 import {
   defaultProfile,
+  getProfileByPseudo,
   getProfileByWallet,
   type ProfileRow,
 } from "@/lib/profile-store";
-import { searchPseudoPrefix } from "@/lib/pseudo-index";
+import {
+  addPseudoToIndex,
+  searchPseudoPrefix,
+} from "@/lib/pseudo-index";
 import { isRateLimited } from "@/lib/kv/ratelimit";
 
 export const runtime = "nodejs";
@@ -93,6 +97,22 @@ export async function GET(req: Request) {
       if (!row) continue; // index pointed at a wallet whose profile got
       // deleted — skip gracefully rather than 500.
       results.push(toResult(row));
+    }
+
+    // Fallback + self-heal: profiles saved BEFORE the pseudo lex index
+    // landed (commit d2392fe) aren't in the sorted set, so prefix
+    // matches miss them. If the query is a full valid pseudo, try the
+    // legacy exact-match key (pseudo:<lowercase> → wallet). On hit,
+    // back-fill the lex index so future prefix searches find it.
+    if (results.length === 0) {
+      const FULL_PSEUDO = /^[a-z0-9_]{3,24}$/i;
+      if (FULL_PSEUDO.test(raw)) {
+        const row = await getProfileByPseudo(raw);
+        if (row && row.pseudo) {
+          await addPseudoToIndex(row.pseudo, row.wallet);
+          results.push(toResult(row));
+        }
+      }
     }
     return NextResponse.json({ results });
   }
