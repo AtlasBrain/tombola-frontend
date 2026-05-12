@@ -15,6 +15,7 @@ import {
 import { CORAL, LAVENDER, MINT, SAND } from "@/lib/colors";
 import { Metric, Stat } from "@/components/ui/Stat";
 import { UserName } from "@/components/UserName";
+import { Countdown } from "@/components/Countdown";
 import { useBuyerParticipations } from "@/hooks/useBuyerParticipations";
 
 // Brand palette tokens — match globals.css :root accents
@@ -458,15 +459,33 @@ function PoolRow({
               : `${pool.myTickets.toString()} of ${pool.totalTickets.toString()}`
           }
         />
-        <Metric
-          label="Participants"
-          value={
-            pool.participantsCount === null
-              ? "…"
-              : pool.participantsCount.toString()
-          }
-          sub="distinct buyers"
-        />
+        {/* Live pools: swap participants for the countdown so buyers see at
+            a glance how much time they have left to add tickets. Drawing /
+            resolved rows keep the participants count (more useful post-
+            close — countdown would just read "—"). Matches the creator
+            dashboard pattern. */}
+        {pool.state === "Open" && pool.closeTimeUnix * 1000 > Date.now() ? (
+          <Metric
+            label="Closes in"
+            value={<Countdown targetUnix={pool.closeTimeUnix} />}
+            sub={
+              pool.participantsCount === null
+                ? "distinct buyers loading…"
+                : `${pool.participantsCount} buyer${pool.participantsCount === 1 ? "" : "s"}`
+            }
+            valueColor={accent}
+          />
+        ) : (
+          <Metric
+            label="Participants"
+            value={
+              pool.participantsCount === null
+                ? "…"
+                : pool.participantsCount.toString()
+            }
+            sub="distinct buyers"
+          />
+        )}
       </dl>
 
       {pool.state === "Resolved" && pool.iWon && pool.winningTicketId !== null && (
