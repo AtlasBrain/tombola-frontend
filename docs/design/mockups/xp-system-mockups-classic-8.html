@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola — XP / Level system mockups · 8 classic crypto tiers</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e; --rose:#e8a5c0;
+    --cyan:#7cc4d8; --steel:#6aa1c5; --deep:#4a5fc1; --gold:#f0c44b;
+    --bg:#0a0a0a; --surface:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:36px 0 80px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1240px;margin:0 auto;padding:0 28px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.01em;text-transform:uppercase}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:8px}
+  h2{font-family:'Space Grotesk';font-weight:700;font-size:22px;letter-spacing:.005em;text-transform:uppercase;margin-top:42px;margin-bottom:14px;color:var(--text)}
+  .section-sub{font-family:'Space Mono';font-size:11px;color:var(--text-mute);margin-bottom:18px;line-height:1.7;max-width:900px}
+
+  .switcher{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .switcher .lbl{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint)}
+  .pill-link{display:inline-block;padding:6px 12px;border:1px solid var(--border);border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-mute);text-decoration:none;transition:.15s}
+  .pill-link:hover{color:var(--text);border-color:#404040}
+  .pill-link.active{background:#1a1a1a;color:var(--text);border-color:#404040}
+
+  /* ============ Badge tile ============ */
+  .badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:1100px){.badge-grid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:800px){.badge-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.badge-grid{grid-template-columns:1fr}}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden}
+  .tile-bg{position:absolute;inset:0;opacity:.18;background:radial-gradient(circle at 50% 40%,var(--tier-color) 0%,transparent 60%);z-index:0;pointer-events:none}
+  .tile > *{position:relative;z-index:1}
+  .tile .lvl{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--text-dim)}
+  .tile .tier{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.22em}
+  .tile .name{font-family:'Space Grotesk';font-weight:700;font-size:24px;text-align:center;text-transform:uppercase;letter-spacing:.01em}
+  .tile .levels{font-family:'Space Mono';font-size:10px;color:var(--text-mute);letter-spacing:.12em;text-transform:uppercase}
+  .tile .desc{font-family:'Space Mono';font-size:10px;color:var(--text-mute);text-align:center;letter-spacing:.04em;line-height:1.6;max-width:200px}
+  .tile .xp{font-family:'Space Mono';font-size:9px;color:var(--text-faint);letter-spacing:.15em;text-transform:uppercase;margin-top:auto;padding-top:4px}
+
+  /* Badge container — matches the ocean / cosmic mockup shell */
+  .badge{width:120px;height:120px;display:flex;align-items:center;justify-content:center;border-radius:50%;position:relative;border:2px solid var(--tier-color);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--tier-color) 26%,transparent),color-mix(in srgb,var(--tier-color) 5%,#0a0a0a 95%) 70%)}
+  .badge svg{width:88px;height:88px}
+
+  /* Apex tier — Hump Back · gold + animated rim like the mythic ocean badge */
+  .badge.apex{border:none;background:conic-gradient(from 0deg,var(--gold),var(--lavender),var(--mint),var(--coral),var(--gold));padding:2px;animation:rotate 14s linear infinite}
+  .badge.apex-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 50% 35%,rgba(240,196,75,.2),#0a0a0a 70%);display:flex;align-items:center;justify-content:center}
+  @keyframes rotate{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{filter:drop-shadow(0 0 4px var(--tier-color))}50%{filter:drop-shadow(0 0 12px var(--tier-color))}}
+  .badge svg{animation:pulse 4s ease-in-out infinite}
+
+  /* ============ Threshold table ============ */
+  .threshold-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:14px;overflow-x:auto}
+  .threshold-card table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+  .threshold-card thead th{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+  .threshold-card thead th.right{text-align:right}
+  .threshold-card tbody td{padding:13px 12px;border-bottom:1px dashed #1a1a1a;vertical-align:middle}
+  .threshold-card tbody tr:last-child td{border-bottom:0}
+  .threshold-card .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:10px}
+  .threshold-card .tier-name{font-family:'Space Grotesk';font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.02em}
+  .threshold-card .lvl{font-family:'Space Mono';font-size:12px;text-align:right;tabular-nums:true;color:var(--text-mute)}
+  .threshold-card td.right{text-align:right;font-family:'Space Mono';font-size:11px;color:var(--text);font-weight:700}
+
+  /* ============ Pros/cons ============ */
+  .callout{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:24px}
+  .callout h3{font-family:'Space Grotesk';font-weight:700;font-size:16px;letter-spacing:.01em;text-transform:uppercase;margin-bottom:10px;color:var(--text)}
+  .callout p{font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.7}
+  .callout strong{color:var(--mint)}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+  @media (max-width:780px){.compare{grid-template-columns:1fr}}
+  .compare .col{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .compare h3{font-family:'Space Grotesk';font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:10px}
+  .compare ul{list-style:none;font-family:'Space Mono';font-size:11px;line-height:1.7;color:var(--text-mute);margin:0;padding:0}
+  .compare li{padding-left:14px;position:relative}
+  .compare li::before{content:"·";position:absolute;left:0;color:var(--text-faint)}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h1>XP / Level system — 8 classic crypto tiers</h1>
+  <p class="lede">Same ocean DNA as the original proposal · simplified to the 8 archetypes the crypto world already speaks: shrimp → hump back</p>
+
+  <div class="switcher">
+    <span class="lbl">VIEWING:</span>
+    <a class="pill-link active">8-CLASSIC</a>
+    <a class="pill-link" href="xp-system-mockups.html">OCEAN · 6-TIER</a>
+    <a class="pill-link" href="xp-system-mockups-cosmic.html">COSMIC · 6-TIER</a>
+  </div>
+
+  <h2>1 · The eight tiers</h2>
+  <p class="section-sub">
+    Each tile renders one tier as a procedural SVG badge — same visual shell, palette, hover halo, and animation system as the original ocean mockup. The naming maps to the universally-understood crypto-status taxonomy (shrimp = small, whale = big). Hump back keeps the mythic-tier holographic rim treatment as the apex.
+  </p>
+
+  <div class="badge-grid">
+
+    <!-- 1 · Shrimp -->
+    <div class="tile" style="--tier-color:var(--coral)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 1</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 22 52 Q 32 42 50 46 Q 68 50 78 56 Q 74 64 60 64 Q 40 64 26 60 Z" fill="var(--coral)"/>
+          <circle cx="74" cy="56" r="8" fill="var(--coral)"/>
+          <circle cx="77" cy="53" r="1.5" fill="#0a0a0a"/>
+          <path d="M 80 52 Q 92 34 96 28 M 82 56 Q 96 42 98 42" stroke="var(--coral)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <path d="M 22 52 L 10 44 L 14 52 L 10 60 Z" fill="var(--coral)" opacity=".85"/>
+          <g stroke="#0a0a0a" stroke-width=".8" opacity=".35">
+            <line x1="36" y1="49" x2="36" y2="61"/>
+            <line x1="46" y1="47" x2="46" y2="62"/>
+            <line x1="56" y1="47" x2="56" y2="62"/>
+            <line x1="66" y1="50" x2="66" y2="62"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Shrimp</div>
+      <div class="levels">LV. 1 – 12</div>
+      <div class="desc">Brand new on the platform. Curious, learning, finding their first pool.</div>
+      <div class="xp">0 – 8K XP</div>
+    </div>
+
+    <!-- 2 · Crab -->
+    <div class="tile" style="--tier-color:var(--sand)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 2</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <ellipse cx="50" cy="56" rx="22" ry="15" fill="var(--sand)"/>
+          <circle cx="42" cy="46" r="2.8" fill="#0a0a0a"/>
+          <circle cx="58" cy="46" r="2.8" fill="#0a0a0a"/>
+          <line x1="42" y1="46" x2="42" y2="42" stroke="var(--sand)" stroke-width="2"/>
+          <line x1="58" y1="46" x2="58" y2="42" stroke="var(--sand)" stroke-width="2"/>
+          <path d="M 45 60 Q 50 64 55 60" stroke="#0a0a0a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <path d="M 30 51 Q 18 46 14 38 Q 18 38 22 41 Q 24 38 28 39 Q 28 44 30 51 Z" fill="var(--sand)"/>
+          <path d="M 70 51 Q 82 46 86 38 Q 82 38 78 41 Q 76 38 72 39 Q 72 44 70 51 Z" fill="var(--sand)"/>
+          <g stroke="var(--sand)" stroke-width="2" stroke-linecap="round">
+            <line x1="34" y1="62" x2="26" y2="70"/>
+            <line x1="40" y1="68" x2="34" y2="76"/>
+            <line x1="66" y1="62" x2="74" y2="70"/>
+            <line x1="60" y1="68" x2="66" y2="76"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Crab</div>
+      <div class="levels">LV. 13 – 25</div>
+      <div class="desc">Settled in. A few pools deep. Owns at least one ticket per cadence.</div>
+      <div class="xp">8K – 38K XP</div>
+    </div>
+
+    <!-- 3 · Octopus -->
+    <div class="tile" style="--tier-color:var(--lavender)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 3</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 28 38 Q 50 22 72 38 Q 78 56 50 62 Q 22 56 28 38 Z" fill="var(--lavender)"/>
+          <circle cx="42" cy="42" r="2.2" fill="#0a0a0a"/>
+          <circle cx="58" cy="42" r="2.2" fill="#0a0a0a"/>
+          <path d="M 46 50 Q 50 53 54 50" stroke="#0a0a0a" stroke-width="1" fill="none" opacity=".5"/>
+          <path d="M 28 56 Q 20 66 16 82 Q 19 86 23 80 Q 25 70 32 64 Z" fill="var(--lavender)"/>
+          <path d="M 38 60 Q 32 72 28 86 Q 31 90 34 84 Q 36 74 42 68 Z" fill="var(--lavender)"/>
+          <path d="M 48 62 Q 46 74 46 88 Q 50 92 50 88 Q 50 76 52 68 Z" fill="var(--lavender)"/>
+          <path d="M 60 60 Q 66 72 72 86 Q 69 90 66 84 Q 64 74 58 68 Z" fill="var(--lavender)"/>
+          <path d="M 70 56 Q 80 66 84 82 Q 81 86 77 80 Q 75 70 68 64 Z" fill="var(--lavender)"/>
+        </svg>
+      </div>
+      <div class="name">Octopus</div>
+      <div class="levels">LV. 26 – 37</div>
+      <div class="desc">Reaches into multiple pools at once. Friends list growing. Active creator.</div>
+      <div class="xp">38K – 81K XP</div>
+    </div>
+
+    <!-- 4 · Fish -->
+    <div class="tile" style="--tier-color:var(--mint)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 4</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 22 50 Q 52 22 78 50 Q 52 78 22 50 Z" fill="var(--mint)"/>
+          <path d="M 12 50 L 24 38 L 24 62 Z" fill="var(--mint)" opacity=".85"/>
+          <circle cx="64" cy="45" r="2.8" fill="#0a0a0a"/>
+          <path d="M 48 32 Q 54 24 60 30" stroke="var(--mint)" stroke-width="1.6" fill="none" opacity=".7" stroke-linecap="round"/>
+          <path d="M 42 64 Q 50 70 56 64" stroke="var(--mint)" stroke-width="1.6" fill="none" opacity=".7" stroke-linecap="round"/>
+          <path d="M 50 40 Q 50 50 50 60" stroke="#0a0a0a" stroke-width=".8" opacity=".4"/>
+          <path d="M 44 42 Q 44 50 44 58" stroke="#0a0a0a" stroke-width=".8" opacity=".3"/>
+        </svg>
+      </div>
+      <div class="name">Fish</div>
+      <div class="levels">LV. 38 – 50</div>
+      <div class="desc">Regular. Built friend graph. Comfortable swimming with the school.</div>
+      <div class="xp">81K – 165K XP</div>
+    </div>
+
+    <!-- 5 · Dolphin -->
+    <div class="tile" style="--tier-color:var(--cyan)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 5</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 18 56 Q 30 40 56 42 Q 76 46 84 54 Q 80 62 70 60 Q 50 66 26 64 Z" fill="var(--cyan)"/>
+          <path d="M 50 42 L 56 28 L 64 44 Z" fill="var(--cyan)"/>
+          <path d="M 18 56 L 8 44 Q 14 52 8 60 Z" fill="var(--cyan)"/>
+          <path d="M 50 62 Q 48 72 60 70 Q 60 64 56 62 Z" fill="var(--cyan)" opacity=".85"/>
+          <path d="M 84 54 Q 92 56 88 60 L 80 58 Z" fill="var(--cyan)"/>
+          <circle cx="76" cy="50" r="1.8" fill="#0a0a0a"/>
+          <path d="M 84 60 Q 88 60 88 58" stroke="#0a0a0a" stroke-width=".9" fill="none" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="name">Dolphin</div>
+      <div class="levels">LV. 51 – 62</div>
+      <div class="desc">Recognized regular. Wins on the board. Multiple invites redeemed.</div>
+      <div class="xp">165K – 282K XP</div>
+    </div>
+
+    <!-- 6 · Shark -->
+    <div class="tile" style="--tier-color:var(--steel)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 6</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 18 56 Q 30 38 60 40 Q 82 44 90 54 Q 86 64 76 62 Q 50 70 25 66 Z" fill="var(--steel)"/>
+          <path d="M 50 40 L 56 22 L 64 42 Z" fill="var(--steel)"/>
+          <path d="M 18 56 L 4 36 L 12 56 L 4 72 Z" fill="var(--steel)"/>
+          <path d="M 52 62 L 48 74 L 66 64 Z" fill="var(--steel)" opacity=".85"/>
+          <path d="M 76 56 L 86 56 L 84 60 L 81 56 L 79 60 Z" fill="#fafafa"/>
+          <circle cx="76" cy="48" r="1.6" fill="#0a0a0a"/>
+          <g stroke="#0a0a0a" stroke-width=".8" opacity=".35">
+            <line x1="62" y1="50" x2="62" y2="58"/>
+            <line x1="66" y1="50" x2="66" y2="58"/>
+            <line x1="70" y1="50" x2="70" y2="58"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Shark</div>
+      <div class="levels">LV. 63 – 75</div>
+      <div class="desc">Hunts pools aggressively. Heavy creator. Friends list of 50+.</div>
+      <div class="xp">282K – 425K XP</div>
+    </div>
+
+    <!-- 7 · Whale -->
+    <div class="tile" style="--tier-color:var(--deep)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 7</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 14 56 Q 28 36 60 36 Q 82 42 90 54 Q 86 64 76 62 Q 50 72 25 66 Z" fill="var(--deep)"/>
+          <path d="M 14 56 L 4 40 Q 10 50 4 64 Z" fill="var(--deep)"/>
+          <path d="M 50 62 Q 56 72 46 74 Q 50 68 48 64 Z" fill="var(--deep)" opacity=".85"/>
+          <path d="M 70 56 Q 80 58 88 56" stroke="#0a0a0a" stroke-width="1" fill="none" opacity=".5"/>
+          <circle cx="72" cy="48" r="1.6" fill="#0a0a0a"/>
+          <path d="M 56 36 L 56 24 M 51 36 L 49 26 M 61 36 L 63 26" stroke="#fff" stroke-width="1.6" opacity=".75" stroke-linecap="round"/>
+          <circle cx="56" cy="22" r="1.2" fill="#fff" opacity=".8"/>
+        </svg>
+      </div>
+      <div class="name">Whale</div>
+      <div class="levels">LV. 76 – 87</div>
+      <div class="desc">Top-fee earners. The pools they create draw crowds. Lifetime SOL in 3+ digits.</div>
+      <div class="xp">425K – 678K XP</div>
+    </div>
+
+    <!-- 8 · Hump Back (apex, holographic) -->
+    <div class="tile" style="--tier-color:var(--gold)">
+      <div class="tile-bg"></div>
+      <div class="lvl">TIER 8 · APEX</div>
+      <div class="badge apex">
+        <div class="badge apex-inner">
+          <svg viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="hump-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--deep)" stop-opacity="1"/>
+                <stop offset="100%" stop-color="var(--gold)" stop-opacity=".75"/>
+              </linearGradient>
+            </defs>
+            <path d="M 12 60 Q 22 50 30 48 Q 40 30 56 30 Q 80 36 90 56 Q 84 66 76 64 Q 50 74 25 68 Z" fill="url(#hump-grad)"/>
+            <path d="M 50 30 L 52 22 L 56 30 Z" fill="var(--deep)"/>
+            <path d="M 12 60 L 0 38 Q 6 48 0 50 L 8 60 L 0 70 Q 6 64 0 80 Z" fill="var(--deep)"/>
+            <path d="M 50 60 Q 70 80 50 82 Q 60 70 45 64 Z" fill="var(--deep)" opacity=".95"/>
+            <g stroke="#0a0a0a" stroke-width=".8" opacity=".35">
+              <line x1="70" y1="58" x2="80" y2="58"/>
+              <line x1="68" y1="62" x2="80" y2="62"/>
+            </g>
+            <circle cx="72" cy="46" r="1.6" fill="#0a0a0a"/>
+            <path d="M 50 30 Q 44 18 50 14 Q 56 18 50 30" fill="#fff" opacity=".85"/>
+            <circle cx="46" cy="18" r="1" fill="var(--gold)" opacity=".9"/>
+            <circle cx="54" cy="18" r="1" fill="var(--gold)" opacity=".9"/>
+          </svg>
+        </div>
+      </div>
+      <div class="name" style="color:var(--gold)">Hump Back</div>
+      <div class="levels">LV. 88 – 100</div>
+      <div class="desc">Apex. Less than 0.1% of users. Carries the gold-rim treatment.</div>
+      <div class="xp">678K – 965K XP</div>
+    </div>
+
+  </div>
+
+  <h2>2 · Threshold table</h2>
+  <p class="section-sub">
+    Mapping of the 100-level curve onto eight tiers (each tier holds 12–13 levels). XP thresholds use the same formula as the original proposal (<code>xp_to_next(level) = floor(50 × level^1.4)</code>), so the math doesn't change — just the tier names that wrap the sub-levels.
+  </p>
+
+  <div class="threshold-card">
+    <table>
+      <thead>
+        <tr>
+          <th>TIER</th>
+          <th class="right">LEVELS</th>
+          <th class="right">XP RANGE</th>
+          <th class="right">EXPECTED COHORT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="swatch" style="background:var(--coral)"></span><span class="tier-name">Shrimp</span></td><td class="lvl">1 – 12</td><td class="right">0 – 8,100</td><td class="right">~80% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--sand)"></span><span class="tier-name">Crab</span></td><td class="lvl">13 – 25</td><td class="right">8,100 – 38,000</td><td class="right">~12% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--lavender)"></span><span class="tier-name">Octopus</span></td><td class="lvl">26 – 37</td><td class="right">38,000 – 80,800</td><td class="right">~4% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--mint)"></span><span class="tier-name">Fish</span></td><td class="lvl">38 – 50</td><td class="right">80,800 – 165,000</td><td class="right">~2% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--cyan)"></span><span class="tier-name">Dolphin</span></td><td class="lvl">51 – 62</td><td class="right">165,000 – 282,000</td><td class="right">~1% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--steel)"></span><span class="tier-name">Shark</span></td><td class="lvl">63 – 75</td><td class="right">282,000 – 425,000</td><td class="right">~0.5% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--deep)"></span><span class="tier-name">Whale</span></td><td class="lvl">76 – 87</td><td class="right">425,000 – 678,000</td><td class="right">~0.2% of users</td></tr>
+        <tr><td><span class="swatch" style="background:var(--gold)"></span><span class="tier-name">Hump Back</span></td><td class="lvl">88 – 100</td><td class="right">678,000 – 965,000</td><td class="right">&lt; 0.1% of users</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>3 · 8-tier vs original 6-tier · vs ocean / cosmic</h2>
+
+  <div class="compare">
+    <div class="col">
+      <h3 style="color:var(--mint)">8-CLASSIC · pros</h3>
+      <ul>
+        <li>Tier names are <strong>universally understood</strong> in crypto — shrimp, dolphin, whale carry instant social meaning</li>
+        <li>One creature per tier = each one gets a bespoke illustration · easier to make iconic</li>
+        <li>Apex tier "Hump Back" is recognizable as the largest whale variant, but distinct from "whale" (the tier just below)</li>
+        <li>Maps cleanly onto common crypto status displays — fits the audience's mental model</li>
+        <li>8 tiers is the most common count in crypto status pages (Binance VIPs, Bybit VIPs, etc.)</li>
+      </ul>
+      <h3 style="color:var(--coral);margin-top:14px">8-CLASSIC · cons</h3>
+      <ul>
+        <li>Less original — every DeFi product uses this exact taxonomy</li>
+        <li>Only one creature per tier · no internal escalation feeling within a tier (e.g. "I'm a Shark Lv. 70" feels weaker than "I'm a Hammerhead → Mako progression")</li>
+        <li>"Hump Back" as the apex is technically a whale variant — less mythic than "Poseidon's Crown"</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3 style="color:var(--mint)">6-TIER OCEAN · pros</h3>
+      <ul>
+        <li>Each tier holds 15–25 sub-creatures · constant little level-up "you're now a Mako shark"</li>
+        <li>Mythic tier escalates beyond known creatures into named legendary beasts</li>
+        <li>More personalization — the L72 user has a different identity from L78 even though both are "whales" in the casual sense</li>
+        <li>Strong endgame: T6 mythic creatures get animated holographic treatment</li>
+      </ul>
+      <h3 style="color:var(--coral);margin-top:14px">6-TIER OCEAN · cons</h3>
+      <ul>
+        <li>100 distinct creature names is a lot of art work — even procedural, each needs a custom SVG</li>
+        <li>Mid-tier names blur (sardine vs anchovy · sei whale vs minke whale)</li>
+        <li>Less universally legible — "I'm a Pilot Whale" needs more explanation than "I'm a Shark"</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h3>My honest take</h3>
+    <p>
+      <strong>The 8-classic system is the easier ship and the safer bet.</strong> It speaks crypto's native vocabulary, requires only 8 bespoke badges (not 100), and the apex Hump Back with the gold holographic rim is still rare and aspirational. Sub-levels can still happen — a "Lv. 47 Fish" or "Lv. 63 Shark" still reads great — but the badge identity locks at the tier level. That's a feature, not a bug: users brag about their tier, not their sub-level.<br/><br/>
+      <strong>The 6-tier ocean is the more elaborate product.</strong> Worth doing if you want users to feel constant micro-progression and if you're willing to fund 100 custom badge illustrations. The mythic tier is genuinely beautiful at L100 in a way the Hump Back can't quite match.<br/><br/>
+      If you said "ship the simplest version tomorrow": <strong>8-classic</strong>. If you said "make this our defining product feature": <strong>6-tier ocean with the mythic endgame</strong>.<br/><br/>
+      Reply with <em>"go 8-classic"</em>, <em>"go 6-tier ocean"</em>, or <em>"go 6-tier cosmic"</em>. Whatever you pick, I'll lock the spec to it and start phase 1 (math + schema + tests) immediately.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
