@@ -10,6 +10,7 @@ import { WalletLink } from "@/components/WalletLink";
 import { formatSol, shortAddress} from "@/lib/format";
 import { Metric, Stat } from "@/components/ui/Stat";
 import { UserName } from "@/components/UserName";
+import { Countdown } from "@/components/Countdown";
 
 // Heavy form modal — 178 LOC + transitively pulls CreatePoolForm + the
 // merkle-tree helpers. Only loaded when the creator clicks "+ Create new
@@ -340,7 +341,22 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
       </div>
 
       <dl className="mt-5 grid grid-cols-2 gap-3 pl-2 text-sm sm:grid-cols-4">
-        <Metric label="Tickets" value={pool.totalTickets.toString()} />
+        {/* For live pools, the first slot is a live countdown so creators
+            can see at a glance how much time is left before the keeper
+            draws. Non-live pools (resolved / drawing / closed) keep the
+            static ticket count there — countdown would always read "—". */}
+        {trulyLive ? (
+          <Metric
+            label="Closes in"
+            value={
+              <Countdown targetUnix={pool.closeTimeUnix} />
+            }
+            sub={`${pool.totalTickets.toString()} tickets sold`}
+            valueColor={MINT}
+          />
+        ) : (
+          <Metric label="Tickets" value={pool.totalTickets.toString()} />
+        )}
         <Metric
           label="Participants"
           value={

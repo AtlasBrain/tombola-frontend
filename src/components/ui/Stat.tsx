@@ -13,10 +13,11 @@
 
 interface StatProps {
   label: string;
-  value: string;
-  /** Optional secondary line under the value. Accepts a plain string or
-   *  JSX so callers can embed a <UserName /> for wallet → pseudo
-   *  resolution. */
+  /** Big display value. Accepts a plain string OR JSX so callers can
+   *  embed live components like <Countdown />. */
+  value: React.ReactNode;
+  /** Optional secondary line under the value. Same shape — accepts JSX
+   *  for things like <UserName />. */
   sub?: React.ReactNode;
   /** CSS color for the value text. Falls back to neutral-100. */
   valueColor?: string;
