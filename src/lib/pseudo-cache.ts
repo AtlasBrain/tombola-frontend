@@ -12,9 +12,24 @@
 import { useEffect, useState } from "react";
 
 /** Resolved pseudos, or null when the lookup completed and there was no
- *  pseudo set. Lives for the tab lifetime — long enough for one nav session,
- *  short enough that stale data doesn't accumulate forever. */
-const cache = new Map<string, string | null>();
+ *  pseudo set. Each entry carries the timestamp it was stored so the
+ *  hook can soft-expire after `CACHE_TTL_MS` — long enough that a
+ *  list of 30 rows doesn't fan out 30 fetches per second, short enough
+ *  that a friend who just claimed a pseudo shows up without a hard
+ *  reload. */
+interface CacheEntry {
+  value: string | null;
+  ts: number;
+}
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60_000;
+
+function readCache(wallet: string): string | null | undefined {
+  const e = cache.get(wallet);
+  if (!e) return undefined; // never seen
+  if (Date.now() - e.ts > CACHE_TTL_MS) return undefined; // expired → refetch
+  return e.value;
+}
 
 /** In-flight fetches keyed by wallet, so concurrent callers share one
  *  promise instead of hammering the API. */
@@ -31,8 +46,13 @@ function notify() {
 
 async function fetchPseudo(wallet: string): Promise<string | null> {
   try {
+    // `no-store` here, NOT `force-cache`. The in-memory `cache` Map below
+    // already dedupes within a session, so we don't need the browser HTTP
+    // cache layer. Worse — `force-cache` made the browser keep returning
+    // stale "no pseudo" responses forever, so when a friend claimed a
+    // pseudo their previous viewers never saw it even after a page reload.
     const res = await fetch(`/api/profile/${encodeURIComponent(wallet)}`, {
-      cache: "force-cache",
+      cache: "no-store",
     });
     if (!res.ok) return null;
     const j = (await res.json()) as { profile?: { pseudo?: string | null } };
@@ -43,11 +63,12 @@ async function fetchPseudo(wallet: string): Promise<string | null> {
 }
 
 function load(wallet: string): Promise<string | null> {
-  if (cache.has(wallet)) return Promise.resolve(cache.get(wallet) ?? null);
+  const cached = readCache(wallet);
+  if (cached !== undefined) return Promise.resolve(cached);
   const existing = inflight.get(wallet);
   if (existing) return existing;
   const p = fetchPseudo(wallet).then((pseudo) => {
-    cache.set(wallet, pseudo);
+    cache.set(wallet, { value: pseudo, ts: Date.now() });
     inflight.delete(wallet);
     notify();
     return pseudo;
@@ -73,10 +94,12 @@ export function usePseudo(wallet: string | null | undefined): string | null {
   }, []);
   useEffect(() => {
     if (!wallet) return;
-    if (!cache.has(wallet)) load(wallet);
+    // readCache returns undefined for missing OR expired entries, both
+    // of which we want to re-fetch.
+    if (readCache(wallet) === undefined) load(wallet);
   }, [wallet]);
   if (!wallet) return null;
-  return cache.get(wallet) ?? null;
+  return readCache(wallet) ?? null;
 }
 
 /** Imperative invalidate — call this after the user saves their own profile
