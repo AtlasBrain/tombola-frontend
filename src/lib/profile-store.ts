@@ -13,6 +13,7 @@ import {
   addPseudoToIndex,
   removePseudoFromIndex,
 } from "./pseudo-index";
+import { recordProfileCreated } from "./activity-store";
 
 const PROFILE_PREFIX = "profile:";
 const PSEUDO_PREFIX = "pseudo:";
@@ -130,6 +131,12 @@ export async function saveProfile(
   if (prev?.pseudo && prev.pseudo !== next.pseudo) {
     writes.push(r.del(`${PSEUDO_PREFIX}${prev.pseudo.toLowerCase()}`));
     writes.push(removePseudoFromIndex(prev.pseudo, prev.wallet));
+  }
+  // First-time save lands the wallet in the per-day "new users" bucket
+  // for admin time-series charts. Idempotent at the SET level — re-
+  // saving (e.g. profile edit) is a no-op for the bucket.
+  if (!prev) {
+    writes.push(recordProfileCreated(next.wallet, next.createdAt));
   }
   await Promise.all(writes);
 }

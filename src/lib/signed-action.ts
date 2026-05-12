@@ -9,6 +9,7 @@
 import nacl from "tweetnacl";
 import { decodeBase58 } from "./base58";
 import { consumeNonce } from "./profile-store";
+import { bumpLastSeen } from "./activity-store";
 
 export interface VerifySignedActionArgs {
   /** Caller's wallet pubkey, base58. */
@@ -52,5 +53,10 @@ export async function verifySignedAction(
 
   const consumed = await consumeNonce(wallet, nonce);
   if (!consumed) return "Nonce expired or already used.";
+  // Liveness signal — the wallet just proved control of a private key.
+  // Rate-limited internally so this is at most one write / 5 min / wallet.
+  // Errors are swallowed: a KV blip here must not flunk an otherwise
+  // valid signed action.
+  void bumpLastSeen(wallet).catch(() => {});
   return null;
 }

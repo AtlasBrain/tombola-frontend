@@ -44,9 +44,20 @@ interface LivePoolRow {
   ticketPriceLamports: string;
 }
 
+interface TimeSeriesPayload {
+  newUsersByDay: Array<{ day: string; count: number }>;
+  dau: number;
+  wau: number;
+  mau: number;
+  newUsers7d: number;
+  newUsers30d: number;
+  generatedAt: number;
+}
+
 interface OverviewPayload {
   kpis: OverviewKpis;
   livePools: LivePoolRow[];
+  timeSeries: TimeSeriesPayload;
 }
 
 const PUBLIC_TYPE_LABEL: Record<number, string> = {
@@ -122,7 +133,7 @@ export default function AdminOverviewPage() {
     );
   }
 
-  const { kpis, livePools } = data;
+  const { kpis, livePools, timeSeries } = data;
   const totalPools =
     kpis.pools.public.open +
     kpis.pools.public.drawing +
@@ -150,9 +161,12 @@ export default function AdminOverviewPage() {
           </p>
         </div>
         <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
-          Phase 1 · lifetime numbers · 7d windows ship in phase 4
+          Phase 4 · lifetime + DAU/WAU/MAU + 30d new-user trend
         </p>
       </div>
+
+      {/* Activity strip — DAU/WAU/MAU + new users + sparkline */}
+      <ActivityStrip ts={timeSeries} />
 
       {/* KPI grid */}
       <section className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -235,11 +249,134 @@ export default function AdminOverviewPage() {
         )}
       </section>
 
-      {/* Phase-2 hint */}
-      <p className="mt-10 text-center font-mono text-[10px] uppercase tracking-widest text-neutral-700">
-        Users · pools · treasury · risk pages land in phase 2-3
-      </p>
     </main>
+  );
+}
+
+function ActivityStrip({ ts }: { ts: TimeSeriesPayload }) {
+  return (
+    <section
+      className="mt-7 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5"
+      aria-label="User activity"
+    >
+      <div className="grid gap-5 md:grid-cols-[auto_1fr]">
+        <div className="grid grid-cols-3 gap-3 md:grid-cols-3 md:gap-5">
+          <ActivityKpi
+            label="DAU"
+            value={ts.dau}
+            sub="24H ACTIVE"
+            accent={MINT}
+          />
+          <ActivityKpi
+            label="WAU"
+            value={ts.wau}
+            sub="7D ACTIVE"
+            accent={LAVENDER}
+          />
+          <ActivityKpi
+            label="MAU"
+            value={ts.mau}
+            sub="30D ACTIVE"
+            accent={SAND}
+          />
+        </div>
+        <div className="md:border-l md:border-neutral-800 md:pl-5">
+          <div className="flex items-baseline justify-between">
+            <h3 className="font-display text-sm uppercase tracking-wide">
+              New users · 30d
+            </h3>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+              7D · {ts.newUsers7d} &nbsp;·&nbsp; 30D · {ts.newUsers30d}
+            </span>
+          </div>
+          <Sparkline data={ts.newUsersByDay} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ActivityKpi({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: number;
+  sub: string;
+  accent: string;
+}) {
+  return (
+    <div
+      className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4"
+      style={{
+        background: `linear-gradient(135deg, ${accent}10, ${accent}03 60%, transparent), rgba(10,10,10,.6)`,
+      }}
+    >
+      <p
+        className="font-mono text-[10px] uppercase tracking-widest"
+        style={{ color: accent }}
+      >
+        {label}
+      </p>
+      <p
+        className="mt-1 font-display text-3xl tabular-nums leading-none"
+        style={{ color: accent }}
+      >
+        {value.toLocaleString()}
+      </p>
+      <p className="mt-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+        {sub}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Pure-SVG bar sparkline. Empty days are rendered as low-opacity ticks
+ * so the user can see day boundaries even on a dead chart. Today is
+ * highlighted with a brighter fill.
+ */
+function Sparkline({ data }: { data: Array<{ day: string; count: number }> }) {
+  if (data.length === 0) {
+    return (
+      <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+        Empty — run /api/admin/maintenance/backfill once to seed history
+      </p>
+    );
+  }
+  const max = Math.max(1, ...data.map((d) => d.count));
+  const w = 100 / data.length;
+  return (
+    <svg
+      viewBox="0 0 100 32"
+      className="mt-3 h-16 w-full"
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="New users per day, last 30 days"
+    >
+      {data.map((d, i) => {
+        const h = d.count > 0 ? Math.max(1.5, (d.count / max) * 28) : 0.8;
+        const x = i * w + 0.5;
+        const y = 32 - h;
+        const isToday = i === data.length - 1;
+        return (
+          <rect
+            key={d.day}
+            x={x}
+            y={y}
+            width={Math.max(0.5, w - 1)}
+            height={h}
+            rx="0.6"
+            fill={isToday ? LAVENDER : MINT}
+            opacity={d.count === 0 ? 0.18 : isToday ? 1 : 0.85}
+          >
+            <title>{`${d.day} · ${d.count} new`}</title>
+          </rect>
+        );
+      })}
+    </svg>
   );
 }
 

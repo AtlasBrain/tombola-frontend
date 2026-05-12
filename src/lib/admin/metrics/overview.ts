@@ -25,6 +25,8 @@ import {
   fetchPublicPools,
 } from "@/lib/solana/program-queries";
 import { getRedis } from "@/lib/kv/redis";
+import { loadSnapshot } from "@/lib/admin/snapshot";
+import { aggregateTimeSeries, type TimeSeriesPayload } from "@/lib/admin/metrics/timeseries";
 
 const OVERVIEW_TTL_MS = 30_000;
 
@@ -71,6 +73,10 @@ export interface LivePoolRow {
 export interface OverviewPayload {
   kpis: OverviewKpis;
   livePools: LivePoolRow[];
+  /** Phase-4 time-series additions. Lives alongside KPIs so the page
+   *  can render the DAU/WAU/MAU strip + sparkline without a second
+   *  fetch. */
+  timeSeries: TimeSeriesPayload;
 }
 
 interface CacheEntry {
@@ -202,6 +208,28 @@ export async function getOverview(): Promise<OverviewPayload> {
   livePools.sort((a, b) => a.closeTimeUnix - b.closeTimeUnix);
   const trimmed = livePools.slice(0, 8);
 
+  // Phase 4: time-series strip. Reuses the shared snapshot (cached
+  // separately for 60s) so on a warm system this is a single pipelined
+  // GET for last-seen-by-wallet + one pipelined SCARD over 30 day-
+  // buckets. On a cold snapshot, we eat the loadSnapshot fan-out once
+  // — acceptable given the overview cache is also 30s.
+  let timeSeries: TimeSeriesPayload;
+  try {
+    const snap = await loadSnapshot();
+    timeSeries = await aggregateTimeSeries(snap);
+  } catch {
+    // Don't fail the entire overview if time-series rolls a strikeout.
+    timeSeries = {
+      newUsersByDay: [],
+      dau: 0,
+      wau: 0,
+      mau: 0,
+      newUsers7d: 0,
+      newUsers30d: 0,
+      generatedAt: Math.floor(Date.now() / 1000),
+    };
+  }
+
   const payload: OverviewPayload = {
     kpis: {
       lifetimeVolumeLamports: totalVolume.toString(),
@@ -215,6 +243,7 @@ export async function getOverview(): Promise<OverviewPayload> {
       generatedAt: Math.floor(Date.now() / 1000),
     },
     livePools: trimmed,
+    timeSeries,
   };
 
   cache = { payload, ts: Date.now() };

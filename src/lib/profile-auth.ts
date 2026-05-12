@@ -12,6 +12,7 @@
 import nacl from "tweetnacl";
 import { decodeBase58 } from "./base58";
 import { consumeNonce } from "./profile-store";
+import { bumpLastSeen } from "./activity-store";
 
 const MESSAGE_PREFIX = "tombola:profile-edit:";
 
@@ -60,6 +61,9 @@ export async function verifySignedRequest(
   const consumed = await consumeNonce(wallet, nonce);
   if (!consumed) return "Nonce expired or already used.";
 
+  // Liveness signal. Rate-limited (1 write / 5 min / wallet); swallow
+  // errors so a KV blip doesn't flunk an otherwise valid edit.
+  void bumpLastSeen(wallet).catch(() => {});
   return null;
 }
 

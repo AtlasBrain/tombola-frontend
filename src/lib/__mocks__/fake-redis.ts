@@ -135,12 +135,20 @@ export class FakeRedis {
     const calls: Array<() => Promise<unknown>> = [];
     // The pipeline shape Upstash provides: chain commands, then .exec().
     const api: PipelineLike = {
+      get: (key) => {
+        calls.push(() => this.get(key));
+        return api;
+      },
       set: (key, value, opts) => {
         calls.push(() => this.set(key, value, opts));
         return api;
       },
       del: (key) => {
         calls.push(() => this.del(key));
+        return api;
+      },
+      scard: (key) => {
+        calls.push(() => this.scard(key));
         return api;
       },
       sadd: (key, member) => {
@@ -170,12 +178,14 @@ export class FakeRedis {
 }
 
 interface PipelineLike {
+  get(key: string): PipelineLike;
   set(
     key: string,
     value: AnyVal,
     opts?: { nx?: boolean; ex?: number },
   ): PipelineLike;
   del(key: string): PipelineLike;
+  scard(key: string): PipelineLike;
   sadd(key: string, member: string): PipelineLike;
   srem(key: string, member: string): PipelineLike;
   zadd(
