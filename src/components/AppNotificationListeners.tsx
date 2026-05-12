@@ -5,9 +5,11 @@
 // it imports this client component once instead of marking the whole
 // layout `"use client"`.
 
+import { useFriendRequestNotifications } from "@/hooks/useFriendRequestNotifications";
 import { usePoolInviteNotifications } from "@/hooks/usePoolInviteNotifications";
 
 export function AppNotificationListeners() {
+  useFriendRequestNotifications();
   usePoolInviteNotifications();
   return null;
 }

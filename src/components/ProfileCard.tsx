@@ -23,6 +23,8 @@ import { useToast } from "@/components/Toast";
 import { StatTile } from "@/components/ui/Stat";
 import { useProfileData } from "@/hooks/useProfileData";
 import { FriendsDrawer } from "@/components/FriendsDrawer";
+import { UserName } from "@/components/UserName";
+import Link from "next/link";
 
 interface Props {
   profile: ProfileRow;
@@ -58,13 +60,52 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
   // All three data fetches (friendship, stats, activity) live in one hook
   // so this component stays focused on layout. `refresh()` retriggers only
   // the friendship lookup — stats/activity don't change on a friend action.
-  const { relationship, friendCount, pendingIn, stats, activity, refresh } =
-    useProfileData({
-      wallet: profile.wallet,
-      viewer,
-      isOwner,
-      connection,
-    });
+  const {
+    relationship,
+    friendCount,
+    pendingIn,
+    pendingInWallets,
+    stats,
+    activity,
+    refresh,
+  } = useProfileData({
+    wallet: profile.wallet,
+    viewer,
+    isOwner,
+    connection,
+  });
+  /** Per-row busy state for the inline accept/decline buttons —
+   *  separate from the header-level `busy` so multiple rows can resolve
+   *  without locking the whole card. */
+  const [rowBusy, setRowBusy] = useState<string | null>(null);
+
+  async function respondToRequest(
+    requester: string,
+    accept: boolean,
+  ): Promise<void> {
+    if (!viewer || !signMessage) {
+      pushToast("error", "Connect a wallet that supports signMessage.");
+      return;
+    }
+    setRowBusy(requester);
+    try {
+      await sendFriendAction({
+        wallet: viewer,
+        signMessage,
+        target: requester,
+        action: accept ? "accept" : "reject",
+      });
+      pushToast(
+        "success",
+        accept ? "Friend request accepted." : "Friend request rejected.",
+      );
+      refresh();
+    } catch (e) {
+      pushToast("error", e instanceof Error ? e.message : String(e));
+    } finally {
+      setRowBusy(null);
+    }
+  }
 
   async function runFriendAction(action: "request" | "accept" | "reject" | "unfriend") {
     if (!viewer || !signMessage) {
@@ -234,10 +275,24 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
               </p>
             )}
             {isOwner && pendingIn > 0 && (
-              <p className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
-                ⋯ {pendingIn} pending friend request{pendingIn === 1 ? "" : "s"} —
-                visit the requesters&apos; profiles to respond
-              </p>
+              <div className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-3">
+                <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
+                  ⋯ {pendingIn} pending friend request
+                  {pendingIn === 1 ? "" : "s"}
+                </p>
+                <ul className="flex flex-col gap-1.5">
+                  {pendingInWallets.map((requester) => (
+                    <PendingRequestRow
+                      key={requester}
+                      requester={requester}
+                      busy={rowBusy === requester}
+                      onRespond={(accept) =>
+                        respondToRequest(requester, accept)
+                      }
+                    />
+                  ))}
+                </ul>
+              </div>
             )}
             <div className="mt-4 grid grid-cols-4 gap-2.5">
               <StatTile
@@ -373,6 +428,60 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
         onClose={() => setDrawerOpen(false)}
       />
     </>
+  );
+}
+
+/** Row inside the pending-friend-requests block on the owner's profile.
+ *  Shows the requester's pseudo (resolved via UserName) + short address,
+ *  links to their profile, and surfaces Accept / Decline buttons that
+ *  run the signed friend-action flow directly without leaving the page. */
+function PendingRequestRow({
+  requester,
+  busy,
+  onRespond,
+}: {
+  requester: string;
+  busy: boolean;
+  onRespond: (accept: boolean) => void;
+}) {
+  return (
+    <li className="flex items-center gap-2 rounded-lg border border-amber-700/30 bg-neutral-950/60 px-2.5 py-2">
+      <Link
+        href={`/u/${encodeURIComponent(requester)}`}
+        className="flex min-w-0 flex-1 items-center gap-2.5 transition hover:opacity-80"
+        title={`${requester} — view profile`}
+      >
+        <WalletIdenticon wallet={requester} size={32} />
+        <span className="flex min-w-0 flex-col">
+          <UserName
+            wallet={requester}
+            className="truncate text-sm font-semibold text-neutral-100"
+          />
+          <span className="font-mono text-[10px] text-neutral-500">
+            {requester.slice(0, 6)}…{requester.slice(-4)}
+          </span>
+        </span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => onRespond(true)}
+        disabled={busy}
+        aria-label={`Accept friend request from ${requester}`}
+        style={{ background: "#88cfc4", color: "#000" }}
+        className="rounded-full px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {busy ? "…" : "Accept"}
+      </button>
+      <button
+        type="button"
+        onClick={() => onRespond(false)}
+        disabled={busy}
+        aria-label={`Decline friend request from ${requester}`}
+        className="rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-300 transition hover:border-neutral-600 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        Decline
+      </button>
+    </li>
   );
 }
 

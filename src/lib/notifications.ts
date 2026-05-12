@@ -22,6 +22,7 @@ export type NotificationKind =
   | "fee-paid"   // $ — your created pool settled, fees credited
   | "redeemed"   // ✦ — code redeemed in your pool
   | "invite"     // 🎟 — a friend invited you to a private pool
+  | "friend-request" // 👤 — someone sent you a friend request
   | "info";      // i — generic informational
 
 export interface Notification {

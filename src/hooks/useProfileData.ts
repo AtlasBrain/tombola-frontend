@@ -31,6 +31,9 @@ export interface ProfileData {
   friendCount: number | null;
   /** Pending-in count — only populated when viewer is the owner. */
   pendingIn: number;
+  /** Pending-in requester wallets — only populated when viewer is the
+   *  owner. Drives the inline accept/decline list on the profile. */
+  pendingInWallets: string[];
   /** On-chain lifetime stats. null until first fetch resolves. */
   stats: WalletStats | null;
   /** 14-week buy activity sparkbar source. null until first fetch resolves. */
@@ -97,6 +100,10 @@ export function useProfileData(args: {
       isOwner && friendsQuery.data
         ? friendsQuery.data.lists.pendingIn.length
         : 0,
+    pendingInWallets:
+      isOwner && friendsQuery.data
+        ? friendsQuery.data.lists.pendingIn
+        : [],
     stats: walletStatsQuery.data ?? null,
     activity: activityQuery.data ?? null,
     refresh,
