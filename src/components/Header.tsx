@@ -3,40 +3,61 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ConnectWalletButton } from "@/components/ConnectWalletButton";
-import { MyProfileButton } from "@/components/MyProfileButton";
+import { IdentityPill } from "@/components/ui/IdentityPill";
+import { NavMore, type NavMoreItem } from "@/components/ui/NavMore";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchPaletteHost } from "@/components/SearchPaletteHost";
 import { ZeroBalanceBanner } from "@/components/ZeroBalanceBanner";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
-type NavItem =
-  | { kind: "anchor"; id: string; label: string }
-  | { kind: "link"; href: string; label: string };
+/** Tailwind class deciding when a nav link rolls into the MORE
+ *  popover. `xl` ≈ 1280px — below that the link is hidden in the top
+ *  bar; the mobile drawer keeps showing it. We also surface the same
+ *  link inside the MORE popover so users on mid-width laptops can
+ *  still reach it without opening the hamburger. */
+const NARROW_HIDE = "hidden xl:inline-flex";
 
-// Full nav — only renders on the homepage where the PUBLIC POOLS anchor
-// actually exists; subroute version uses a cross-page link instead.
+type NavItem =
+  | { kind: "anchor"; id: string; label: string; narrow?: boolean }
+  | { kind: "link"; href: string; label: string; narrow?: boolean };
+
+// Full nav — only renders on the homepage where the PUBLIC POOLS,
+// HOW IT WORKS and FAQ scroll-anchors actually exist; the subroute
+// version uses cross-page links instead.
 //
-// HOW IT WORKS and FAQ used to live here but they're scroll-anchors that
-// only existed on the homepage AND overflowed the desktop center column
-// at mid widths (1100-1300px), overlapping the right-side controls.
-// Both are still reachable: the homepage scrolls past them naturally,
-// and the footer has direct links.
+// `narrow: true` flags links that hide behind the MORE popover at
+// widths < xl (≈1280px), keeping the primary 4 always visible.
 const NAV_HOMEPAGE: readonly NavItem[] = [
-  { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
-  { kind: "link",   href: "/create",     label: "CREATE POOL" },
-  { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
-  { kind: "link",   href: "/leaderboard",label: "LEADERBOARD" },
+  { kind: "anchor", id: "pools",          label: "PUBLIC POOLS" },
+  { kind: "link",   href: "/create",      label: "CREATE POOL" },
+  { kind: "link",   href: "/my-tickets",  label: "MY TICKETS" },
+  { kind: "link",   href: "/leaderboard", label: "LEADERBOARD" },
+  { kind: "anchor", id: "how",            label: "HOW IT WORKS", narrow: true },
+  { kind: "anchor", id: "faq",            label: "FAQ",          narrow: true },
 ];
 
-// Subroute nav — only real routes (anchors don't exist outside homepage so
-// they'd no-op). POOLS becomes a cross-page link to /#pools (browser scrolls
-// after navigation). The current page is filtered out by hideHref below.
+// Subroute nav — only real routes (anchors don't exist outside homepage
+// so they'd no-op). POOLS, HOW IT WORKS, and FAQ become cross-page
+// links to /#anchor (browser scrolls after navigation). The current
+// page is filtered out by hideHref below.
 const NAV_SUBROUTE: readonly NavItem[] = [
   { kind: "link", href: "/#pools",      label: "POOLS" },
   { kind: "link", href: "/create",      label: "CREATE POOL" },
   { kind: "link", href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link", href: "/leaderboard", label: "LEADERBOARD" },
+  { kind: "link", href: "/#how",        label: "HOW IT WORKS", narrow: true },
+  { kind: "link", href: "/#faq",        label: "FAQ",          narrow: true },
+];
+
+// MORE popover — overflow + reference links. Always-visible on
+// desktop, no responsive collapse needed. Add future entries here
+// (Roadmap, API, Press kit, etc.) without touching the layout.
+const MORE_ITEMS: readonly NavMoreItem[] = [
+  {
+    label: "GITHUB",
+    href: "https://github.com/AtlasBrain/Project-Tombola",
+    external: true,
+  },
 ];
 
 export function Header() {
@@ -53,6 +74,26 @@ export function Header() {
   const navItems = (isHomepage ? NAV_HOMEPAGE : NAV_SUBROUTE).filter(
     (item) => item.kind === "anchor" || item.href !== hideHref,
   );
+
+  // MORE popover contents — narrow nav links surface here too so users
+  // on < xl widths can still reach them without opening the hamburger.
+  // They get `narrowOnly: true` so they don't double-render at ≥ xl
+  // (where they're already visible in the main nav).
+  const moreItems: NavMoreItem[] = [
+    ...navItems
+      .filter((n) => n.narrow)
+      .map<NavMoreItem>((n) => ({
+        label: n.label,
+        href: n.kind === "anchor" ? `#${n.id}` : n.href,
+        narrowOnly: true,
+        // Anchor scroll for in-page nav, no-op otherwise.
+        onClick:
+          n.kind === "anchor" && isHomepage
+            ? () => smoothScrollToId(n.id)
+            : undefined,
+      })),
+    ...MORE_ITEMS,
+  ];
 
   // Mobile menu state — closed by default. Toggled by the hamburger button.
   // Closes automatically when a nav item is tapped (the link / anchor handler
@@ -113,22 +154,27 @@ export function Header() {
             pointer-events-auto restores clicks (parent doesn't disable
             them but the wrapper is non-interactive otherwise). */}
         <nav className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 sm:flex">
-          {navItems.map((item) =>
-            item.kind === "anchor" ? (
+          {navItems.map((item) => {
+            const cls = `nav-link ${item.narrow ? NARROW_HIDE : ""}`;
+            return item.kind === "anchor" ? (
               <a
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={handleScroll(item.id)}
-                className="nav-link"
+                className={cls}
               >
                 {item.label}
               </a>
             ) : (
-              <Link key={item.href} href={item.href} className="nav-link" onClick={closeMenu}>
+              <Link key={item.href} href={item.href} className={cls} onClick={closeMenu}>
                 {item.label}
               </Link>
-            ),
-          )}
+            );
+          })}
+          {/* MORE popover: parking spot for overflow + narrow-width
+              collapse of HOW IT WORKS / FAQ. Always renders the
+              referenceLinks; narrowItems only appear at < xl. */}
+          <NavMore items={moreItems} />
         </nav>
 
         {/* RIGHT: status + CTA + mobile menu toggle */}
@@ -151,11 +197,10 @@ export function Header() {
               </button>
             )}
           />
-          <div className="hidden sm:block">
-            <MyProfileButton />
-          </div>
           <NotificationBell />
-          <ConnectWalletButton />
+          <div className="hidden sm:block">
+            <IdentityPill />
+          </div>
           {/* Hamburger — visible below sm. The .ham-spin CSS in globals.css
               rotates the icon 180° while the bars morph into an × on .open.
               CSS-driven so the animation runs on every toggle without React
@@ -213,8 +258,8 @@ export function Header() {
           {/* Mobile profile + search — desktop versions are
               `hidden sm:inline-flex` so without these explicit mobile
               rows the user has no path to either. */}
-          <div className="px-2 py-2">
-            <MyProfileButton mobile />
+          <div className="py-2">
+            <IdentityPill mobile />
           </div>
           <SearchPaletteHost
             trigger={(openPalette) => (
