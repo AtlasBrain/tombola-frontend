@@ -21,7 +21,7 @@ const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "link",   href: "/create",      label: "CREATE POOL" },
   { kind: "link",   href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link",   href: "/leaderboard", label: "LEADERBOARD" },
-  { kind: "anchor", id: "how",            label: "HOW IT WORKS" },
+  { kind: "anchor", id: "how-it-works",   label: "HOW IT WORKS" },
   { kind: "anchor", id: "faq",            label: "FAQ" },
 ];
 
@@ -34,8 +34,8 @@ const NAV_SUBROUTE: readonly NavItem[] = [
   { kind: "link", href: "/create",      label: "CREATE POOL" },
   { kind: "link", href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link", href: "/leaderboard", label: "LEADERBOARD" },
-  { kind: "link", href: "/#how",        label: "HOW IT WORKS" },
-  { kind: "link", href: "/#faq",        label: "FAQ" },
+  { kind: "link", href: "/#how-it-works", label: "HOW IT WORKS" },
+  { kind: "link", href: "/#faq",          label: "FAQ" },
 ];
 
 
