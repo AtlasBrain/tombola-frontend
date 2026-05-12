@@ -17,10 +17,9 @@ import { CORAL, MINT } from "@/lib/colors";
 
 const NAV: ReadonlyArray<{ href: string; label: string; enabled: boolean }> = [
   { href: "/admin", label: "OVERVIEW", enabled: true },
-  // Phase 2+ — surfaces as visible-but-disabled so the user knows
-  // they're coming.
-  { href: "/admin/users", label: "USERS", enabled: false },
-  { href: "/admin/pools", label: "POOLS", enabled: false },
+  { href: "/admin/users", label: "USERS", enabled: true },
+  { href: "/admin/pools", label: "POOLS", enabled: true },
+  // Phase 3+ — visible-but-disabled so the user sees what's coming.
   { href: "/admin/treasury", label: "TREASURY", enabled: false },
   { href: "/admin/risk", label: "RISK", enabled: false },
 ];
