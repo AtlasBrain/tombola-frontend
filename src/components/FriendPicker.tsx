@@ -56,17 +56,24 @@ export function FriendPicker({
   const selected = useMemo(() => new Set(value), [value]);
   const disabled = disabledWallets ?? new Set<string>();
 
+  // Cache key + return shape MUST match every other consumer of the
+  // ["friends", wallet, null] key (SearchPalette, IdentityPill,
+  // FriendsDrawer). All of them return { relationship, lists }; if we
+  // return lists bare here, the first component to populate the cache
+  // wins and FriendPicker reads `data.friends` against the wrong shape
+  // — which is exactly the "no friends yet" bug from creating a pool
+  // after the IdentityPill / bell had already fetched.
   const friendsQuery = useQuery({
     enabled: !!caller,
     queryKey: ["friends", caller, null],
     queryFn: async () => {
       const lists = await getFriendLists(caller);
-      return lists;
+      return { relationship: null, lists };
     },
   });
 
   const friends = useMemo(
-    () => friendsQuery.data?.friends ?? [],
+    () => friendsQuery.data?.lists.friends ?? [],
     [friendsQuery.data],
   );
 
