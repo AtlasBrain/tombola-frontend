@@ -72,7 +72,14 @@ export function Header() {
     // relative so the absolute mobile dropdown anchors here; z-50 so the
     // dropdown overlays Hero content (which has its own stacking contexts).
     <header className="relative z-50 mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
-      <div className="flex items-center justify-between gap-3 sm:grid sm:grid-cols-3 sm:gap-4">
+      {/* Layout: [logo auto] [nav 1fr centered] [actions auto, hugs right].
+          Old `sm:grid-cols-3` forced fixed 1/3-width columns, so the 4
+          long nav labels overflowed the center third and bled into the
+          right cluster at mid widths (≈1100-1500px) — search button
+          rendered on top of LEADERBOARD. The auto-1fr-auto template lets
+          the right cluster claim only what it needs and pins it to the
+          edge, with the nav free to grow into the middle space. */}
+      <div className="flex items-center justify-between gap-3 sm:grid sm:grid-cols-[auto_1fr_auto] sm:gap-6 lg:gap-8">
         {/* LEFT: logo */}
         <Link
           href="/"
