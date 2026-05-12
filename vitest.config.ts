@@ -17,6 +17,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@tombola/sdk": path.resolve(__dirname, "vendor/sdk/index.ts"),
+      // `server-only` is a no-op marker at runtime that throws when
+      // imported from a Client Component. Vitest sees keeper modules as
+      // "client" by default; alias to an empty stub so the marker stays
+      // a Next.js production-build check but doesn't block unit tests.
+      "server-only": path.resolve(__dirname, "src/test-server-only-stub.ts"),
     },
   },
 });
