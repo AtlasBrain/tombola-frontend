@@ -15,6 +15,7 @@ import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
 import { PoolInviteBanner } from "@/components/PoolInviteBanner";
+import { UserName } from "@/components/UserName";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import {
@@ -229,7 +230,7 @@ export default function PrivatePoolPage({
                   href={`/creator/${pool.creator}`}
                   className="hover:text-white"
                 >
-                  {shortAddress(pool.creator)} →
+                  <UserName wallet={pool.creator} /> →
                 </a>{" "}
                 · FEE {(pool.creatorFeeBps / 100).toFixed(1)}% ·{" "}
                 <a

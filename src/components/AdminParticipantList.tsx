@@ -1,6 +1,7 @@
 "use client";
 import { formatSol, formatTickets } from "@/lib/format";
 import { explorerAddressUrl } from "@/lib/explorer-url";
+import { UserName } from "@/components/UserName";
 
 interface Participant {
   owner: string;
@@ -39,7 +40,7 @@ export function AdminParticipantList({ participants, rpcUrl }: Props) {
                 className="border-t border-neutral-800/50 text-neutral-200"
               >
                 <td className="py-2 font-mono text-xs">
-                  {p.owner.slice(0, 8)}…{p.owner.slice(-4)}
+                  <UserName wallet={p.owner} />
                 </td>
                 <td className="py-2 text-right tabular-nums">
                   {formatTickets(p.tickets)}

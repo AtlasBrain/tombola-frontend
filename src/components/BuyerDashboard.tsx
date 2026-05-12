@@ -13,6 +13,7 @@ import {
   type PoolMembership,
 } from "@/lib/buyer-pools";
 import { Metric, Stat } from "@/components/ui/Stat";
+import { UserName } from "@/components/UserName";
 import { useBuyerParticipations } from "@/hooks/useBuyerParticipations";
 
 // Brand palette tokens — match globals.css :root accents
@@ -420,7 +421,7 @@ function PoolRow({
                   rel="noreferrer"
                   className="hover:text-neutral-300"
                 >
-                  {shortAddress(pool.winner)} ↗
+                  <UserName wallet={pool.winner} /> ↗
                 </a>
               </>
             )}

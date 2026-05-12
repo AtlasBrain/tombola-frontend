@@ -9,6 +9,7 @@ import { explorerAddressUrl } from "@/lib/explorer-url";
 import { WalletLink } from "@/components/WalletLink";
 import { formatSol, shortAddress} from "@/lib/format";
 import { Metric, Stat } from "@/components/ui/Stat";
+import { UserName } from "@/components/UserName";
 
 // Heavy form modal — 178 LOC + transitively pulls CreatePoolForm + the
 // merkle-tree helpers. Only loaded when the creator clicks "+ Create new
@@ -362,9 +363,13 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
             label="Resolved"
             value={pool.winner ? "🏆" : "✓"}
             sub={
-              pool.winner
-                ? `winner ${shortAddress(pool.winner)}`
-                : `${pool.totalTickets.toString()} tickets sold (voided)`
+              pool.winner ? (
+                <>
+                  winner <UserName wallet={pool.winner} />
+                </>
+              ) : (
+                `${pool.totalTickets.toString()} tickets sold (voided)`
+              )
             }
           />
         ) : pool.state === 1 ? (

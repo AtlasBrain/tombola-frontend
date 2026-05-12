@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { explorerTxUrl } from "@/lib/explorer-url";
+import { UserName } from "@/components/UserName";
 
 const VALIDATOR_RPC = process.env.NEXT_PUBLIC_VALIDATOR_RPC ?? "";
 const FAUCET_SOL = process.env.NEXT_PUBLIC_FAUCET_SOL ?? "1000";
@@ -170,7 +171,7 @@ export default function ClaimPage({ params }: PageProps) {
         <Step n={3} done={walletConnected} title="Connect your wallet">
           {walletConnected ? (
             <p className="font-mono text-xs text-neutral-300">
-              {publicKey.toBase58().slice(0, 8)}…{publicKey.toBase58().slice(-6)}
+              <UserName wallet={publicKey.toBase58()} />
             </p>
           ) : (
             <button

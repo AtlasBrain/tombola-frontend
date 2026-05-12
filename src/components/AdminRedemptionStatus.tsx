@@ -347,7 +347,6 @@ export function AdminRedemptionStatus({
                   wallet={r.redeemer}
                   rpcUrl={connection.rpcEndpoint}
                   className="min-w-0 text-[#88cfc4] hover:underline"
-                  label={`${r.redeemer.slice(0, 6)}…${r.redeemer.slice(-4)}`}
                 />
               ) : (
                 <span className="text-neutral-600">—</span>

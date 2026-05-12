@@ -14,7 +14,10 @@
 interface StatProps {
   label: string;
   value: string;
-  sub?: string;
+  /** Optional secondary line under the value. Accepts a plain string or
+   *  JSX so callers can embed a <UserName /> for wallet → pseudo
+   *  resolution. */
+  sub?: React.ReactNode;
   /** CSS color for the value text. Falls back to neutral-100. */
   valueColor?: string;
 }

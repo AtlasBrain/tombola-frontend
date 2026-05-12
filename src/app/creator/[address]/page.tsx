@@ -7,6 +7,7 @@ import { PROGRAM_ID } from "@tombola/sdk";
 import { Header } from "@/components/Header";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
+import { UserName } from "@/components/UserName";
 import {
   fetchCreatorStats,
   type CreatorPoolSummary,
@@ -143,7 +144,7 @@ export default function CreatorProfilePage({
                 Creator profile
               </span>
               <h1 className="mt-3 font-display text-3xl uppercase leading-[0.95] sm:text-5xl">
-                {shortAddress(address)}
+                <UserName wallet={address} />
               </h1>
               <p className="mt-2 break-all font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 <a

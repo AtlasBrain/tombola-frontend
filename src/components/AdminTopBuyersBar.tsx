@@ -1,5 +1,6 @@
 "use client";
 import { formatSol, formatTickets } from "@/lib/format";
+import { UserName } from "@/components/UserName";
 
 interface Participant {
   owner: string;
@@ -58,7 +59,7 @@ export function AdminTopBuyersBar({ participants }: Props) {
           return (
             <li key={p.owner} className="flex items-center gap-3">
               <code className="w-32 shrink-0 truncate font-mono text-xs text-neutral-400">
-                {p.owner.slice(0, 8)}…{p.owner.slice(-4)}
+                <UserName wallet={p.owner} />
               </code>
               <div className="flex-1">
                 <div className="h-3 overflow-hidden rounded-full bg-neutral-800">
