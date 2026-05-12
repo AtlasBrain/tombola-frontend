@@ -109,3 +109,25 @@ export function invalidatePseudo(wallet: string): void {
   inflight.delete(wallet);
   notify();
 }
+
+/** Imperative pseudo lookup for places that can't use the `usePseudo`
+ *  hook — notably notification builders that emit a plain-text body
+ *  string at push time. Hits the cache when warm; awaits the API once
+ *  otherwise. Returns null when the wallet has no claimed pseudo. */
+export function getPseudo(wallet: string): Promise<string | null> {
+  return load(wallet);
+}
+
+/** Convenience: resolve to pseudo if available, else the short-form
+ *  wallet address. Lets call sites write
+ *    const label = await displayNameFor(wallet);
+ *  without re-doing the shortAddress fallback every time. */
+export async function displayNameFor(wallet: string): Promise<string> {
+  const pseudo = await load(wallet);
+  if (pseudo) return pseudo;
+  // Match shortAddress's format so the notification body reads the
+  // same as the inline UI when no pseudo is set.
+  return wallet.length <= 10
+    ? wallet
+    : `${wallet.slice(0, 4)}…${wallet.slice(-4)}`;
+}

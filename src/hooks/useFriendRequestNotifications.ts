@@ -30,6 +30,7 @@ import {
   type FriendListsResponse,
 } from "@/lib/friend-client";
 import { pushNotification } from "@/lib/notifications";
+import { displayNameFor } from "@/lib/pseudo-cache";
 
 interface Snapshot {
   friends: string[];
@@ -104,41 +105,54 @@ export function useFriendRequestNotifications() {
     const lists = listsQuery.data?.lists;
     if (!lists) return;
     const prev = readSnapshot(wallet);
+    let cancelled = false;
 
-    // Incoming requests — fire one persistent notif per requester.
-    // dedupeId keeps the bell from duplicating across restarts; the
-    // poll loop is idempotent.
-    for (const requester of lists.pendingIn) {
-      pushNotification({
-        wallet,
-        kind: "friend-request",
-        title: "👤 New friend request",
-        body: `${requester.slice(0, 6)}…${requester.slice(-4)} wants to connect`,
-        href: `/u/${requester}`,
-        dedupeId: `friend-request-${requester}`,
-      });
-    }
-
-    // Accepted-by transition — only fire when we have a previous
-    // snapshot. First poll for a wallet seeds the snapshot without
-    // notifying, otherwise every long-standing friend would notify.
-    if (prev) {
-      const prevPendingOut = new Set(prev.pendingOut);
-      const prevFriends = new Set(prev.friends);
-      for (const friend of lists.friends) {
-        if (prevFriends.has(friend)) continue; // already a friend last poll
-        if (!prevPendingOut.has(friend)) continue; // didn't originate from MY request
+    (async () => {
+      // Incoming requests — fire one persistent notif per requester.
+      // dedupeId keeps the bell from duplicating across restarts; the
+      // poll loop is idempotent. Pseudo is resolved (and cached) before
+      // the body string is built so the notification reads
+      // "marwan wants to connect" instead of a truncated wallet.
+      for (const requester of lists.pendingIn) {
+        const name = await displayNameFor(requester);
+        if (cancelled) return;
         pushNotification({
           wallet,
           kind: "friend-request",
-          title: "✓ Friend request accepted",
-          body: `${friend.slice(0, 6)}…${friend.slice(-4)} accepted your request`,
-          href: `/u/${friend}`,
-          dedupeId: `friend-accepted-${friend}`,
+          title: "👤 New friend request",
+          body: `${name} wants to connect`,
+          href: `/u/${requester}`,
+          dedupeId: `friend-request-${requester}`,
         });
       }
-    }
 
-    writeSnapshot(wallet, toSnapshot(lists));
+      // Accepted-by transition — only fire when we have a previous
+      // snapshot. First poll for a wallet seeds the snapshot without
+      // notifying, otherwise every long-standing friend would notify.
+      if (prev) {
+        const prevPendingOut = new Set(prev.pendingOut);
+        const prevFriends = new Set(prev.friends);
+        for (const friend of lists.friends) {
+          if (prevFriends.has(friend)) continue; // already a friend last poll
+          if (!prevPendingOut.has(friend)) continue; // didn't originate from MY request
+          const name = await displayNameFor(friend);
+          if (cancelled) return;
+          pushNotification({
+            wallet,
+            kind: "friend-request",
+            title: "✓ Friend request accepted",
+            body: `${name} accepted your request`,
+            href: `/u/${friend}`,
+            dedupeId: `friend-accepted-${friend}`,
+          });
+        }
+      }
+
+      if (!cancelled) writeSnapshot(wallet, toSnapshot(lists));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [wallet, listsQuery.data]);
 }

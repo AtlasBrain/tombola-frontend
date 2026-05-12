@@ -134,8 +134,38 @@ export interface PushArgs {
 
 export function pushNotification(args: PushArgs): Notification | null {
   const list = loadFromStorage(args.wallet);
-  if (args.dedupeId && list.some((n) => n.id === args.dedupeId)) {
-    return null;
+  if (args.dedupeId) {
+    const existingIdx = list.findIndex((n) => n.id === args.dedupeId);
+    if (existingIdx >= 0) {
+      const existing = list[existingIdx];
+      // Same dedupeId + same title/body/href = nothing to do. Don't
+      // bump createdAt or mark unread; this is the hot-path on every
+      // poll tick.
+      if (
+        existing.title === args.title &&
+        existing.body === args.body &&
+        existing.href === args.href
+      ) {
+        return null;
+      }
+      // Same dedupeId but title or body changed — typically because a
+      // pseudo finally resolved and the renderer's body now reads
+      // "marwan reserved a seat" instead of "5mvi…dYv5 reserved …".
+      // Update in place WITHOUT bumping createdAt so the notification
+      // doesn't jump back to the top of the list. Preserve the read flag
+      // — if the user already saw it, no reason to re-surface as unread.
+      const updated: Notification = {
+        ...existing,
+        title: args.title,
+        body: args.body,
+        href: args.href,
+      };
+      const next = [...list];
+      next[existingIdx] = updated;
+      writeToStorage(args.wallet, next);
+      notify(args.wallet);
+      return updated;
+    }
   }
   const id = args.dedupeId ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const note: Notification = {

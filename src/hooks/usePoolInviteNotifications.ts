@@ -13,6 +13,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useQuery } from "@tanstack/react-query";
 import { getInvitesForWallet } from "@/lib/pool-invite-client";
 import { pushNotification } from "@/lib/notifications";
+import { displayNameFor } from "@/lib/pseudo-cache";
 
 export function usePoolInviteNotifications() {
   const { publicKey } = useWallet();
@@ -32,19 +33,31 @@ export function usePoolInviteNotifications() {
   useEffect(() => {
     if (!wallet) return;
     if (!invitesQuery.data) return;
-    for (const inv of invitesQuery.data) {
-      if (inv.status !== "sent") continue;
-      pushNotification({
-        wallet,
-        kind: "invite",
-        title: "🎟 Friend invited you to a private pool",
-        body: `${inv.inviter.slice(0, 6)}…${inv.inviter.slice(-4)} reserved a seat for you`,
-        href: `/pool/private/${inv.pool}`,
-        // One persistent notif per (wallet, pool) — re-pushing with the
-        // same dedupeId is a no-op so this is safe to call on every
-        // poll tick.
-        dedupeId: `pool-invite-${inv.pool}`,
-      });
-    }
+    let cancelled = false;
+    (async () => {
+      for (const inv of invitesQuery.data!) {
+        if (inv.status !== "sent") continue;
+        // Resolve the inviter's pseudo (cached after first hit) so the
+        // notification body shows "marwan reserved a seat for you"
+        // rather than a truncated wallet address. Falls back to
+        // shortAddress when no pseudo is claimed.
+        const inviterName = await displayNameFor(inv.inviter);
+        if (cancelled) return;
+        pushNotification({
+          wallet,
+          kind: "invite",
+          title: `🎟 ${inviterName} invited you to a private pool`,
+          body: `${inviterName} reserved a seat for you`,
+          href: `/pool/private/${inv.pool}`,
+          // One persistent notif per (wallet, pool) — re-pushing with the
+          // same dedupeId is a no-op so this is safe to call on every
+          // poll tick.
+          dedupeId: `pool-invite-${inv.pool}`,
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [wallet, invitesQuery.data]);
 }
