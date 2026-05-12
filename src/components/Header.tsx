@@ -14,16 +14,19 @@ type NavItem =
   | { kind: "anchor"; id: string; label: string }
   | { kind: "link"; href: string; label: string };
 
-// Full nav — only renders on the homepage where the anchor sections actually
-// exist. PUBLIC POOLS / HOW IT WORKS / FAQ all scroll to ids inside the
-// homepage's long-form layout, so on any other route they'd no-op.
+// Full nav — only renders on the homepage where the PUBLIC POOLS anchor
+// actually exists; subroute version uses a cross-page link instead.
+//
+// HOW IT WORKS and FAQ used to live here but they're scroll-anchors that
+// only existed on the homepage AND overflowed the desktop center column
+// at mid widths (1100-1300px), overlapping the right-side controls.
+// Both are still reachable: the homepage scrolls past them naturally,
+// and the footer has direct links.
 const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
   { kind: "link",   href: "/create",     label: "CREATE POOL" },
   { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
   { kind: "link",   href: "/leaderboard",label: "LEADERBOARD" },
-  { kind: "anchor", id: "how-it-works",  label: "HOW IT WORKS" },
-  { kind: "anchor", id: "faq",           label: "FAQ" },
 ];
 
 // Subroute nav — only real routes (anchors don't exist outside homepage so
