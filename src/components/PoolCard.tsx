@@ -99,7 +99,7 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
       >
         <div className="flex items-baseline justify-between">
           <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">POT</div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
             {isDrawing ? "FINAL · AWAITING REVEAL" : ""}
           </div>
         </div>
@@ -117,15 +117,15 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
       {/* Mini stats — TICKETS / BUYERS / CLOSES IN */}
       <div className="mt-3 grid grid-cols-3 gap-2">
         <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">TICKETS</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">TICKETS</div>
           <div className="mt-1 font-display text-xl uppercase tabular-nums">{tickets.toLocaleString()}</div>
         </div>
         <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">BUYERS</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">BUYERS</div>
           <div className="mt-1 font-display text-xl uppercase tabular-nums">{buyers}</div>
         </div>
         <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">CLOSES IN</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">CLOSES IN</div>
           <div className="mt-1 font-display text-xl uppercase tabular-nums">
             <Countdown targetUnix={pool.closeTimeUnix} />
           </div>

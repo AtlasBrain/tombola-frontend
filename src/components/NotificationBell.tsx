@@ -206,7 +206,7 @@ export function NotificationBell() {
                           >
                             {n.title}
                           </span>
-                          <span className="shrink-0 font-mono text-[9px] uppercase tracking-widest text-neutral-600">
+                          <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                             {relativeTime(n.createdAt, nowSec)}
                           </span>
                         </div>

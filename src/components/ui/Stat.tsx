@@ -71,7 +71,7 @@ export function Metric({ label, value, sub, valueColor }: StatProps) {
 export function StatTile({ label, value, sub, valueColor }: StatProps) {
   return (
     <div>
-      <span className="block font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+      <span className="block font-mono text-[10px] uppercase tracking-widest text-neutral-400">
         {label}
       </span>
       <div
@@ -81,7 +81,7 @@ export function StatTile({ label, value, sub, valueColor }: StatProps) {
         {value}
       </div>
       {sub && (
-        <div className="mt-1 font-mono text-[10px] text-neutral-600">
+        <div className="mt-1 font-mono text-[10px] text-neutral-400">
           {sub}
         </div>
       )}

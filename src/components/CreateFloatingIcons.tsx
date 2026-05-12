@@ -11,7 +11,7 @@
  */
 export function CreateFloatingIcons() {
   return (
-    <div className="pointer-events-none absolute inset-0 hidden md:block">
+    <div className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block">
       {/* ============ RIGHT-HALF CLUSTER ============ */}
 
       {/* Top-right: KEY (private invite — mint, primary) */}

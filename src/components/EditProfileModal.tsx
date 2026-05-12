@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { editProfile, type ProfileRow } from "@/lib/profile-client";
 import { invalidatePseudo } from "@/lib/pseudo-cache";
+import { CloseButton } from "@/components/ui/CloseButton";
 
 interface Props {
   /** Current profile loaded from /api/profile/[handle]. Pre-fills the form. */
@@ -92,12 +93,17 @@ export function EditProfileModal({ initial, onSaved, onClose }: Props) {
         className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950 p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-display text-xl uppercase tracking-tight">
-          Edit profile
-        </h2>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-          Signed by your wallet — no password
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl uppercase tracking-tight">
+              Edit profile
+            </h2>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+              Signed by your wallet — no password
+            </p>
+          </div>
+          <CloseButton onClick={onClose} label="Close edit profile" />
+        </div>
 
         {/* Pseudo */}
         <label className="mt-5 block">

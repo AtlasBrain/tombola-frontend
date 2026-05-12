@@ -315,7 +315,7 @@ export function CreatePoolForm({ onCreated }: Props) {
           >
             Ticket price
           </label>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
             What each ticket costs
           </span>
         </div>
@@ -435,7 +435,7 @@ export function CreatePoolForm({ onCreated }: Props) {
             <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
               Pick friends to invite
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
               one code per friend · max 100
             </span>
           </div>
@@ -528,7 +528,7 @@ function MiniStatInput({
     >
       <label
         htmlFor={id}
-        className="font-mono text-[9px] uppercase tracking-widest text-neutral-500"
+        className="font-mono text-[10px] uppercase tracking-widest text-neutral-400"
       >
         {label}
       </label>

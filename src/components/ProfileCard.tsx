@@ -269,12 +269,12 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
         {(profile.isPublic || isOwner) && (
           <>
             {!profile.isPublic && isOwner && (
-              <p className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
+              <p className="mt-3 rounded-xl border border-amber-700/40 bg-amber-900/20 p-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
                 Private — only you see this section
               </p>
             )}
             {isOwner && pendingIn > 0 && (
-              <div className="mt-3 rounded-lg border border-amber-700/40 bg-amber-900/20 p-3">
+              <div className="mt-3 rounded-xl border border-amber-700/40 bg-amber-900/20 p-3">
                 <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-amber-300">
                   ⋯ {pendingIn} pending friend request
                   {pendingIn === 1 ? "" : "s"}
@@ -386,7 +386,7 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
 
             {/* Badges — Phase 3+ rule-derived. Empty state for now. */}
             <div className="mt-4 flex flex-wrap gap-1.5">
-              <span className="rounded-full border border-neutral-800 bg-neutral-900 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+              <span className="rounded-full border border-neutral-800 bg-neutral-900 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                 No badges yet
               </span>
             </div>

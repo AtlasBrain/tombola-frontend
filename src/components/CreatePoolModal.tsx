@@ -6,6 +6,7 @@ import { CreatePoolForm, type CreateUiMode } from "@/components/CreatePoolForm";
 import { RedemptionLinkList } from "@/components/RedemptionLinkList";
 import { InviteFriendsTab } from "@/components/InviteFriendsTab";
 import { MINT } from "@/lib/colors";
+import { CloseButton } from "@/components/ui/CloseButton";
 
 interface CreatedPayload {
   poolAddress: string;
@@ -101,7 +102,7 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
         className="grad-private rounded-3xl border border-neutral-800 bg-neutral-950 p-7 shadow-2xl shadow-black/60"
       >
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0 flex-1">
             <p
               className="font-mono text-[10px] uppercase tracking-widest"
               style={{ color: MINT }}
@@ -109,25 +110,16 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
               {created ? "Pool created" : "New private pool"}
             </p>
             <h2
-              className="mt-1 font-display text-3xl uppercase"
+              className="mt-1 font-display text-2xl uppercase sm:text-3xl"
               style={{ color: MINT }}
             >
               {created ? "You're live" : "Parameters"}
             </h2>
           </div>
-          <button
-            type="button"
+          <CloseButton
             onClick={onClose}
-            aria-label="Close"
-            style={{
-              borderColor: `${MINT}66`,
-              color: MINT,
-              background: `${MINT}10`,
-            }}
-            className="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition hover:brightness-125"
-          >
-            {created ? "Done" : "Cancel"}
-          </button>
+            label={created ? "Close — codes saved" : "Cancel create pool"}
+          />
         </div>
 
         <div className="mt-6">

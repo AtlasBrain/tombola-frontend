@@ -26,6 +26,8 @@ import {
   sendFriendAction,
 } from "@/lib/friend-client";
 import { MINT } from "@/lib/colors";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { CloseButton } from "@/components/ui/CloseButton";
 import { useToast } from "@/components/Toast";
 
 interface Props {
@@ -182,35 +184,38 @@ export function SearchPalette({ open, onClose }: Props) {
         onKeyDown={onKey}
         className="w-full max-w-[560px] rounded-2xl border border-neutral-800 bg-neutral-950/95 p-2 shadow-2xl shadow-black/60"
       >
-        <div className="relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            ref={inputRef}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search players, pseudos, wallets…"
-            aria-label="Search query"
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-9 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              ref={inputRef}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search players, pseudos, wallets…"
+              aria-label="Search query"
+              className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-9 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </div>
+          <CloseButton onClick={onClose} label="Close search" />
         </div>
 
         {/* Status row */}
-        <div className="px-3 pt-2 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+        <div className="px-3 pt-2 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
           {error ? (
             <span className="text-rose-400">{error}</span>
           ) : loading ? (
@@ -278,7 +283,7 @@ export function SearchPalette({ open, onClose }: Props) {
                           <>
                             {r.pseudo}
                             {!r.isPublic && (
-                              <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+                              <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                                 🔒 private
                               </span>
                             )}
@@ -299,27 +304,13 @@ export function SearchPalette({ open, onClose }: Props) {
                       strangers = inline +Add (saves a navigation hop). */}
                   <span className="ml-auto flex shrink-0 items-center gap-2">
                     {isSelf ? (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600">
-                        You
-                      </span>
+                      <StatusPill kind="you" />
                     ) : isFriend ? (
-                      <span
-                        className="font-mono text-[9px] uppercase tracking-widest"
-                        style={{ color: MINT }}
-                      >
-                        ✓ Friends
-                      </span>
+                      <StatusPill kind="friends" />
                     ) : isPendingOut ? (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
-                        Sent
-                      </span>
+                      <StatusPill kind="sent" />
                     ) : isPendingIn ? (
-                      <span
-                        className="font-mono text-[9px] uppercase tracking-widest"
-                        style={{ color: "#e8d89e" }}
-                      >
-                        Accept on profile →
-                      </span>
+                      <StatusPill kind="pending" label="ACCEPT →" />
                     ) : viewer ? (
                       <button
                         type="button"
@@ -348,7 +339,7 @@ export function SearchPalette({ open, onClose }: Props) {
         )}
 
         {/* Keyboard-shortcut footer */}
-        <div className="mt-2 flex items-center justify-between px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-neutral-600">
+        <div className="mt-2 flex items-center justify-between px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
           <span>
             <kbd className="rounded border border-neutral-800 px-1.5 py-0.5">↑↓</kbd>{" "}
             navigate ·{" "}

@@ -290,7 +290,7 @@ export function AdminRedemptionStatus({
                   {r.code.slice(0, 16)}…
                 </code>
                 {isClosed ? (
-                  <span className="shrink-0 rounded bg-neutral-900 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+                  <span className="shrink-0 rounded bg-neutral-900 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                     Voided
                   </span>
                 ) : (

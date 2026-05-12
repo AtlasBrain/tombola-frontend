@@ -199,7 +199,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 sm:p-5">
-      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500 sm:text-[10px]">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 sm:text-[10px]">
         {label}
       </div>
       <div
@@ -209,7 +209,7 @@ function Stat({
         {value}
       </div>
       {sub && (
-        <div className="mt-1 font-mono text-[9px] uppercase tracking-widest text-neutral-500 sm:text-[10px]">
+        <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-400 sm:text-[10px]">
           {sub}
         </div>
       )}
@@ -318,7 +318,7 @@ function Metric({
 }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
         {label}
       </div>
       <div

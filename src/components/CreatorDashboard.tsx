@@ -11,6 +11,7 @@ import { formatSol, shortAddress} from "@/lib/format";
 import { Metric, Stat } from "@/components/ui/Stat";
 import { UserName } from "@/components/UserName";
 import { Countdown } from "@/components/Countdown";
+import { StatusPill, type StatusKind } from "@/components/ui/StatusPill";
 import { MINT } from "@/lib/colors";
 
 // Heavy form modal — 178 LOC + transitively pulls CreatePoolForm + the
@@ -39,34 +40,14 @@ function durationLabel(openSec: number, closeSec: number): string {
   return `${Math.floor(secs / 60)}m`;
 }
 
-function statusLabel(
+function statusKindFor(
   state: 0 | 1 | 2,
   closeTimeUnix: number,
-): { label: string; cls: string; style?: React.CSSProperties } {
-  if (state === 2)
-    return {
-      label: "✓ RESOLVED",
-      cls: "border border-neutral-800 bg-neutral-900/50 text-neutral-400",
-    };
-  if (state === 1)
-    return {
-      label: "◷ DRAWING",
-      cls: "border border-amber-500/30 bg-amber-500/10 text-amber-400",
-    };
-  if (closeTimeUnix * 1000 <= Date.now())
-    return {
-      label: "CLOSED",
-      cls: "border border-amber-500/30 bg-amber-500/10 text-amber-400",
-    };
-  return {
-    label: "▲ OPEN",
-    cls: "border",
-    style: {
-      borderColor: `${MINT}4d`,
-      background: `${MINT}1a`,
-      color: MINT,
-    },
-  };
+): StatusKind {
+  if (state === 2) return "resolved";
+  if (state === 1) return "drawing";
+  if (closeTimeUnix * 1000 <= Date.now()) return "closed";
+  return "open";
 }
 
 export function CreatorDashboard() {
@@ -260,7 +241,7 @@ function PoolsSection({
 }
 
 function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
-  const status = statusLabel(pool.state, pool.closeTimeUnix);
+  const kind = statusKindFor(pool.state, pool.closeTimeUnix);
   // Truly live = still accepting tickets (Open AND not past close). Closed-
   // but-not-resolved pools don't show a redemption-ratio cell because no new
   // redemptions can land — they're waiting for the keeper to commit.
@@ -290,12 +271,7 @@ function PoolRow({ pool, rpcUrl }: { pool: PoolRow; rpcUrl: string }) {
             >
               Private · {shortAddress(pool.poolAddress)}
             </Link>
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${status.cls}`}
-              style={status.style}
-            >
-              {status.label}
-            </span>
+            <StatusPill kind={kind} />
           </div>
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
             <a

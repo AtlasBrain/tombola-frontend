@@ -16,7 +16,7 @@
  */
 export function MyTicketsFloatingIcons() {
   return (
-    <div className="pointer-events-none absolute inset-0 hidden md:block">
+    <div className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block">
       {/* ============ RIGHT-HALF CLUSTER (no text behind here) ============ */}
 
       {/* Top-right: SOL coin (large, primary) */}

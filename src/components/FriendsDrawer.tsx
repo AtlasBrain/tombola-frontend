@@ -193,7 +193,7 @@ function FriendRow({
         )}
       </span>
       <span
-        className="font-mono text-[9px] uppercase tracking-widest text-neutral-700 transition group-hover:text-neutral-400"
+        className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 transition group-hover:text-neutral-300"
         aria-hidden
         onClick={onNavigate}
       >

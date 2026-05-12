@@ -146,7 +146,7 @@ function ForCreatorBadge() {
     <span
       role="status"
       aria-label="For creators"
-      className="inline-flex select-none items-center gap-2 self-start rounded-md border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-300"
+      className="inline-flex select-none items-center gap-2 self-start rounded-full border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-300"
     >
       <span
         className="pulse-soft h-1.5 w-1.5 rounded-full"
@@ -306,7 +306,7 @@ function Stat({
       >
         {value}
       </div>
-      <div className="mt-2 font-mono text-[9px] uppercase tracking-widest text-neutral-500 sm:mt-3 sm:text-[10px]">
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-neutral-400 sm:mt-3 sm:text-[10px]">
         {label}
       </div>
     </div>

@@ -299,7 +299,7 @@ function NotificationRow({
         )}
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
           {relativeTime(note.createdAt, nowSec)}
         </span>
         {!note.read && (

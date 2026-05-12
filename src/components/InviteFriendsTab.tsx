@@ -23,7 +23,8 @@ import {
   revokePoolInvite,
   type InvitePublicView,
 } from "@/lib/pool-invite-client";
-import { MINT, SAND } from "@/lib/colors";
+import { MINT } from "@/lib/colors";
+import { StatusPill } from "@/components/ui/StatusPill";
 import {
   bytesToBase64Url,
   loadCodesFromStorage,
@@ -268,12 +269,7 @@ function InviteRow({
           className="truncate text-sm text-neutral-100 transition hover:text-white"
         />
       </span>
-      <span
-        className="font-mono text-[9px] uppercase tracking-widest"
-        style={{ color: sent ? SAND : MINT }}
-      >
-        {sent ? "SENT" : "REDEEMED ✓"}
-      </span>
+      <StatusPill kind={sent ? "sent" : "redeemed"} />
       {sent && (
         <button
           type="button"

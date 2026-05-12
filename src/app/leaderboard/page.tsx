@@ -43,7 +43,7 @@ export default function LeaderboardPage() {
       <Header />
       <main className="mx-auto max-w-5xl px-4 pb-12 sm:px-6">
         <section className="pt-12 pb-8 sm:pt-16">
-          <span className="inline-flex select-none items-center gap-2 rounded-md border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
+          <span className="inline-flex select-none items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
             <span
               className="pulse-soft h-1.5 w-1.5 rounded-full"
               style={{ background: MINT }}
@@ -167,7 +167,7 @@ function WinnerList({ data, rpcUrl }: { data: Leaderboard; rpcUrl: string }) {
               >
                 {formatSol(w.totalWonLamports)}
               </div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                 won
               </div>
             </div>
@@ -216,7 +216,7 @@ function BuyerList({ data, rpcUrl }: { data: Leaderboard; rpcUrl: string }) {
               >
                 {b.totalTickets.toLocaleString()}
               </div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                 tickets
               </div>
             </div>

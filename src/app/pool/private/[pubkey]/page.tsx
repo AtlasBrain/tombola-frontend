@@ -262,7 +262,7 @@ export default function PrivatePoolPage({
               <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 Pot
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                 {pool.state === 1 ? "FINAL · AWAITING REVEAL" : ""}
               </div>
             </div>
@@ -345,7 +345,7 @@ export default function PrivatePoolPage({
         </div>
 
         {/* === ticket-price hint (subtle) ============================== */}
-        <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+        <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-widest text-neutral-400">
           {formatSol(pool.ticketPriceLamports)} per ticket
         </p>
       </main>
@@ -362,7 +362,7 @@ function MiniStat({
 }) {
   return (
     <div className="rounded-xl border border-neutral-900 bg-neutral-950/80 p-3">
-      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
         {label}
       </div>
       <div className="mt-1 font-display text-xl uppercase tabular-nums">

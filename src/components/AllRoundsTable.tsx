@@ -132,7 +132,7 @@ export function AllRoundsTable({ pools }: { pools: PoolView[] }) {
                       · #{p.round.toString()}
                     </span>
                   </div>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
                     rank #{i + 1}
                   </div>
                 </div>
@@ -181,7 +181,7 @@ function Cell({
 }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
         {label}
       </div>
       <div
