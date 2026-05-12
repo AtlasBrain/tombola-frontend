@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola — XP / Level system mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e; --rose:#e8a5c0;
+    --gold:#f0c44b;
+    --bg:#0a0a0a; --surface:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:36px 0 80px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1200px;margin:0 auto;padding:0 28px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.01em;text-transform:uppercase}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:8px}
+  h2{font-family:'Space Grotesk';font-weight:700;font-size:22px;letter-spacing:.005em;text-transform:uppercase;margin-top:42px;margin-bottom:14px;color:var(--text)}
+  .section-sub{font-family:'Space Mono';font-size:11px;color:var(--text-mute);margin-bottom:18px;line-height:1.6;max-width:880px}
+
+  /* ============ Badge tile ============ */
+  .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:900px){.badge-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:600px){.badge-grid{grid-template-columns:1fr}}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden}
+  .tile-bg{position:absolute;inset:0;opacity:.18;background:radial-gradient(circle at 50% 40%,var(--tier-color) 0%,transparent 60%);z-index:0;pointer-events:none}
+  .tile > *{position:relative;z-index:1}
+  .tile .lvl{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .tile .tier{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.22em}
+  .tile .name{font-family:'Space Grotesk';font-weight:700;font-size:22px;text-align:center;text-transform:uppercase;letter-spacing:.02em}
+  .tile .desc{font-family:'Space Mono';font-size:10px;color:var(--text-mute);text-align:center;letter-spacing:.05em;line-height:1.6;max-width:240px}
+
+  /* Badge SVG container */
+  .badge{width:120px;height:120px;display:flex;align-items:center;justify-content:center;border-radius:50%;position:relative;border:2px solid var(--tier-color);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--tier-color) 25%,transparent),color-mix(in srgb,var(--tier-color) 4%,#0a0a0a 96%) 70%)}
+  .badge svg{width:74px;height:74px}
+  .badge.lg{width:160px;height:160px}
+  .badge.lg svg{width:96px;height:96px}
+  .badge.sm{width:48px;height:48px;border-width:1.5px}
+  .badge.sm svg{width:32px;height:32px}
+
+  /* Mythic tier glow */
+  .badge.mythic{border:none;background:conic-gradient(from 0deg,#88cfc4,#c9b5dc,#e8d89e,#e89999,#88cfc4);padding:2px;animation:rotate 10s linear infinite}
+  .badge.mythic-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 50% 35%,rgba(240,196,75,.18),#0a0a0a 70%);display:flex;align-items:center;justify-content:center}
+  @keyframes rotate{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{filter:drop-shadow(0 0 4px var(--tier-color))}50%{filter:drop-shadow(0 0 12px var(--tier-color))}}
+  .badge svg{animation:pulse 4s ease-in-out infinite}
+
+  /* ============ XP bar ============ */
+  .xp-card{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;gap:24px;align-items:center}
+  .xp-card .who{display:flex;flex-direction:column;gap:4px}
+  .xp-card .level-line{display:flex;gap:10px;align-items:baseline}
+  .xp-card .lvl-num{font-family:'Space Grotesk';font-weight:700;font-size:36px;line-height:1;color:var(--mint)}
+  .xp-card .lvl-name{font-family:'Space Grotesk';font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.01em;color:var(--text)}
+  .xp-card .tier-line{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .xp-card .progress-wrap{flex:1}
+  .xp-card .progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-mute)}
+  .xp-card .progress-top .next{color:var(--text)}
+  .xp-card .bar{height:12px;border-radius:99px;background:#0a0a0a;border:1px solid var(--border-soft);overflow:hidden;position:relative}
+  .xp-card .bar .fill{position:absolute;inset:0;background:linear-gradient(90deg,var(--mint) 0%,var(--lavender) 70%,var(--coral) 100%);width:61%;border-radius:99px;box-shadow:0 0 12px rgba(136,207,196,.3)}
+  .xp-card .progress-bottom{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)}
+
+  /* ============ IdentityPill with level ring ============ */
+  .pill-row{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:30px;display:flex;justify-content:center;align-items:center;gap:14px}
+  .id-pill{position:relative;isolation:isolate;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 7px;cursor:pointer;color:#000}
+  .id-pill::before{content:"";position:absolute;inset:0;z-index:-1;background-color:var(--mint);
+    clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+  }
+  .id-pill .avatar-ring{width:28px;height:28px;border-radius:50%;padding:2px;background:conic-gradient(var(--lavender) 0% 75%,rgba(0,0,0,.2) 75% 100%);position:relative}
+  .id-pill .avatar-ring .lvl-chip{position:absolute;bottom:-3px;right:-4px;width:16px;height:16px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Mono';font-size:8px;font-weight:700;border:2px solid var(--mint)}
+  .id-pill .avatar{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#3a6f68,#243a35);overflow:hidden;position:relative}
+  .id-pill .avatar::after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(#88cfc466 0% 25%, transparent 0% 50%) 0/10px 10px;opacity:.45}
+  .id-pill .name{font-family:'Space Grotesk';font-weight:700;font-size:14px;letter-spacing:-.005em;padding-left:6px;line-height:1;text-transform:capitalize}
+  .id-pill .sep{width:1px;height:14px;background:rgba(0,0,0,.2);margin:0 4px}
+  .id-pill .addr{font-family:'Space Mono';font-size:10px;letter-spacing:.04em;font-weight:400;color:rgba(0,0,0,.55)}
+  .id-pill .caret{width:26px;height:26px;border-radius:50%;background:#000;display:inline-flex;align-items:center;justify-content:center;color:#fafafa;font-size:12px;margin-left:4px}
+
+  /* Caption */
+  .pill-cap{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);text-align:center;margin-top:10px}
+
+  /* ============ Level-up toast ============ */
+  .toast{background:linear-gradient(135deg,rgba(201,181,220,.15),transparent 60%),var(--surface);border:1px solid rgba(201,181,220,.5);border-radius:18px;padding:18px 20px;display:flex;gap:14px;align-items:center;max-width:420px}
+  .toast .badge{width:54px;height:54px;border:2px solid var(--lavender);background:radial-gradient(circle at 50% 35%,rgba(201,181,220,.22),transparent 70%)}
+  .toast .badge svg{width:34px;height:34px}
+  .toast .body .head{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--lavender)}
+  .toast .body .title{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.005em;margin-top:2px}
+  .toast .body .sub{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-mute);margin-top:4px}
+
+  /* ============ Level-up modal (tier crossing) ============ */
+  .modal-stage{position:relative;background:radial-gradient(ellipse at 50% 40%,#1a1620 0%,#070707 70%);border:1px solid var(--border-soft);border-radius:24px;padding:50px 32px;text-align:center;overflow:hidden}
+  .modal-stage::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 20% 30%,rgba(201,181,220,.25),transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(136,207,196,.18),transparent 40%);
+    pointer-events:none}
+  .modal-stage .badge{margin:0 auto}
+  .modal-stage .tier-line{position:relative;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.3em;color:var(--mint);margin-top:24px}
+  .modal-stage .new-tier{position:relative;font-family:'Space Grotesk';font-weight:700;font-size:48px;letter-spacing:-.01em;text-transform:uppercase;margin-top:6px;line-height:1}
+  .modal-stage .lvl-num{position:relative;font-family:'Space Grotesk';font-weight:700;font-size:64px;color:var(--mint);line-height:1;margin-top:14px}
+  .modal-stage .creature{position:relative;font-family:'Space Mono';font-size:14px;text-transform:uppercase;letter-spacing:.15em;color:var(--text);margin-top:6px}
+  .modal-stage .flavor{position:relative;font-family:'Space Mono';font-size:11px;color:var(--text-mute);max-width:380px;margin:18px auto 0;line-height:1.7}
+  .modal-stage .btn{position:relative;display:inline-block;margin-top:26px;padding:11px 22px;background:var(--mint);color:#000;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;border-radius:999px;cursor:pointer;text-decoration:none;border:none}
+  .modal-stage .btn:hover{filter:brightness(.95)}
+
+  /* ============ Layout helpers ============ */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:780px){.grid-2{grid-template-columns:1fr}}
+  .stack{display:flex;flex-direction:column;gap:14px}
+
+  /* ============ Decisions table ============ */
+  .decisions{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-top:22px}
+  .decisions table{width:100%;border-collapse:collapse;font-size:13px}
+  .decisions td{padding:10px 14px;border-bottom:1px dashed var(--border-soft);vertical-align:top}
+  .decisions tr:last-child td{border-bottom:0}
+  .decisions td.q{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text);width:35%}
+  .decisions td.a{color:var(--text-mute);line-height:1.7}
+  .decisions td.a strong{color:var(--mint)}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h1>XP / Level system — visual proposal</h1>
+  <p class="lede">6 tiers · 100 levels · plankton to mythic ocean lord · cosmetic-only v1</p>
+
+  <h2>1 · Six tier examples</h2>
+  <p class="section-sub">
+    One badge per tier so the visual language is legible at a glance. Each badge is rendered as inline SVG — same component, parameterized by level, no asset pipeline. Lower tiers have flat single-color silhouettes; mid tiers introduce gradients + glow; mythic tier (L86+) gets the animated holographic rim.
+  </p>
+
+  <div class="badge-grid">
+
+    <!-- Tier 1 -->
+    <div class="tile" style="--tier-color:var(--coral)">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 1 · PLANKTON</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <ellipse cx="50" cy="50" rx="22" ry="14" fill="var(--coral)" opacity=".85"/>
+          <circle cx="42" cy="50" r="2.5" fill="#0a0a0a"/>
+          <path d="M 26 50 Q 16 44 16 50 Q 16 56 26 50 Z" fill="var(--coral)" opacity=".6"/>
+          <path d="M 70 44 Q 80 38 80 44 M 70 56 Q 80 62 80 56" stroke="var(--coral)" stroke-width="1.5" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="tier" style="color:var(--coral)">TIER 1 · CRUSTACEANS</div>
+      <div class="name">Plankton</div>
+      <div class="desc">Entry tier. Pastel pink + sand palette. Levels 1–10 (plankton → crab).</div>
+    </div>
+
+    <!-- Tier 2 -->
+    <div class="tile" style="--tier-color:var(--lavender)">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 18 · ANGELFISH</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 30 50 Q 50 25 75 50 Q 50 75 30 50 Z" fill="var(--lavender)"/>
+          <path d="M 22 50 L 30 40 L 30 60 Z" fill="var(--lavender)" opacity=".7"/>
+          <circle cx="60" cy="46" r="2.5" fill="#0a0a0a"/>
+          <path d="M 50 36 Q 56 30 60 38 M 50 64 Q 56 70 60 62" stroke="var(--lavender)" stroke-width="1.5" opacity=".8"/>
+        </svg>
+      </div>
+      <div class="tier" style="color:var(--lavender)">TIER 2 · SMALL FISH</div>
+      <div class="name">Angelfish</div>
+      <div class="desc">Casual user tier. Lavender + cyan, soft glow. Levels 11–25.</div>
+    </div>
+
+    <!-- Tier 3 -->
+    <div class="tile" style="--tier-color:var(--mint)">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 32 · STINGRAY</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 50 30 Q 80 40 75 60 Q 50 70 25 60 Q 20 40 50 30 Z" fill="var(--mint)" opacity=".9"/>
+          <path d="M 70 56 Q 84 70 88 84" stroke="var(--mint)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="45" cy="46" r="1.6" fill="#0a0a0a"/>
+          <circle cx="55" cy="46" r="1.6" fill="#0a0a0a"/>
+        </svg>
+      </div>
+      <div class="tier" style="color:var(--mint)">TIER 3 · OPEN OCEAN</div>
+      <div class="name">Stingray</div>
+      <div class="desc">Regular user tier. Mint + deep teal, gradient fills. Levels 26–45.</div>
+    </div>
+
+    <!-- Tier 4 -->
+    <div class="tile" style="--tier-color:#6aa1c5">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 50 · HAMMERHEAD</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 30 36 Q 22 44 22 50 Q 22 56 30 64 L 50 60 L 76 64 Q 80 60 78 50 Q 80 40 76 36 L 50 40 Z" fill="#6aa1c5"/>
+          <circle cx="26" cy="42" r="1.8" fill="#0a0a0a"/>
+          <circle cx="26" cy="58" r="1.8" fill="#0a0a0a"/>
+          <path d="M 76 36 Q 86 30 90 28 M 76 64 Q 86 70 90 72" stroke="#6aa1c5" stroke-width="1.5"/>
+          <path d="M 48 60 Q 58 64 50 70" stroke="#6aa1c5" stroke-width="2" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="tier" style="color:#6aa1c5">TIER 4 · PREDATORS</div>
+      <div class="name">Hammerhead</div>
+      <div class="desc">Committed user tier. Steel blue, sharp edges, inner glow. Levels 46–65.</div>
+    </div>
+
+    <!-- Tier 5 -->
+    <div class="tile" style="--tier-color:#4a5fc1">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 80 · BLUE WHALE</div>
+      <div class="badge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M 18 50 Q 32 32 60 36 Q 84 40 86 50 Q 84 60 60 64 Q 32 68 18 50 Z" fill="#4a5fc1"/>
+          <path d="M 78 38 Q 90 28 94 30 Q 88 36 78 48 M 78 62 Q 90 72 94 70 Q 88 64 78 52" fill="#4a5fc1" opacity=".7"/>
+          <circle cx="32" cy="50" r="2" fill="#0a0a0a"/>
+          <path d="M 50 32 Q 50 24 54 22" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+          <circle cx="56" cy="20" r="1.6" fill="#fff" opacity=".8"/>
+        </svg>
+      </div>
+      <div class="tier" style="color:#4a5fc1">TIER 5 · WHALES</div>
+      <div class="name">Blue Whale</div>
+      <div class="desc">High-value tier. Midnight blue + holographic accents, subtle particle field. Levels 66–85.</div>
+    </div>
+
+    <!-- Tier 6 — Mythic -->
+    <div class="tile" style="--tier-color:var(--gold)">
+      <div class="tile-bg"></div>
+      <div class="lvl">LV. 100 · POSEIDON'S CROWN</div>
+      <div class="badge mythic">
+        <div class="badge mythic-inner">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M 20 60 L 30 40 L 40 56 L 50 30 L 60 56 L 70 40 L 80 60 Z" fill="var(--gold)"/>
+            <circle cx="30" cy="40" r="3" fill="var(--coral)"/>
+            <circle cx="50" cy="30" r="4" fill="var(--mint)"/>
+            <circle cx="70" cy="40" r="3" fill="var(--lavender)"/>
+            <path d="M 20 60 L 80 60" stroke="var(--gold)" stroke-width="3"/>
+            <path d="M 16 68 L 84 68" stroke="var(--gold)" stroke-width="1.5" opacity=".5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="tier" style="color:var(--gold)">TIER 6 · MYTHIC</div>
+      <div class="name">Poseidon's Crown</div>
+      <div class="desc">Apex tier · &lt; 0.1% of users. Animated holographic rim. Levels 86–100.</div>
+    </div>
+
+  </div>
+
+  <h2>2 · XP progress bar (profile page)</h2>
+  <p class="section-sub">
+    Always-visible on the user's own profile + below the avatar on others' profiles. Shows current level + creature name + tier label + bar fill + next-level target. Tier color drives the bar accent (mint here for Tier 3).
+  </p>
+
+  <div class="xp-card">
+    <div class="badge" style="--tier-color:var(--mint);width:90px;height:90px">
+      <svg viewBox="0 0 100 100" fill="none">
+        <path d="M 50 30 Q 80 40 75 60 Q 50 70 25 60 Q 20 40 50 30 Z" fill="var(--mint)" opacity=".9"/>
+        <path d="M 70 56 Q 84 70 88 84" stroke="var(--mint)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="45" cy="46" r="1.6" fill="#0a0a0a"/>
+        <circle cx="55" cy="46" r="1.6" fill="#0a0a0a"/>
+      </svg>
+    </div>
+    <div class="who">
+      <div class="level-line">
+        <span class="lvl-num">32</span>
+        <span class="lvl-name">Stingray</span>
+      </div>
+      <div class="tier-line" style="color:var(--mint)">TIER 3 · OPEN OCEAN</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span>4,210 / 6,860 XP</span>
+        <span class="next">NEXT · Eagle Ray · LV. 33</span>
+      </div>
+      <div class="bar"><div class="fill"></div></div>
+      <div class="progress-bottom">
+        <span>61% TO LV. 33</span>
+        <span>+2,650 XP TO NEXT</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>3 · IdentityPill — level ring + chip</h2>
+  <p class="section-sub">
+    Adds a small tier-colored ring around the avatar with a numeric level chip in the bottom-right corner. The badge ring tints to match the user's current tier (lavender = Tier 2, mint = Tier 3, etc.). Compact enough to fit in the existing pill width.
+  </p>
+
+  <div class="pill-row">
+    <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
+      <button class="id-pill">
+        <span class="avatar-ring">
+          <span class="avatar"></span>
+          <span class="lvl-chip">32</span>
+        </span>
+        <span class="name">Marwan</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+      <div class="pill-cap">Lv. 32 · Stingray · Open Ocean</div>
+    </div>
+  </div>
+
+  <h2>4 · Level-up moments</h2>
+  <p class="section-sub">
+    Two intensities. Most level-ups (within a tier) get a small toast at the corner — non-blocking, ~4s autohide. Tier-crossings (e.g. L25 → L26 = entering Open Ocean) get a full modal with animation + flavor text. Mythic-tier entries (L86+) get the same modal with particle effects added.
+  </p>
+
+  <div class="grid-2">
+    <div>
+      <div style="font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);margin-bottom:10px">4A · TOAST (within-tier level up)</div>
+      <div class="toast">
+        <div class="badge">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M 30 50 Q 50 25 75 50 Q 50 75 30 50 Z" fill="var(--lavender)"/>
+            <path d="M 22 50 L 30 40 L 30 60 Z" fill="var(--lavender)" opacity=".7"/>
+            <circle cx="60" cy="46" r="2.5" fill="#0a0a0a"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="head">LEVEL UP</div>
+          <div class="title">Lv. 18 · Angelfish</div>
+          <div class="sub">+ 1,200 XP · 800 to next</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);margin-bottom:10px">4B · MODAL (tier crossing)</div>
+      <div class="modal-stage">
+        <div class="badge lg" style="--tier-color:#6aa1c5">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M 30 36 Q 22 44 22 50 Q 22 56 30 64 L 50 60 L 76 64 Q 80 60 78 50 Q 80 40 76 36 L 50 40 Z" fill="#6aa1c5"/>
+            <circle cx="26" cy="42" r="1.8" fill="#0a0a0a"/>
+            <circle cx="26" cy="58" r="1.8" fill="#0a0a0a"/>
+            <path d="M 76 36 Q 86 30 90 28 M 76 64 Q 86 70 90 72" stroke="#6aa1c5" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="tier-line" style="color:#6aa1c5">YOU'VE ENTERED</div>
+        <div class="new-tier" style="color:#6aa1c5">PREDATORS</div>
+        <div class="lvl-num" style="color:#6aa1c5">46</div>
+        <div class="creature">Reef Shark</div>
+        <div class="flavor">
+          The water gets colder out here. Bigger fish, sharper teeth. Welcome to the predator tier — only the committed make it this far.
+        </div>
+        <button class="btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>5 · Open product decisions</h2>
+  <p class="section-sub">
+    Each row is a decision the founder needs to make before phase-1 code. The "recommendation" column is my best guess given the brand + audit work to date. Approve or change-request inline; I'll update the spec doc and start phase 1 when all green.
+  </p>
+
+  <div class="decisions">
+    <table>
+      <tr><td class="q">XP lifetime vs seasonal?</td>
+        <td class="a"><strong>Lifetime.</strong> Matches the shrimp-to-whale evolution narrative. Seasonal ranks can land later as a parallel competition.</td></tr>
+      <tr><td class="q">Other users see your level?</td>
+        <td class="a"><strong>Yes by default · respects `profile.isPublic`.</strong> Status doesn't work in private. Private profiles already hide stats; level joins that set.</td></tr>
+      <tr><td class="q">Cosmetic or unlock perks?</td>
+        <td class="a"><strong>Cosmetic only for v1.</strong> Functional perks would touch protocol economics — out of scope. Future options: pool theming at L50+, profile flair at L75+. Never fee discounts.</td></tr>
+      <tr><td class="q">XP source mix?</td>
+        <td class="a"><strong>40% activity · 30% loyalty · 30% value.</strong> Tunable as server weights, no schema change. Avoids spend-pure (whales auto-win) and activity-pure (farming).</td></tr>
+      <tr><td class="q">Backfill existing users?</td>
+        <td class="a"><strong>Yes.</strong> See §6 of PROPOSAL.md. Without it, day-1 users see "Lv. 1 Plankton" and feel demoted. Backfill targets active users to L5–30.</td></tr>
+      <tr><td class="q">Empty private pools earn XP?</td>
+        <td class="a"><strong>Yes, small (100 XP).</strong> Effort acknowledged, but no big reward without participants.</td></tr>
+      <tr><td class="q">Consolation XP for losing?</td>
+        <td class="a"><strong>None extra.</strong> Already covered by the per-ticket grant — playing IS the participation reward.</td></tr>
+      <tr><td class="q">Badges as NFTs at L75+?</td>
+        <td class="a"><strong>Defer.</strong> Cool optionality. Make badge metadata addressable now (`/api/badge/[level]/metadata.json`) so the door stays open without a hard commit.</td></tr>
+      <tr><td class="q">Audio on mythic level-up?</td>
+        <td class="a"><strong>Default off · per-user toggle in settings.</strong></td></tr>
+      <tr><td class="q">Admin flag threshold for farming?</td>
+        <td class="a"><strong>&gt; 10,000 XP/day surfaces in risk feed.</strong> No auto-block — admin reviews + decides.</td></tr>
+    </table>
+  </div>
+
+  <p class="section-sub" style="text-align:center;margin-top:30px">
+    Approve / change-request each row in §5, then I'll write the locked SPEC and start phase 1 (math + schema + tests).
+  </p>
+
+</div>
+
+</body>
+</html>
