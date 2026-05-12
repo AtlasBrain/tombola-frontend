@@ -78,18 +78,17 @@ export function Header() {
     // column. Page content below still respects its own max-w-7xl
     // container, so the body layout doesn't change.
     <header className="relative z-50 px-3 py-4 sm:px-4 sm:py-5">
-      {/* Layout: [logo auto] [nav 1fr centered] [actions auto, hugs right].
-          Old `sm:grid-cols-3` forced fixed 1/3-width columns, so the 4
-          long nav labels overflowed the center third and bled into the
-          right cluster at mid widths (≈1100-1500px) — search button
-          rendered on top of LEADERBOARD. The auto-1fr-auto template lets
-          the right cluster claim only what it needs and pins it to the
-          edge, with the nav free to grow into the middle space. */}
-      <div className="flex items-center justify-between gap-3 sm:grid sm:grid-cols-[auto_1fr_auto] sm:gap-6 lg:gap-8">
+      {/* Layout: logo flush-left, actions flush-right via flex
+          justify-between. The nav is absolutely positioned and centered
+          to the <header> (see <nav> below) so it aligns with the
+          viewport's visual center axis (hero circle + "Where SOL wins
+          big") rather than the center of whatever space is left between
+          logo and actions. */}
+      <div className="flex items-center justify-between gap-3">
         {/* LEFT: logo */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 sm:gap-2.5 sm:justify-self-start"
+          className="flex shrink-0 items-center gap-2 sm:gap-2.5"
           onClick={closeMenu}
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="text-white sm:h-[34px] sm:w-[34px]">
@@ -103,8 +102,17 @@ export function Header() {
           <span className="font-display text-base uppercase tracking-tight sm:text-lg">TOMBOLA</span>
         </Link>
 
-        {/* CENTER: nav links — desktop only */}
-        <nav className="hidden items-center gap-1 justify-self-center sm:flex">
+        {/* CENTER: nav links — desktop only. Absolutely centered to the
+            <header> (which is full-viewport-wide and position:relative)
+            so the nav aligns with the viewport's visual center, not the
+            grid's 1fr center. Because the right cluster (~600px) is much
+            wider than the logo (~150px), the 1fr middle column's center
+            sits left of viewport center — which made the nav misalign
+            with the hero circle + "Where SOL wins big" axis. Absolute
+            positioning sidesteps that by anchoring to the header itself.
+            pointer-events-auto restores clicks (parent doesn't disable
+            them but the wrapper is non-interactive otherwise). */}
+        <nav className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 sm:flex">
           {navItems.map((item) =>
             item.kind === "anchor" ? (
               <a
@@ -124,7 +132,7 @@ export function Header() {
         </nav>
 
         {/* RIGHT: status + CTA + mobile menu toggle */}
-        <div className="flex items-center gap-2 sm:justify-self-end">
+        <div className="flex items-center gap-2">
           <SearchPaletteHost
             trigger={(openPalette) => (
               <button
