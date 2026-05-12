@@ -77,7 +77,7 @@ export function Header() {
     // sits flush-right instead of pinching toward a centered 80rem
     // column. Page content below still respects its own max-w-7xl
     // container, so the body layout doesn't change.
-    <header className="relative z-50 px-3 py-4 sm:px-4 sm:py-5">
+    <header className="relative z-50 px-3 py-4 sm:py-5 sm:pl-10 sm:pr-4">
       {/* Layout: logo flush-left, actions flush-right via flex
           justify-between. The nav is absolutely positioned and centered
           to the <header> (see <nav> below) so it aligns with the
