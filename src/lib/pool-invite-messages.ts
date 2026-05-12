@@ -17,6 +17,19 @@ export function createInviteMessage(
   return `tombola:pool-invite:create:${pool}:${friend}:${nonce}`;
 }
 
+/** Batch-create message — signs over the SORTED list of friend wallets so
+ *  the order they're passed in doesn't affect the canonical message. The
+ *  server re-sorts when verifying. Inviter signs once; server fans out N
+ *  store writes. */
+export function createInviteBatchMessage(
+  pool: string,
+  friends: readonly string[],
+  nonce: string,
+): string {
+  const sorted = [...friends].sort();
+  return `tombola:pool-invite:create-batch:${pool}:${sorted.join(",")}:${nonce}`;
+}
+
 export function claimInviteMessage(pool: string, nonce: string): string {
   return `tombola:pool-invite:claim:${pool}:${nonce}`;
 }

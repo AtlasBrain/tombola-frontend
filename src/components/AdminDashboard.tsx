@@ -11,6 +11,7 @@ import { AdminDashboardStats } from "./AdminDashboardStats";
 import { AdminRedemptionStatus } from "./AdminRedemptionStatus";
 import { AdminTopBuyersBar } from "./AdminTopBuyersBar";
 import { AdminParticipantList } from "./AdminParticipantList";
+import { InviteFriendsTab } from "./InviteFriendsTab";
 
 interface Props {
   poolAddress: string;
@@ -225,6 +226,19 @@ export function AdminDashboard({ poolAddress }: Props) {
             closeTimeUnix={pool.closeTimeUnix}
           />
         </div>
+
+        {/* Friend invites — only meaningful for Whitelist-mode pools
+            (the only flavor where allocating codes to specific wallets
+            makes sense). OneCodePerTicket pools hand out bearer codes
+            that aren't addressable. */}
+        {pool.accessMode === "Whitelist" && (
+          <div className="mt-8 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-5">
+            <h2 className="mb-4 font-display text-lg uppercase tracking-tight text-neutral-200">
+              Invite friends
+            </h2>
+            <InviteFriendsTab poolAddress={poolAddress} />
+          </div>
+        )}
         <div className="mt-8">
           <AdminTopBuyersBar participants={participants} />
         </div>

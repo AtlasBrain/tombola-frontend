@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CreatePoolForm } from "@/components/CreatePoolForm";
+import { CreatePoolForm, type CreateUiMode } from "@/components/CreatePoolForm";
 import { RedemptionLinkList } from "@/components/RedemptionLinkList";
+import { InviteFriendsTab } from "@/components/InviteFriendsTab";
 
 const MINT = "#88cfc4";
 
@@ -12,6 +13,8 @@ interface CreatedPayload {
   codes: string[];
   proofs: Record<string, Uint8Array[]>;
   mode: "Whitelist" | "OneCodePerTicket";
+  uiMode: CreateUiMode;
+  invitedFriends: string[];
 }
 
 interface Props {
@@ -132,47 +135,138 @@ export function CreatePoolModal({ open, onClose, onPoolCreated }: Props) {
           {!created ? (
             <CreatePoolForm onCreated={handlePoolCreated} />
           ) : (
-            <div className="flex flex-col gap-5">
-              <div
-                className="rounded-2xl border p-5"
-                style={{
-                  borderColor: `${MINT}66`,
-                  background: `linear-gradient(135deg, ${MINT}1a, ${MINT}05 60%, transparent)`,
-                  boxShadow: `0 0 0 1px ${MINT}33, 0 8px 30px ${MINT}26`,
-                }}
-              >
-                <p className="text-sm text-neutral-300">
-                  Pool address:{" "}
-                  <Link
-                    href={`/pool/private/${created.poolAddress}`}
-                    className="font-mono hover:underline"
-                    style={{ color: MINT }}
-                  >
-                    {created.poolAddress.slice(0, 8)}…
-                    {created.poolAddress.slice(-4)}
-                  </Link>
-                </p>
-                <p
-                  className="mt-3 font-mono text-[10px] uppercase tracking-widest"
-                  style={{ color: MINT }}
-                >
-                  Save these codes now — they only live in this browser
-                </p>
-                <p className="mt-1 text-xs text-neutral-400">
-                  Codes are bearer tokens; if you lose them you can&apos;t
-                  hand them out. Use Copy all or Download CSV before closing.
-                </p>
-              </div>
-              <RedemptionLinkList
-                poolAddress={created.poolAddress}
-                codes={created.codes}
-                proofs={created.proofs}
-                mode={created.mode}
-              />
-            </div>
+            <SuccessBody created={created} />
           )}
         </div>
       </div>
     </dialog>
+  );
+}
+
+/** Success-screen body. Picks which tabs to render based on the
+ *  pool's UI mode:
+ *
+ *    WHITELIST  → both tabs, INVITE LINKS open by default
+ *    FRIENDS    → both tabs, INVITE FRIENDS open by default (initial
+ *                 allocations already done by CreatePoolForm; the tab
+ *                 lets the creator add more or revoke)
+ *    PUBLIC     → INVITE LINKS only — bearer codes can't be addressed
+ *                 to a specific wallet
+ */
+function SuccessBody({ created }: { created: CreatedPayload }) {
+  const showFriendsTab = created.uiMode !== "OneCodePerTicket";
+  const showLinksTab = created.uiMode !== "Friends";
+  const [tab, setTab] = useState<"links" | "friends">(
+    created.uiMode === "Friends" ? "friends" : "links",
+  );
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div
+        className="rounded-2xl border p-5"
+        style={{
+          borderColor: `${MINT}66`,
+          background: `linear-gradient(135deg, ${MINT}1a, ${MINT}05 60%, transparent)`,
+          boxShadow: `0 0 0 1px ${MINT}33, 0 8px 30px ${MINT}26`,
+        }}
+      >
+        <p className="text-sm text-neutral-300">
+          Pool address:{" "}
+          <Link
+            href={`/pool/private/${created.poolAddress}`}
+            className="font-mono hover:underline"
+            style={{ color: MINT }}
+          >
+            {created.poolAddress.slice(0, 8)}…
+            {created.poolAddress.slice(-4)}
+          </Link>
+        </p>
+        {created.uiMode === "Friends" ? (
+          <>
+            <p
+              className="mt-3 font-mono text-[10px] uppercase tracking-widest"
+              style={{ color: MINT }}
+            >
+              Invited {created.invitedFriends.length} friend
+              {created.invitedFriends.length === 1 ? "" : "s"} · codes never
+              leave this browser
+            </p>
+            <p className="mt-1 text-xs text-neutral-400">
+              Each friend will see a one-click claim banner on the pool
+              page. Manage invites from the Friends tab below.
+            </p>
+          </>
+        ) : (
+          <>
+            <p
+              className="mt-3 font-mono text-[10px] uppercase tracking-widest"
+              style={{ color: MINT }}
+            >
+              Save these codes now — they only live in this browser
+            </p>
+            <p className="mt-1 text-xs text-neutral-400">
+              Codes are bearer tokens; if you lose them you can&apos;t hand
+              them out. Use Copy all or Download CSV before closing.
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Tab bar — only renders when both surfaces are available. */}
+      {showFriendsTab && showLinksTab && (
+        <div
+          className="flex w-fit gap-1 rounded-full border p-1"
+          style={{
+            borderColor: `${MINT}33`,
+            background: "rgba(0,0,0,0.4)",
+          }}
+        >
+          <TabBtn active={tab === "links"} onClick={() => setTab("links")}>
+            INVITE LINKS
+          </TabBtn>
+          <TabBtn active={tab === "friends"} onClick={() => setTab("friends")}>
+            INVITE FRIENDS
+          </TabBtn>
+        </div>
+      )}
+
+      {/* Content */}
+      {(tab === "links" || !showFriendsTab) && showLinksTab && (
+        <RedemptionLinkList
+          poolAddress={created.poolAddress}
+          codes={created.codes}
+          proofs={created.proofs}
+          mode={created.mode}
+        />
+      )}
+      {(tab === "friends" || !showLinksTab) && showFriendsTab && (
+        <InviteFriendsTab poolAddress={created.poolAddress} />
+      )}
+    </div>
+  );
+}
+
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={
+        active
+          ? { background: MINT, color: "#000" }
+          : { color: "#a3a3a3" }
+      }
+      className="rounded-full px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition"
+    >
+      {children}
+    </button>
   );
 }

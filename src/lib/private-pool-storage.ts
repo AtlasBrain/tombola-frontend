@@ -101,7 +101,7 @@ export function removeCodesFromStorage(poolAddress: string): void {
 
 // ---------- base64url helpers (browser + happy-dom compatible) ----------
 
-function bytesToBase64Url(bytes: Uint8Array): string {
+export function bytesToBase64Url(bytes: Uint8Array): string {
   let s = "";
   for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
   const b64 =
@@ -111,7 +111,7 @@ function bytesToBase64Url(bytes: Uint8Array): string {
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function base64UrlToBytes(b64url: string): Uint8Array {
+export function base64UrlToBytes(b64url: string): Uint8Array {
   const b64 = b64url.replace(/-/g, "+").replace(/_/g, "/");
   const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
   const raw =

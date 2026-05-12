@@ -9,6 +9,7 @@ import type { WalletContextState } from "@solana/wallet-adapter-react";
 import { encodeBase58 } from "./base58";
 import {
   claimInviteMessage,
+  createInviteBatchMessage,
   createInviteMessage,
   revokeInviteMessage,
 } from "./pool-invite-messages";
@@ -66,6 +67,58 @@ export async function createPoolInvite(args: CreateInviteArgs): Promise<void> {
     const j = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(j.error ?? `create invite ${res.status}`);
   }
+}
+
+export interface BatchInviteEntry {
+  friend: string;
+  code: string;
+  proofsBase64: string[];
+}
+
+export interface BatchInviteArgs {
+  inviter: string;
+  signMessage: NonNullable<WalletContextState["signMessage"]>;
+  pool: string;
+  friends: BatchInviteEntry[];
+}
+
+export interface BatchInviteResult {
+  friend: string;
+  ok: boolean;
+  error?: string;
+}
+
+/** Allocate codes to N friends in a single signed call. Used at pool
+ *  creation (FRIENDS mode bakes initial seats) and in the admin tab. */
+export async function createPoolInviteBatch(
+  args: BatchInviteArgs,
+): Promise<BatchInviteResult[]> {
+  if (args.friends.length === 0) return [];
+  const nonce = await getNonce(args.inviter);
+  const signatureBase58 = await signMessageBase58(
+    args.signMessage,
+    createInviteBatchMessage(
+      args.pool,
+      args.friends.map((f) => f.friend),
+      nonce,
+    ),
+  );
+  const res = await fetch("/api/pool-invite/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      inviter: args.inviter,
+      pool: args.pool,
+      friends: args.friends,
+      nonce,
+      signatureBase58,
+    }),
+  });
+  if (!res.ok) {
+    const j = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(j.error ?? `batch invite ${res.status}`);
+  }
+  return ((await res.json()) as { results: BatchInviteResult[] }).results;
 }
 
 export interface RevokeInviteArgs {
