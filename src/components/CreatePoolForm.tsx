@@ -360,6 +360,7 @@ export function CreatePoolForm({ onCreated }: Props) {
           min={0}
           max={90}
           errorOnRow={errors.duration}
+          hint="How long buyers can buy tickets. Combined with hours; minimum 1 hour total."
         />
         <MiniStatInput
           id="hours"
@@ -368,6 +369,7 @@ export function CreatePoolForm({ onCreated }: Props) {
           onChange={setHours}
           min={0}
           max={23}
+          hint="Extra hours on top of days. Use this to fine-tune the close time."
         />
         <MiniStatInput
           id="feePct"
@@ -378,6 +380,7 @@ export function CreatePoolForm({ onCreated }: Props) {
           max={5}
           step={0.5}
           errorOnRow={errors.feePct}
+          hint="Your cut from the pot at settle. 0–5%. Paid out automatically to your wallet."
         />
         {/* Code count is hidden in FRIENDS mode — the friend picker
             determines how many codes the merkle tree contains. */}
@@ -390,6 +393,7 @@ export function CreatePoolForm({ onCreated }: Props) {
             min={1}
             max={5000}
             errorOnRow={errors.codeCount}
+            hint="How many invite codes to generate. Each code lets one wallet join the pool. Codes are saved only in this browser — write them down."
           />
         )}
       </div>
@@ -500,6 +504,7 @@ function MiniStatInput({
   max,
   step,
   errorOnRow,
+  hint,
 }: {
   id: string;
   label: string;
@@ -509,6 +514,9 @@ function MiniStatInput({
   max: number;
   step?: number;
   errorOnRow?: string;
+  /** One-line explainer shown under the label so new creators don't
+   *  have to guess what the field means. */
+  hint?: string;
 }) {
   return (
     <div
@@ -517,6 +525,7 @@ function MiniStatInput({
           ? "border-rose-700/50"
           : "border-neutral-900 focus-within:border-[#88cfc4]/40"
       }`}
+      title={hint}
     >
       <label
         htmlFor={id}

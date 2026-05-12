@@ -7,6 +7,7 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { MyProfileButton } from "@/components/MyProfileButton";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SearchPaletteHost } from "@/components/SearchPaletteHost";
+import { ZeroBalanceBanner } from "@/components/ZeroBalanceBanner";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
 type NavItem =
@@ -18,7 +19,7 @@ type NavItem =
 // homepage's long-form layout, so on any other route they'd no-op.
 const NAV_HOMEPAGE: readonly NavItem[] = [
   { kind: "anchor", id: "pools",         label: "PUBLIC POOLS" },
-  { kind: "link",   href: "/create",     label: "PRIVATE" },
+  { kind: "link",   href: "/create",     label: "CREATE POOL" },
   { kind: "link",   href: "/my-tickets", label: "MY TICKETS" },
   { kind: "link",   href: "/leaderboard",label: "LEADERBOARD" },
   { kind: "anchor", id: "how-it-works",  label: "HOW IT WORKS" },
@@ -30,7 +31,7 @@ const NAV_HOMEPAGE: readonly NavItem[] = [
 // after navigation). The current page is filtered out by hideHref below.
 const NAV_SUBROUTE: readonly NavItem[] = [
   { kind: "link", href: "/#pools",      label: "POOLS" },
-  { kind: "link", href: "/create",      label: "PRIVATE" },
+  { kind: "link", href: "/create",      label: "CREATE POOL" },
   { kind: "link", href: "/my-tickets",  label: "MY TICKETS" },
   { kind: "link", href: "/leaderboard", label: "LEADERBOARD" },
 ];
@@ -185,9 +186,31 @@ export function Header() {
         className="absolute left-4 right-4 top-full mt-2 rounded-2xl border border-neutral-800 bg-neutral-950/95 p-2 shadow-2xl shadow-black/70 backdrop-blur-md sm:hidden"
       >
         <div className="flex flex-col gap-1">
-          <div className="px-3 py-2">
-            <MyProfileButton />
+          {/* Mobile profile + search — desktop versions are
+              `hidden sm:inline-flex` so without these explicit mobile
+              rows the user has no path to either. */}
+          <div className="px-2 py-2">
+            <MyProfileButton mobile />
           </div>
+          <SearchPaletteHost
+            trigger={(openPalette) => (
+              <button
+                type="button"
+                onClick={() => {
+                  openPalette();
+                  closeMenu();
+                }}
+                className="mx-2 mb-1 flex h-12 items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950 px-3 font-mono text-xs uppercase tracking-widest text-neutral-300 transition hover:border-neutral-600 hover:text-white"
+                tabIndex={menuOpen ? 0 : -1}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                Search players
+              </button>
+            )}
+          />
           {navItems.map((item) =>
             item.kind === "anchor" ? (
               <a
@@ -213,6 +236,10 @@ export function Header() {
           )}
         </div>
       </nav>
+      {/* Zero-balance hint — surfaces when the connected wallet has 0
+          lamports so first-time users don't get stuck at the "Buy"
+          step with a confusing tx error. Dismissible per session. */}
+      <ZeroBalanceBanner />
     </header>
   );
 }

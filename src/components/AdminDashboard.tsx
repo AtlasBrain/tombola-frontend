@@ -191,6 +191,14 @@ export function AdminDashboard({ poolAddress }: Props) {
     <>
       <LivePoolWatcher addresses={[poolAddress]} rpcUrl={connection.rpcEndpoint} />
       <main className="mx-auto max-w-5xl px-6 py-12">
+        <div className="mb-4">
+          <Link
+            href="/create"
+            className="font-mono text-xs uppercase tracking-widest text-neutral-500 transition hover:text-neutral-300"
+          >
+            ← All my pools
+          </Link>
+        </div>
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs uppercase tracking-widest text-neutral-500">

@@ -8,7 +8,6 @@ import { HostRaffleSection } from "@/components/HostRaffleSection";
 import { HowItWorks } from "@/components/HowItWorks";
 import { LivePoolWatcher } from "@/components/LivePoolWatcher";
 import { PoolCard } from "@/components/PoolCard";
-import { RecentWinners } from "@/components/RecentWinners";
 import { Ticker } from "@/components/Ticker";
 import { WhyItsFair } from "@/components/WhyItsFair";
 import { MOCK_POOLS, type PoolView } from "@/lib/mock-pools";
@@ -73,7 +72,6 @@ export default async function Home() {
 
       <HostRaffleSection />
 
-      <RecentWinners />
       <AllRoundsTable pools={pools} />
       <WhyItsFair />
       <HowItWorks />
