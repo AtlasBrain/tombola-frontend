@@ -227,7 +227,7 @@ export default function PrivatePoolPage({
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
                 CREATOR{" "}
                 <a
-                  href={`/creator/${pool.creator}`}
+                  href={`/u/${pool.creator}?tab=creator`}
                   className="hover:text-white"
                 >
                   <UserName wallet={pool.creator} /> →

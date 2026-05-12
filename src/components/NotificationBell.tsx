@@ -254,6 +254,15 @@ export function NotificationBell() {
                 })}
               </ul>
             )}
+            {/* "View all" footer — opens the full /notifications page
+                with filters, mark-read, delete. */}
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="block border-t border-neutral-800 px-4 py-2.5 text-center font-mono text-[10px] uppercase tracking-widest text-neutral-400 transition hover:text-neutral-100"
+            >
+              View all →
+            </Link>
           </div>
         </div>
       )}

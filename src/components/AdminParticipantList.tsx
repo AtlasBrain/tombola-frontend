@@ -16,7 +16,19 @@ interface Props {
 
 export function AdminParticipantList({ participants, rpcUrl }: Props) {
   if (participants === null) return null;
-  if (participants.length === 0) return null;
+  if (participants.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/30 p-6 text-center">
+        <p className="font-display text-base uppercase text-neutral-300">
+          No participants yet
+        </p>
+        <p className="mt-1 text-xs text-neutral-500">
+          Share an invite code or invite friends from this pool&apos;s admin
+          panel to bring buyers in.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">

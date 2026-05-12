@@ -212,3 +212,13 @@ export function clearAll(wallet: string): void {
   writeToStorage(wallet, []);
   notify(wallet);
 }
+
+/** Remove a single notification by id — used by the /notifications page's
+ *  per-row delete button. No-op when the id isn't present. */
+export function removeNotification(wallet: string, id: string): void {
+  const list = loadFromStorage(wallet);
+  const next = list.filter((n) => n.id !== id);
+  if (next.length === list.length) return;
+  writeToStorage(wallet, next);
+  notify(wallet);
+}
