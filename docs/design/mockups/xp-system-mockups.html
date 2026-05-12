@@ -363,9 +363,11 @@
       <tr><td class="q">Backfill existing users?</td>
         <td class="a"><strong>Yes.</strong> See §6 of PROPOSAL.md. Without it, day-1 users see "Lv. 1 Plankton" and feel demoted. Backfill targets active users to L5–30.</td></tr>
       <tr><td class="q">Empty private pools earn XP?</td>
-        <td class="a"><strong>Yes, small (100 XP).</strong> Effort acknowledged, but no big reward without participants.</td></tr>
+        <td class="a"><strong>No · resolved.</strong> Pool-creator XP is fully outcome-gated: 50 on first participant, then milestones at 5 / 20 / 100 participants, +250 if the pool resolves with ≥1 SOL pot. Solo button-press earns nothing.</td></tr>
       <tr><td class="q">Consolation XP for losing?</td>
         <td class="a"><strong>None extra.</strong> Already covered by the per-ticket grant — playing IS the participation reward.</td></tr>
+      <tr><td class="q">Grant philosophy enforced in code?</td>
+        <td class="a"><strong>Yes.</strong> Every XP grant must pass <em>on-chain-anchor</em> OR <em>outcome-gate</em> — codified inside <code>grantXp()</code> so future grants can't sneak in solo-action XP.</td></tr>
       <tr><td class="q">Badges as NFTs at L75+?</td>
         <td class="a"><strong>Defer.</strong> Cool optionality. Make badge metadata addressable now (`/api/badge/[level]/metadata.json`) so the door stays open without a hard commit.</td></tr>
       <tr><td class="q">Audio on mythic level-up?</td>

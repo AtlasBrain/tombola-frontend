@@ -146,6 +146,15 @@ Palette: **abyssal black + gold + animated mint-to-coral gradient** · style: an
 
 ## 4. XP earning rules
 
+### Grant philosophy
+
+Every grant must pass **at least one** of the two tests below. Anything that grants XP for a solo button-press is cut.
+
+1. **On-chain anchor** — the grant references a verifiable on-chain event (ticket buy, pool win, settle). Can't be faked. Idempotent against the tx signature.
+2. **Outcome gate** — the grant only fires when a *different real wallet* on the platform interacts with the user's action (someone joins their pool, accepts their friend request, redeems their invite). Solo activity earns nothing.
+
+Solo profile-setup steps still grant XP (it's a one-time bootstrap, hard cap) but everything ongoing has to clear one of the two bars above.
+
 ### Action grants (server-issued, server-verified)
 
 | Action | XP | Cap | Notes |
@@ -153,14 +162,17 @@ Palette: **abyssal black + gold + animated mint-to-coral gradient** · style: an
 | Account creation (first sign-in) | 50 | once | One-time bootstrap |
 | Profile completion (pseudo + avatar + X handle) | 100 | once | Encourages full profile |
 | First wallet connection | 25 | once | Pairs with signup |
-| Daily login (signed action within 24h) | 10 | 1/day | Soft daily incentive |
+| Daily login (signed action within 24h) | 10 | 1/day | Soft daily incentive — capped low |
 | 7-day streak | 50 | 1/week | Stacks on daily |
 | 30-day streak | 250 | 1/month | Stacks on weekly |
-| Buy a ticket | 5 | 50/day | Discourages burst-spam |
-| Join a brand-new pool (never participated) | 25 | 100/day | Encourages exploration |
-| Create a private pool | 100 | 500/week | Encourages community building |
-| Send a friend request | 5 | 20/day | Anti-spam cap |
-| Friend request accepted (recipient) | 10 | uncapped | Recipient action — hard to farm |
+| Buy a ticket | 5 | 50/day | On-chain anchored to batch-creation tx sig |
+| Join a brand-new pool (never participated) | 25 | 100/day | On-chain — first batch in this pool |
+| First participant joins your pool | 50 | uncapped | Fires when `total_tickets` crosses 0 in a pool you created |
+| Your pool reaches 5 participants | 100 | uncapped | Outcome gate — real adoption |
+| Your pool reaches 20 participants | 500 | uncapped | Real community |
+| Your pool reaches 100 participants | 2,500 | uncapped | Elite creator |
+| Your pool resolves with prize ≥ 1 SOL | 250 | uncapped | Real-money outcome from your pool |
+| Friend request accepted | 5 (sender) + 10 (recipient) | uncapped | Sender XP only on **acceptance**, not on send (closes the spam loop). Recipient XP unchanged. |
 | Friend redeems your invite to a private pool | 50 | uncapped | Genuine onboarding event |
 | Win a pool | 100 | uncapped | On-chain verifiable, can't be faked |
 | Win bonus (per 0.001 SOL won) | 1 | uncapped | Diminishing returns vs flat win |
@@ -168,7 +180,13 @@ Palette: **abyssal black + gold + animated mint-to-coral gradient** · style: an
 | Spend milestone — 10 SOL lifetime | 1,000 | once | |
 | Spend milestone — 100 SOL lifetime | 5,000 | once | |
 | Spend milestone — 1,000 SOL lifetime | 25,000 | once | Whale-tier unlock |
-| Refer a new user (signs up + claims profile) | 100 | 50/lifetime | Lifetime cap to prevent referral mills |
+| Refer a new user | 100 | 50/lifetime | Outcome gate: referred wallet must **sign at least one action AND buy at least one ticket**. Profile claim alone doesn't count. |
+
+### Removed from earlier draft (and why)
+
+- **~~Create a private pool · 100 XP~~** — empty pools generated zero platform value, but the flat grant rewarded the click anyway. Farming surface: open 5 empty pools per week for free 500 XP. Replaced with the outcome-gated cascade (first participant → 5-buyer → 20-buyer → 100-buyer milestones above). Creating a pool nobody joins now earns 0 XP.
+- **~~Send a friend request · 5 XP × 20/day~~** — spamming requests to strangers was free farming. Moved to a 5-XP grant that fires only when the request is **accepted**. The 10-XP recipient grant stays as-is. Net: both parties get XP only on the handshake.
+- **~~Refer a new user · 100 XP for profile claim~~** — too easy to game with placeholder profiles. Tightened the trigger: referred wallet must sign at least one action AND buy at least one ticket before the 100 XP fires.
 
 ### XP source mix at level 50 (typical user)
 
@@ -176,19 +194,21 @@ To reach 165,000 XP (level 50), a hypothetical engaged user breakdown:
 
 - **Activity (40%)** — daily logins + ticket buys + pool joins → ~66K XP
 - **Loyalty (30%)** — streaks + spend milestones → ~50K XP
-- **Value (30%)** — wins + creator activity → ~50K XP
+- **Value (30%)** — wins + creator outcomes + accepted referrals → ~50K XP
 
 This balance is tunable — exact percentages set at server-side weights, no schema change needed.
 
 ### Anti-farming rules
 
 1. **All XP issued server-side**, never client. Every grant goes through `grantXp()` which validates the action against existing wallet signature or on-chain event.
-2. **Per-action daily caps** stored in Redis (`xp-rate:<wallet>:<action>:<YYYY-MM-DD>`) with TTL = end of day UTC. Caps reset cleanly.
-3. **Self-friending / cycling**: friend-store already blocks self-edges; multi-wallet cycles are slowed by the recipient-side acceptance requirement (you can't farm by accepting your own requests with a second wallet without paying 2× signing cost).
-4. **Multi-wallet farming**: detect via existing risk heuristics (concentrated IP, rapid creation). Surface in admin risk feed. v1 doesn't auto-block — admin can manually freeze XP grants on a wallet.
-5. **On-chain anchors**: ticket buys, pool wins, private-pool creation are all verifiable on-chain. Server XP grants for these reference the tx signature so they can't be claimed twice for the same event.
-6. **Suspicious-rate flag**: if a wallet earns > 10,000 XP/day, surface in the admin risk feed.
-7. **No backfill bonuses for retroactive activity** (or only a small one — see §6).
+2. **Every grant satisfies the on-chain-anchor OR outcome-gate test** (see "Grant philosophy" above). Solo button-press grants are gone.
+3. **Per-action daily caps** stored in Redis (`xp-rate:<wallet>:<action>:<YYYY-MM-DD>`) with TTL = end of day UTC. Caps reset cleanly.
+4. **Self-friending / cycling**: friend-store already blocks self-edges; multi-wallet cycles are slowed by the recipient-side acceptance requirement and now also by the sender-side acceptance gate (5 XP only on acceptance, not on send).
+5. **Multi-wallet farming**: detect via existing risk heuristics (concentrated IP, rapid creation). Surface in admin risk feed. v1 doesn't auto-block — admin can manually freeze XP grants on a wallet.
+6. **On-chain anchors with dedupe**: ticket buys, pool wins, participant milestones, prize-≥1-SOL events are all verifiable on-chain. Server XP grants reference the tx signature stored in `xp:granted:<sig>` so the same event can't be claimed twice.
+7. **Referral graph dedupe**: the referred-wallet ticket-buy that fires the referral grant must itself be a first-time-ever ticket for that wallet. Re-buying doesn't re-fire.
+8. **Suspicious-rate flag**: if a wallet earns > 10,000 XP/day, surface in the admin risk feed.
+9. **No backfill bonuses for retroactive activity** (or only a small one — see §6).
 
 ---
 
@@ -292,11 +312,12 @@ Each question has my recommended answer in parens. Pick agreed / change-request 
 3. **Cosmetic only or unlock benefits?** (Cosmetic-only for v1. Future possibilities: custom pool theming at L50+, profile flair at L75+, no fee discounts.)
 4. **XP source mix?** (40% activity, 30% loyalty, 30% value — exact ratios set as server weights.)
 5. **Should backfill happen?** (Yes — see §6. Without it, existing users are demotivated on launch day.)
-6. **Should creating a private pool give XP even if it stays empty?** (Yes but small — 100 XP. Empty pools shouldn't be rewarded heavily.)
-7. **Should losing a pool give consolation XP?** (Recommend: small "you played" XP, ~10 per pool you bought into and didn't win. Already covered by the per-ticket grant; no extra.)
+6. **Should creating an empty private pool give XP?** **(Resolved — no.)** Pool-creator XP is fully outcome-gated: 50 XP when the first participant joins, then milestone bumps at 5 / 20 / 100 participants, plus 250 XP if the pool resolves with ≥1 SOL pot. Empty pools earn 0.
+7. **Should losing a pool give consolation XP?** (Recommend: no extra. Already covered by the per-ticket buy grant.)
 8. **Should we tie badges to NFT mints at L75+?** (Out of scope for v1. Cool idea — each badge could later be mintable as an SPL NFT. Keep the option open by making badge metadata addressable: `/api/badge/[level]/metadata.json`.)
 9. **Mythic-tier audio on level up?** (Default off. Settings toggle.)
 10. **Anti-abuse threshold for admin flag?** (>10,000 XP/day. Surfaceable, not auto-blocking.)
+11. **Grant philosophy enforcement?** (Recommend: every XP grant must pass the on-chain-anchor OR outcome-gate test in §4. Codify this in `grantXp()` so future grants can't sneak in solo-action XP without explicit override.)
 
 ---
 
