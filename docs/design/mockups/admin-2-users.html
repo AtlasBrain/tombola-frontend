@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola Admin — User Analytics (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--mint:#88cfc4;--lavender:#c9b5dc;--coral:#e89999;--sand:#e8d89e;--rose:#e8a5c0;--bg:#0a0a0a;--surface:#171717;--surface-2:#0f0f0f;--border:#262626;--border-soft:#1a1a1a;--text:#fafafa;--text-mute:#a3a3a3;--text-dim:#737373;--text-faint:#525252}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .uppercase{text-transform:uppercase;letter-spacing:.15em}
+  .tabular{font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-soft);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid var(--border);border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--coral)}
+  header .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 3px rgba(232,153,153,.18)}
+  header nav{display:flex;gap:4px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em}
+  header nav a{padding:8px 12px;border-radius:8px;color:var(--text-mute);text-decoration:none;transition:.15s}
+  header nav a.active{color:var(--text);background:#1f1f1f}
+  header .who{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-dim);display:flex;align-items:center;gap:10px}
+  header .who .dot{width:6px;height:6px;background:var(--mint);border-radius:50%;box-shadow:0 0 0 3px rgba(136,207,196,.2)}
+
+  main{display:grid;grid-template-columns:380px 1fr;gap:0;max-width:1700px;margin:0 auto}
+  aside{padding:28px 22px 64px;border-right:1px solid var(--border-soft);min-height:calc(100vh - 64px)}
+  section.main{padding:28px 32px 64px}
+
+  .h1{font-family:'Space Grotesk';font-weight:700;font-size:30px;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:6px}
+  .h2{font-family:'Space Grotesk';font-weight:700;font-size:16px;letter-spacing:.02em;text-transform:uppercase;margin-bottom:10px}
+  .sub{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+
+  .search{position:relative;margin-bottom:14px}
+  .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--border);background:#0d0d0d;color:var(--text);border-radius:12px;font-size:13px;outline:none;font-family:'Space Mono'}
+  .search input::placeholder{color:var(--text-faint)}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-faint)}
+
+  .filter-grp{margin-bottom:18px}
+  .filter-grp .lbl{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-bottom:8px}
+  .chip{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;padding:6px 12px;border:1px solid var(--border);border-radius:999px;color:var(--text-mute);background:transparent;cursor:pointer;transition:.15s;margin-right:6px;margin-bottom:6px;display:inline-block}
+  .chip:hover{color:var(--text)}
+  .chip.on{background:#1a1a1a;color:var(--text);border-color:#404040}
+  .chip.on.coral{border-color:rgba(232,153,153,.4);background:rgba(232,153,153,.08);color:var(--coral)}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+  thead th.right{text-align:right}
+  thead th .sort{display:inline-block;margin-left:4px;color:var(--text-faint)}
+  tbody td{padding:14px 12px;border-bottom:1px dashed #262626;vertical-align:middle}
+  tbody tr:hover{background:#0f0f0f;cursor:pointer}
+  tbody tr.selected{background:rgba(136,207,196,.06);box-shadow:inset 3px 0 0 var(--mint)}
+
+  .user-cell{display:flex;align-items:center;gap:10px;min-width:0}
+  .avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#3f3f46,#18181b);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .avatar.lav{background:linear-gradient(135deg,#c9b5dc,#7e6a92);color:#000}
+  .avatar.mint{background:linear-gradient(135deg,#88cfc4,#3a6f68);color:#000}
+  .avatar.coral{background:linear-gradient(135deg,#e89999,#7d4040);color:#000}
+  .user-cell .who{display:flex;flex-direction:column;min-width:0}
+  .user-cell .name{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-cell .addr{font-family:'Space Mono';font-size:10px;color:var(--text-faint)}
+
+  td.right{text-align:right;font-family:'Space Mono';font-weight:700;font-size:12px}
+  td.right.mint{color:var(--mint)}
+  td.right.coral{color:var(--coral)}
+
+  .pill{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.18em;padding:3px 9px;border-radius:999px;display:inline-block}
+  .pill.private{background:#171717;color:var(--sand);border:1px solid rgba(232,216,158,.3)}
+  .pill.public{background:rgba(136,207,196,.08);color:var(--mint);border:1px solid rgba(136,207,196,.25)}
+  .pill.flag{background:rgba(232,153,153,.12);color:var(--coral);border:1px solid rgba(232,153,153,.3)}
+
+  .paginator{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .paginator .controls button{margin-left:6px}
+
+  /* drill-down panel */
+  .drill{margin-top:24px;border-top:1px solid var(--border)}
+  .drill h3{font-family:'Space Grotesk';font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:-.005em;margin-top:24px;display:flex;align-items:center;gap:12px}
+  .drill .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  .drill .grid .cell{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .drill .grid .cell .lbl{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .drill .grid .cell .val{margin-top:6px;font-family:'Space Grotesk';font-weight:700;font-size:24px;letter-spacing:-.01em}
+  .drill .grid .cell .val.mint{color:var(--mint)}
+  .drill .grid .cell .val.coral{color:var(--coral)}
+  .drill .grid .cell .sub{margin-top:4px;font-family:'Space Mono';font-size:10px;color:var(--text-faint)}
+
+  .activity{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .panel .ttl{font-family:'Space Grotesk';font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+
+  .timeline{position:relative;padding-left:18px}
+  .timeline::before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:#1f1f1f}
+  .tl-row{position:relative;padding:9px 0;font-size:12px;display:flex;justify-content:space-between;gap:12px}
+  .tl-row::before{content:"";position:absolute;left:-15px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--mint)}
+  .tl-row.lav::before{background:var(--lavender)}
+  .tl-row.coral::before{background:var(--coral)}
+  .tl-row.sand::before{background:var(--sand)}
+  .tl-row .l{color:var(--text-mute)}
+  .tl-row .r{font-family:'Space Mono';color:var(--text-faint);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+  .toolbar{display:flex;gap:8px}
+  .btn{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;padding:9px 14px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--text);cursor:pointer;transition:.15s}
+  .btn:hover{border-color:#404040}
+  .btn.mint{background:var(--mint);color:#000;border-color:var(--mint)}
+  .btn.coral{border-color:rgba(232,153,153,.4);color:var(--coral)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="color:#fff"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span class="mono uppercase" style="font-size:11px;color:var(--text-mute)">TOMBOLA</span>
+    <span class="badge">ADMIN</span>
+  </div>
+  <nav>
+    <a href="admin-1-executive.html">OVERVIEW</a>
+    <a href="#" class="active">USERS</a>
+    <a href="admin-3-pools.html">POOLS</a>
+    <a href="#">TREASURY</a>
+    <a href="#">RISK</a>
+  </nav>
+  <div class="who"><span class="dot"></span><span>MARWAN · A9XZ…CDWY</span></div>
+</header>
+
+<main>
+  <aside>
+    <div class="h2">Filters</div>
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Pseudo or wallet address…" value="" />
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Profile status</div>
+      <button class="chip on">ALL</button>
+      <button class="chip">CLAIMED</button>
+      <button class="chip">UNCLAIMED</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Privacy</div>
+      <button class="chip on">ALL</button>
+      <button class="chip">PUBLIC</button>
+      <button class="chip">PRIVATE</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Activity</div>
+      <button class="chip">≥1 TICKET</button>
+      <button class="chip on">≥1 POOL</button>
+      <button class="chip">WON ≥1</button>
+      <button class="chip">≥10 POOLS</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Spend bucket · SOL</div>
+      <button class="chip">0</button>
+      <button class="chip">0–1</button>
+      <button class="chip">1–10</button>
+      <button class="chip on">10–100</button>
+      <button class="chip">100+</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Created (UTC)</div>
+      <button class="chip">7D</button>
+      <button class="chip on">30D</button>
+      <button class="chip">90D</button>
+      <button class="chip">ALL</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Risk flags</div>
+      <button class="chip on coral">FLAGGED ONLY</button>
+      <button class="chip">RAPID-FIRE</button>
+      <button class="chip">SELF-DEALER</button>
+      <button class="chip">DUPE SUSPECT</button>
+    </div>
+
+    <div class="filter-grp">
+      <div class="lbl">Sort</div>
+      <button class="chip on">SPEND ↓</button>
+      <button class="chip">POOLS ↓</button>
+      <button class="chip">WINS ↓</button>
+      <button class="chip">CREATED ↓</button>
+    </div>
+
+    <div style="margin-top:18px;display:flex;gap:8px">
+      <button class="btn">RESET</button>
+      <button class="btn mint">APPLY (1,247)</button>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <h1 class="h1">Users</h1>
+        <div class="sub" style="margin-top:6px">1,247 of 5,892 match · sorted by 7D spend desc</div>
+      </div>
+      <div class="toolbar">
+        <button class="btn">EXPORT CSV</button>
+        <button class="btn">REFRESH</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>USER<span class="sort">↕</span></th>
+          <th>STATUS</th>
+          <th class="right">SPEND 7D</th>
+          <th class="right">SPEND LIFETIME</th>
+          <th class="right">POOLS</th>
+          <th class="right">WINS</th>
+          <th class="right">NET P&L</th>
+          <th class="right">FRIENDS</th>
+          <th class="right">CREATED</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="selected">
+          <td><div class="user-cell"><div class="avatar mint">J</div><div class="who"><span class="name">jpegmillions</span><span class="addr">7HrA…dY9q</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">412.0 SOL</td>
+          <td class="right tabular">2,418.40</td>
+          <td class="right tabular">38</td>
+          <td class="right mint tabular">4</td>
+          <td class="right mint tabular">+98.7</td>
+          <td class="right tabular">24</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2025-11-04</td>
+          <td><span class="pill flag">▲ HIGH</span></td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar lav">S</div><div class="who"><span class="name">solgodfather</span><span class="addr">9pXm…vU1q</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">298.4 SOL</td>
+          <td class="right tabular">1,892.10</td>
+          <td class="right tabular">22</td>
+          <td class="right mint tabular">2</td>
+          <td class="right mint tabular">+12.4</td>
+          <td class="right tabular">9</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2026-01-12</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar coral">N</div><div class="who"><span class="name">notavirus</span><span class="addr">4Vmx…WeC9</span></div></div></td>
+          <td><span class="pill private">PRIVATE 🔒</span></td>
+          <td class="right mint tabular">187.1 SOL</td>
+          <td class="right tabular">1,012.80</td>
+          <td class="right tabular">14</td>
+          <td class="right tabular">1</td>
+          <td class="right coral tabular">−4.2</td>
+          <td class="right tabular">3</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2026-02-04</td>
+          <td><span class="pill flag">RAPID</span></td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar">M</div><div class="who"><span class="name">marwan</span><span class="addr">A9XZ…CDWY</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">142.0 SOL</td>
+          <td class="right tabular">812.50</td>
+          <td class="right tabular">9</td>
+          <td class="right tabular">0</td>
+          <td class="right coral tabular">−6.1</td>
+          <td class="right tabular">12</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2025-09-22</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar">F</div><div class="who"><span class="name">freewheel</span><span class="addr">HBQX…DWSX</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">109.7 SOL</td>
+          <td class="right tabular">689.20</td>
+          <td class="right tabular">12</td>
+          <td class="right mint tabular">1</td>
+          <td class="right mint tabular">+18.0</td>
+          <td class="right tabular">31</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2025-10-15</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar lav">D</div><div class="who"><span class="name">DUKE…VWVB</span><span class="addr">no pseudo</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">88.0 SOL</td>
+          <td class="right tabular">90.20</td>
+          <td class="right tabular">11</td>
+          <td class="right tabular">0</td>
+          <td class="right coral tabular">−2.0</td>
+          <td class="right tabular">0</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2026-05-08</td>
+          <td><span class="pill flag">RAPID</span></td>
+        </tr>
+        <tr>
+          <td><div class="user-cell"><div class="avatar mint">Q</div><div class="who"><span class="name">QWYK…ZB1M</span><span class="addr">no pseudo</span></div></div></td>
+          <td><span class="pill public">PUBLIC</span></td>
+          <td class="right mint tabular">61.2 SOL</td>
+          <td class="right tabular">312.40</td>
+          <td class="right tabular">8</td>
+          <td class="right mint tabular">1</td>
+          <td class="right mint tabular">+48.4</td>
+          <td class="right tabular">2</td>
+          <td class="right mono" style="color:var(--text-faint);font-size:10px">2026-03-18</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="paginator">
+      <span>SHOWING 1–7 OF 1,247</span>
+      <div class="controls">
+        <button class="btn">PREV</button>
+        <button class="btn">1</button>
+        <button class="btn mint">2</button>
+        <button class="btn">3</button>
+        <button class="btn">…</button>
+        <button class="btn">179</button>
+        <button class="btn">NEXT</button>
+      </div>
+    </div>
+
+    <!-- Drill-down -->
+    <div class="drill">
+      <h3>
+        <span class="avatar mint" style="width:42px;height:42px;font-size:18px">J</span>
+        jpegmillions
+        <span class="mono" style="color:var(--text-faint);font-size:11px;font-weight:400;letter-spacing:.15em">· 7HrA1pPxnD9ZqVeM9eUw2Mz3rSDz4xCXLpvqFqQUdY9q</span>
+        <span class="pill flag" style="margin-left:auto;font-size:10px">▲ HIGH-ACTIVITY · REVIEW</span>
+      </h3>
+      <div class="sub" style="margin-top:6px">Public · X: @jpegmillions · 24 friends · joined Nov 4 2025 · last seen 4m ago</div>
+
+      <div class="grid">
+        <div class="cell"><div class="lbl">LIFETIME SPEND</div><div class="val tabular">2,418 SOL</div><div class="sub">38 distinct pools</div></div>
+        <div class="cell"><div class="lbl">LIFETIME WINS</div><div class="val mint tabular">4 / 38</div><div class="sub">10.5% win rate</div></div>
+        <div class="cell"><div class="lbl">LIFETIME WON</div><div class="val mint tabular">2,517 SOL</div><div class="sub">best 410 · MONTHLY #2</div></div>
+        <div class="cell"><div class="lbl">NET P&L</div><div class="val mint tabular">+98.7 SOL</div><div class="sub">all-time, resolved only</div></div>
+      </div>
+
+      <div class="activity">
+        <div class="panel">
+          <div class="ttl">Recent on-chain activity</div>
+          <div class="timeline">
+            <div class="tl-row lav"><span class="l">Bought 50 tickets · WEEKLY #20</span><span class="r">2M AGO · 5.00 SOL</span></div>
+            <div class="tl-row coral"><span class="l">Bought 8 tickets · BIWEEKLY #7</span><span class="r">17M AGO · 0.80 SOL</span></div>
+            <div class="tl-row sand"><span class="l">Won MONTHLY #2 · 410.2 SOL</span><span class="r">2D AGO · settle tx</span></div>
+            <div class="tl-row"><span class="l">Bought 200 tickets · MONTHLY #2</span><span class="r">14D AGO · 20.00 SOL</span></div>
+            <div class="tl-row lav"><span class="l">Won WEEKLY #18 · 96.5 SOL</span><span class="r">3D AGO</span></div>
+            <div class="tl-row"><span class="l">Created private pool · 8GH3…aaPM</span><span class="r">5D AGO · ALLOCATED 4 INVITES</span></div>
+            <div class="tl-row lav"><span class="l">Bought 100 tickets · WEEKLY #19</span><span class="r">9D AGO · 10.00 SOL</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ttl">Pool participation breakdown</div>
+          <svg viewBox="0 0 360 200" class="chart" style="width:100%;height:200px">
+            <g class="axis-label" font-family="Space Mono" font-size="9" fill="#525252" text-transform="uppercase" letter-spacing="0.15em">
+              <text x="0" y="20">WEEKLY</text>
+              <text x="0" y="55">BIWEEKLY</text>
+              <text x="0" y="90">TRIWEEKLY</text>
+              <text x="0" y="125">MONTHLY</text>
+              <text x="0" y="160">PRIVATE</text>
+            </g>
+            <g>
+              <rect x="80" y="8" width="240" height="14" fill="#c9b5dc"/>
+              <rect x="80" y="43" width="120" height="14" fill="#e89999"/>
+              <rect x="80" y="78" width="40" height="14" fill="#88cfc4"/>
+              <rect x="80" y="113" width="60" height="14" fill="#e8d89e"/>
+              <rect x="80" y="148" width="20" height="14" fill="#fafafa"/>
+            </g>
+            <g class="axis-label" font-family="Space Mono" font-size="10" fill="#fafafa" text-anchor="end">
+              <text x="325" y="20" font-weight="700">17 POOLS · 1,420 SOL</text>
+              <text x="205" y="55" font-weight="700">8 · 480</text>
+              <text x="125" y="90" font-weight="700">3 · 180</text>
+              <text x="145" y="125" font-weight="700">4 · 280</text>
+              <text x="105" y="160" font-weight="700">6 · 58</text>
+            </g>
+          </svg>
+          <div class="sub" style="margin-top:8px;text-align:right">38 POOLS · 2,418 SOL TOTAL</div>
+        </div>
+      </div>
+
+      <div class="activity">
+        <div class="panel">
+          <div class="ttl">Friend graph (24 accepted)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+            <span class="pill public">solgodfather</span>
+            <span class="pill public">freewheel</span>
+            <span class="pill public">marwan</span>
+            <span class="pill public">QWYK…ZB1M</span>
+            <span class="pill public">notavirus 🔒</span>
+            <span class="pill public">+ 19 more</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ttl">Risk readout</div>
+          <div style="font-size:12px;line-height:1.6;color:var(--text-mute)">
+            <div>⚠ <span style="color:var(--text)">High-volume buyer:</span> 38 pools / 30 days · top 3% by spend.</div>
+            <div>✓ <span style="color:var(--text)">Single wallet:</span> no duplicate-IP correlation observed.</div>
+            <div>✓ <span style="color:var(--text)">Wins distribution:</span> matches expected variance for stake size.</div>
+            <div>✓ <span style="color:var(--text)">Self-deal:</span> 0 wins in private pools they created.</div>
+            <div style="margin-top:10px;padding:10px;background:#1a1a1a;border-radius:10px;border-left:2px solid var(--mint);color:var(--text)">Recommendation: monitor, no action needed.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola Admin — Executive Overview (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e; --rose:#e8a5c0;
+    --bg:#0a0a0a; --surface:#171717; --surface-2:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:0;min-height:100vh}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .uppercase{text-transform:uppercase;letter-spacing:.15em}
+  .tabular{font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-soft);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid var(--border);border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--coral)}
+  header .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 3px rgba(232,153,153,.18)}
+  header nav{display:flex;gap:4px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em}
+  header nav a{padding:8px 12px;border-radius:8px;color:var(--text-mute);text-decoration:none;transition:.15s}
+  header nav a.active{color:var(--text);background:#1f1f1f}
+  header nav a:hover{color:var(--text)}
+  header .who{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-dim);display:flex;align-items:center;gap:10px}
+  header .who .dot{width:6px;height:6px;background:var(--mint);border-radius:50%;box-shadow:0 0 0 3px rgba(136,207,196,.2)}
+
+  main{padding:28px 32px 64px;max-width:1600px;margin:0 auto}
+  .h1{font-family:'Space Grotesk';font-weight:700;font-size:34px;letter-spacing:-.01em;text-transform:uppercase}
+  .h2{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:.01em;text-transform:uppercase;margin-bottom:12px}
+  .sub{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .row{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:18px}
+  .filters{display:flex;gap:8px;align-items:center}
+  .chip{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;padding:7px 14px;border:1px solid var(--border);border-radius:999px;color:var(--text-mute);background:transparent;cursor:pointer;transition:.15s}
+  .chip:hover{color:var(--text);border-color:#404040}
+  .chip.on{background:#1a1a1a;color:var(--text);border-color:#404040}
+  .chip.on.accent{border-color:rgba(201,181,220,.5);background:rgba(201,181,220,.12);color:var(--lavender)}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px}
+  .kpi .label{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .kpi .val{margin-top:8px;font-family:'Space Grotesk';font-weight:700;font-size:32px;letter-spacing:-.01em}
+  .kpi .delta{margin-top:10px;font-family:'Space Mono';font-size:11px;letter-spacing:.05em}
+  .kpi .delta.up{color:var(--mint)}
+  .kpi .delta.down{color:var(--coral)}
+  .kpi .delta.flat{color:var(--text-faint)}
+  .kpi.mint{background:linear-gradient(135deg,rgba(136,207,196,.06),rgba(136,207,196,.01) 60%,transparent)}
+  .kpi.mint .val{color:var(--mint)}
+  .kpi.lavender{background:linear-gradient(135deg,rgba(201,181,220,.06),rgba(201,181,220,.01) 60%,transparent)}
+  .kpi.lavender .val{color:var(--lavender)}
+
+  .grid-2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:32px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;min-height:200px}
+  .card.tall{min-height:340px}
+  .card .header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .card .header .title{font-family:'Space Grotesk';font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.1em}
+  .card .header .meta{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)}
+
+  .chart{width:100%;height:240px}
+  .axis-label{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.15em;fill:var(--text-faint)}
+
+  .list-row{display:grid;grid-template-columns:24px 1fr auto auto;gap:14px;align-items:center;padding:11px 0;border-bottom:1px dashed #262626;font-size:13px}
+  .list-row:last-child{border-bottom:0}
+  .rank{font-family:'Space Mono';font-size:11px;color:var(--text-faint);text-align:center}
+  .who-cell{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .who-cell .name{font-weight:600;color:var(--text);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .who-cell .addr{font-family:'Space Mono';font-size:10px;color:var(--text-faint)}
+  .val-cell{font-family:'Space Mono';font-size:12px;font-weight:700;text-align:right;color:var(--text)}
+  .val-cell.mint{color:var(--mint)}
+  .val-cell.coral{color:var(--coral)}
+  .pill{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.18em;padding:3px 9px;border-radius:999px;display:inline-block}
+  .pill.open{background:rgba(136,207,196,.12);color:var(--mint);border:1px solid rgba(136,207,196,.3)}
+  .pill.drawing{background:rgba(232,216,158,.12);color:var(--sand);border:1px solid rgba(232,216,158,.3)}
+  .pill.resolved{background:#171717;color:var(--text-mute);border:1px solid var(--border)}
+  .pill.risk{background:rgba(232,153,153,.12);color:var(--coral);border:1px solid rgba(232,153,153,.3)}
+  .pill.private{background:rgba(136,207,196,.06);color:var(--mint);border:1px solid rgba(136,207,196,.18)}
+  .pill.public{background:rgba(201,181,220,.06);color:var(--lavender);border:1px solid rgba(201,181,220,.18)}
+
+  .risk-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px dashed #262626}
+  .risk-row:last-child{border-bottom:0}
+  .risk-row .icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .risk-row .icon.high{background:rgba(232,153,153,.14);color:var(--coral)}
+  .risk-row .icon.medium{background:rgba(232,216,158,.14);color:var(--sand)}
+  .risk-row .body .ttl{font-weight:600;font-size:13px;margin-bottom:2px}
+  .risk-row .body .desc{font-size:11px;color:var(--text-mute)}
+  .risk-row .cta{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text);background:transparent;border:1px solid var(--border);border-radius:999px;padding:6px 12px;cursor:pointer}
+
+  footer.note{margin-top:48px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint);text-align:center}
+  .legend{display:flex;gap:14px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-dim)}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="color:#fff">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+      <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span class="mono uppercase" style="font-size:11px;color:var(--text-mute)">TOMBOLA</span>
+    <span class="badge">ADMIN</span>
+  </div>
+  <nav>
+    <a href="#" class="active">OVERVIEW</a>
+    <a href="admin-2-users.html">USERS</a>
+    <a href="admin-3-pools.html">POOLS</a>
+    <a href="#">TREASURY</a>
+    <a href="#">RISK</a>
+  </nav>
+  <div class="who">
+    <span class="dot"></span>
+    <span>MARWAN · A9XZ…CDWY</span>
+    <span style="color:var(--text-faint)">SESSION 12:42 LEFT</span>
+  </div>
+</header>
+
+<main>
+  <div class="row">
+    <div>
+      <h1 class="h1">Platform overview</h1>
+      <div class="sub" style="margin-top:6px">Live readout · last refresh 14s ago · devnet</div>
+    </div>
+    <div class="filters">
+      <button class="chip">24H</button>
+      <button class="chip on accent">7D</button>
+      <button class="chip">30D</button>
+      <button class="chip">90D</button>
+      <button class="chip">ALL</button>
+    </div>
+  </div>
+
+  <section class="kpis">
+    <div class="kpi mint">
+      <div class="label">PROTOCOL VOLUME · 7D</div>
+      <div class="val tabular">2,481 SOL</div>
+      <div class="delta up">+18.4% vs prev 7D</div>
+    </div>
+    <div class="kpi lavender">
+      <div class="label">PROTOCOL FEES · 7D</div>
+      <div class="val tabular">12.40 SOL</div>
+      <div class="delta up">+18.4% · 0.5% take rate</div>
+    </div>
+    <div class="kpi">
+      <div class="label">ACTIVE USERS · 7D</div>
+      <div class="val tabular">1,247</div>
+      <div class="delta up">+92 vs prev 7D</div>
+    </div>
+    <div class="kpi">
+      <div class="label">TICKETS SOLD · 7D</div>
+      <div class="val tabular">18,932</div>
+      <div class="delta down">−3.1% vs prev 7D</div>
+    </div>
+    <div class="kpi">
+      <div class="label">POOLS RESOLVED · 7D</div>
+      <div class="val tabular">28</div>
+      <div class="delta flat">flat · within ±5%</div>
+    </div>
+    <div class="kpi">
+      <div class="label">PRIZES PAID · 7D</div>
+      <div class="val tabular">2,468 SOL</div>
+      <div class="delta up">99.5% of pot</div>
+    </div>
+    <div class="kpi">
+      <div class="label">NEW USERS · 7D</div>
+      <div class="val tabular">214</div>
+      <div class="delta up">+12% WoW</div>
+    </div>
+    <div class="kpi">
+      <div class="label">TREASURY BAL</div>
+      <div class="val tabular">68.41 SOL</div>
+      <div class="delta flat">Squads vault · 2-of-3</div>
+    </div>
+  </section>
+
+  <section class="grid-2">
+    <div class="card tall">
+      <div class="header">
+        <span class="title">Daily volume + fees</span>
+        <span class="legend">
+          <span><i style="background:var(--lavender)"></i>VOLUME (SOL)</span>
+          <span><i style="background:var(--mint)"></i>FEES (SOL × 100)</span>
+        </span>
+      </div>
+      <svg class="chart" viewBox="0 0 720 240" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="vol" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#c9b5dc" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#c9b5dc" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- grid -->
+        <line x1="40" x2="700" y1="40" y2="40" stroke="#1f1f1f"/>
+        <line x1="40" x2="700" y1="100" y2="100" stroke="#1f1f1f"/>
+        <line x1="40" x2="700" y1="160" y2="160" stroke="#1f1f1f"/>
+        <line x1="40" x2="700" y1="210" y2="210" stroke="#1f1f1f"/>
+        <text class="axis-label" x="6" y="45">600</text>
+        <text class="axis-label" x="6" y="105">400</text>
+        <text class="axis-label" x="6" y="165">200</text>
+        <text class="axis-label" x="6" y="215">0</text>
+        <!-- volume area -->
+        <path d="M50,160 L140,120 L230,140 L320,80 L410,100 L500,60 L590,90 L680,50 L680,210 L50,210 Z" fill="url(#vol)"/>
+        <path d="M50,160 L140,120 L230,140 L320,80 L410,100 L500,60 L590,90 L680,50" stroke="#c9b5dc" stroke-width="2" fill="none"/>
+        <!-- fees line -->
+        <path d="M50,196 L140,188 L230,192 L320,180 L410,184 L500,176 L590,182 L680,172" stroke="#88cfc4" stroke-width="2" fill="none" stroke-dasharray="0"/>
+        <!-- dots -->
+        <g fill="#c9b5dc">
+          <circle cx="50" cy="160" r="3"/><circle cx="140" cy="120" r="3"/><circle cx="230" cy="140" r="3"/><circle cx="320" cy="80" r="3"/><circle cx="410" cy="100" r="3"/><circle cx="500" cy="60" r="3"/><circle cx="590" cy="90" r="3"/><circle cx="680" cy="50" r="3"/>
+        </g>
+        <!-- axis -->
+        <g class="axis-label" text-anchor="middle">
+          <text x="50" y="232">MON</text><text x="140" y="232">TUE</text><text x="230" y="232">WED</text><text x="320" y="232">THU</text><text x="410" y="232">FRI</text><text x="500" y="232">SAT</text><text x="590" y="232">SUN</text><text x="680" y="232">TODAY</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="card tall">
+      <div class="header">
+        <span class="title">Pool mix · 7d</span>
+        <span class="meta">BY VOLUME</span>
+      </div>
+      <svg class="chart" viewBox="0 0 360 240" style="height:180px">
+        <g transform="translate(180,120)">
+          <!-- donut -->
+          <circle r="74" fill="none" stroke="#1f1f1f" stroke-width="22"/>
+          <!-- WEEKLY 42% -->
+          <circle r="74" fill="none" stroke="#c9b5dc" stroke-width="22" stroke-dasharray="195 465" stroke-dashoffset="0" transform="rotate(-90)"/>
+          <!-- BIWEEKLY 22% -->
+          <circle r="74" fill="none" stroke="#e89999" stroke-width="22" stroke-dasharray="102 465" stroke-dashoffset="-195" transform="rotate(-90)"/>
+          <!-- MONTHLY 18% -->
+          <circle r="74" fill="none" stroke="#e8d89e" stroke-width="22" stroke-dasharray="84 465" stroke-dashoffset="-297" transform="rotate(-90)"/>
+          <!-- TRIWEEKLY 11% -->
+          <circle r="74" fill="none" stroke="#88cfc4" stroke-width="22" stroke-dasharray="51 465" stroke-dashoffset="-381" transform="rotate(-90)"/>
+          <!-- PRIVATE 7% -->
+          <circle r="74" fill="none" stroke="#fafafa" stroke-width="22" stroke-dasharray="33 465" stroke-dashoffset="-432" transform="rotate(-90)"/>
+          <text text-anchor="middle" y="0" font-family="Space Grotesk" font-size="26" font-weight="700" fill="#fff">2,481</text>
+          <text text-anchor="middle" y="22" class="axis-label">SOL · 7D</text>
+        </g>
+      </svg>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+        <div class="legend" style="justify-content:space-between;font-size:11px"><span><i style="background:#c9b5dc"></i>WEEKLY</span><span class="mono tabular">1,042 SOL · 42%</span></div>
+        <div class="legend" style="justify-content:space-between;font-size:11px"><span><i style="background:#e89999"></i>BIWEEKLY</span><span class="mono tabular">546 SOL · 22%</span></div>
+        <div class="legend" style="justify-content:space-between;font-size:11px"><span><i style="background:#e8d89e"></i>MONTHLY</span><span class="mono tabular">447 SOL · 18%</span></div>
+        <div class="legend" style="justify-content:space-between;font-size:11px"><span><i style="background:#88cfc4"></i>TRIWEEKLY</span><span class="mono tabular">273 SOL · 11%</span></div>
+        <div class="legend" style="justify-content:space-between;font-size:11px"><span><i style="background:#fafafa"></i>PRIVATE</span><span class="mono tabular">173 SOL · 7%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-3">
+    <div class="card">
+      <div class="header">
+        <span class="title">Top spenders · 7d</span>
+        <span class="meta">BY TOTAL SPEND</span>
+      </div>
+      <div class="list-row"><div class="rank">1</div><div class="who-cell"><span class="name">jpegmillions</span><span class="addr">7HrA…dY9q</span></div><div class="val-cell mint">412.0 SOL</div><div><span class="pill private">38 POOLS</span></div></div>
+      <div class="list-row"><div class="rank">2</div><div class="who-cell"><span class="name">solgodfather</span><span class="addr">9pXm…vU1q</span></div><div class="val-cell mint">298.4 SOL</div><div><span class="pill private">22 POOLS</span></div></div>
+      <div class="list-row"><div class="rank">3</div><div class="who-cell"><span class="name">notavirus</span><span class="addr">4Vmx…WeC9</span></div><div class="val-cell mint">187.1 SOL</div><div><span class="pill private">14 POOLS</span></div></div>
+      <div class="list-row"><div class="rank">4</div><div class="who-cell"><span class="name">marwan</span><span class="addr">A9XZ…CDWY</span></div><div class="val-cell mint">142.0 SOL</div><div><span class="pill private">9 POOLS</span></div></div>
+      <div class="list-row"><div class="rank">5</div><div class="who-cell"><span class="name">freewheel</span><span class="addr">HBQX…DWSX</span></div><div class="val-cell mint">109.7 SOL</div><div><span class="pill private">12 POOLS</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="header">
+        <span class="title">Biggest wins · 7d</span>
+        <span class="meta">RESOLVED PAYOUTS</span>
+      </div>
+      <div class="list-row"><div class="rank">🏆</div><div class="who-cell"><span class="name">2uhk…Z8JA</span><span class="addr">MONTHLY #2</span></div><div class="val-cell mint">410.2 SOL</div><div class="mono" style="color:var(--text-faint);font-size:10px">2D AGO</div></div>
+      <div class="list-row"><div class="rank">2</div><div class="who-cell"><span class="name">jpegmillions</span><span class="addr">WEEKLY #18</span></div><div class="val-cell mint">96.5 SOL</div><div class="mono" style="color:var(--text-faint);font-size:10px">3D AGO</div></div>
+      <div class="list-row"><div class="rank">3</div><div class="who-cell"><span class="name">QWYK…ZB1M</span><span class="addr">BIWEEKLY #6</span></div><div class="val-cell mint">61.2 SOL</div><div class="mono" style="color:var(--text-faint);font-size:10px">4D AGO</div></div>
+      <div class="list-row"><div class="rank">4</div><div class="who-cell"><span class="name">solgodfather</span><span class="addr">TRIWEEKLY #4</span></div><div class="val-cell mint">38.7 SOL</div><div class="mono" style="color:var(--text-faint);font-size:10px">5D AGO</div></div>
+      <div class="list-row"><div class="rank">5</div><div class="who-cell"><span class="name">freewheel</span><span class="addr">WEEKLY #17</span></div><div class="val-cell mint">22.1 SOL</div><div class="mono" style="color:var(--text-faint);font-size:10px">6D AGO</div></div>
+    </div>
+
+    <div class="card">
+      <div class="header">
+        <span class="title">Risk flags · open</span>
+        <span class="meta">3 ACTIVE</span>
+      </div>
+      <div class="risk-row">
+        <div class="icon high">!</div>
+        <div class="body">
+          <div class="ttl">Stuck pool · WEEKLY #19</div>
+          <div class="desc">AwaitingVrf for 1h 12m · keeper retry queue exhausted</div>
+        </div>
+        <button class="cta">INSPECT</button>
+      </div>
+      <div class="risk-row">
+        <div class="icon medium">▲</div>
+        <div class="body">
+          <div class="ttl">Concentrated stake · PRIVATE HBQX…</div>
+          <div class="desc">Creator owns 92% of tickets · self-deal possible</div>
+        </div>
+        <button class="cta">INSPECT</button>
+      </div>
+      <div class="risk-row">
+        <div class="icon medium">↺</div>
+        <div class="body">
+          <div class="ttl">Rapid-fire buys · DUKE…VWVB</div>
+          <div class="desc">7 tx in 14s across 4 pools · within human limits</div>
+        </div>
+        <button class="cta">INSPECT</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-2">
+    <div class="card">
+      <div class="header">
+        <span class="title">Live pools · open right now</span>
+        <span class="meta">4 OPEN · 0 DRAWING · 19 RESOLVED THIS WEEK</span>
+      </div>
+      <div class="list-row"><div class="rank">⬢</div><div class="who-cell"><span class="name">WEEKLY #20</span><span class="addr">6PLF…ZKPG</span></div><div class="val-cell">147.20 SOL</div><div><span class="pill open">CLOSES IN 1D 4H</span></div></div>
+      <div class="list-row"><div class="rank">⬢</div><div class="who-cell"><span class="name">BIWEEKLY #7</span><span class="addr">EaAL…PLBT</span></div><div class="val-cell">82.40 SOL</div><div><span class="pill open">CLOSES IN 6D 12H</span></div></div>
+      <div class="list-row"><div class="rank">⬢</div><div class="who-cell"><span class="name">TRIWEEKLY #5</span><span class="addr">QWYK…ZB1M</span></div><div class="val-cell">214.10 SOL</div><div><span class="pill open">CLOSES IN 11D 3H</span></div></div>
+      <div class="list-row"><div class="rank">⬢</div><div class="who-cell"><span class="name">MONTHLY #3</span><span class="addr">2UHK…Z8JA</span></div><div class="val-cell">589.40 SOL</div><div><span class="pill open">CLOSES IN 18D 9H</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="header">
+        <span class="title">Treasury inflows · last 8 settles</span>
+        <span class="meta">PROTOCOL FEE PER DRAW (0.5% − VRF)</span>
+      </div>
+      <svg viewBox="0 0 540 180" class="chart" style="height:160px">
+        <line x1="20" x2="520" y1="20" y2="20" stroke="#1f1f1f"/>
+        <line x1="20" x2="520" y1="80" y2="80" stroke="#1f1f1f"/>
+        <line x1="20" x2="520" y1="140" y2="140" stroke="#1f1f1f"/>
+        <text class="axis-label" x="2" y="24">3.0</text>
+        <text class="axis-label" x="2" y="84">1.5</text>
+        <text class="axis-label" x="2" y="144">0</text>
+        <g fill="#88cfc4">
+          <rect x="40" y="100" width="34" height="40"/>
+          <rect x="100" y="65" width="34" height="75"/>
+          <rect x="160" y="55" width="34" height="85"/>
+          <rect x="220" y="90" width="34" height="50"/>
+          <rect x="280" y="40" width="34" height="100"/>
+          <rect x="340" y="75" width="34" height="65"/>
+          <rect x="400" y="22" width="34" height="118"/>
+          <rect x="460" y="50" width="34" height="90"/>
+        </g>
+        <g class="axis-label" text-anchor="middle">
+          <text x="57" y="160">W#13</text><text x="117" y="160">W#14</text><text x="177" y="160">B#5</text><text x="237" y="160">W#15</text><text x="297" y="160">W#16</text><text x="357" y="160">T#4</text><text x="417" y="160">M#2</text><text x="477" y="160">W#17</text>
+        </g>
+      </svg>
+      <div style="display:flex;justify-content:space-between;margin-top:10px" class="mono uppercase" >
+        <span style="color:var(--text-faint);font-size:10px;letter-spacing:.15em">TOTAL FEES · 7D</span>
+        <span style="color:var(--mint);font-size:12px;font-weight:700">12.40 SOL</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">
+    Mockup · placeholder data · TOMBOLA admin · 2026-05-12
+  </footer>
+</main>
+
+</body>
+</html>

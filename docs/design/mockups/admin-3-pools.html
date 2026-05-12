@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola Admin — Pools & Operator (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--mint:#88cfc4;--lavender:#c9b5dc;--coral:#e89999;--sand:#e8d89e;--rose:#e8a5c0;--bg:#0a0a0a;--surface:#171717;--border:#262626;--border-soft:#1a1a1a;--text:#fafafa;--text-mute:#a3a3a3;--text-dim:#737373;--text-faint:#525252}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .uppercase{text-transform:uppercase;letter-spacing:.15em}
+  .tabular{font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-soft);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid var(--border);border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--coral)}
+  header .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 3px rgba(232,153,153,.18)}
+  header nav{display:flex;gap:4px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em}
+  header nav a{padding:8px 12px;border-radius:8px;color:var(--text-mute);text-decoration:none;transition:.15s}
+  header nav a.active{color:var(--text);background:#1f1f1f}
+  header .who{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-dim);display:flex;align-items:center;gap:10px}
+  header .who .dot{width:6px;height:6px;background:var(--mint);border-radius:50%;box-shadow:0 0 0 3px rgba(136,207,196,.2)}
+
+  main{padding:28px 32px 64px;max-width:1700px;margin:0 auto}
+  .h1{font-family:'Space Grotesk';font-weight:700;font-size:30px;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:6px}
+  .sub{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+
+  .top{display:flex;align-items:end;justify-content:space-between;margin-bottom:18px;gap:14px;flex-wrap:wrap}
+  .chip{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;padding:7px 14px;border:1px solid var(--border);border-radius:999px;color:var(--text-mute);background:transparent;cursor:pointer;transition:.15s;margin-right:4px}
+  .chip:hover{color:var(--text)}
+  .chip.on{background:#1a1a1a;color:var(--text);border-color:#404040}
+  .chip.on.mint{border-color:rgba(136,207,196,.4);background:rgba(136,207,196,.1);color:var(--mint)}
+  .chip.on.lav{border-color:rgba(201,181,220,.4);background:rgba(201,181,220,.1);color:var(--lavender)}
+
+  .quick{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px}
+  .quick .q{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .quick .q .l{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .quick .q .v{margin-top:6px;font-family:'Space Grotesk';font-weight:700;font-size:22px;letter-spacing:-.01em}
+  .quick .q .s{margin-top:3px;font-family:'Space Mono';font-size:10px;letter-spacing:.05em;color:var(--text-faint)}
+  .quick .q .v.mint{color:var(--mint)}
+  .quick .q .v.coral{color:var(--coral)}
+  .quick .q .v.lavender{color:var(--lavender)}
+  .quick .q .v.sand{color:var(--sand)}
+
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:22px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px}
+  .card .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:8px}
+  .card .h .title{font-family:'Space Grotesk';font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.1em}
+  .card .h .meta{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+  thead th.right{text-align:right}
+  tbody td{padding:13px 12px;border-bottom:1px dashed #262626;vertical-align:middle}
+  tbody tr:hover{background:#0f0f0f;cursor:pointer}
+
+  .pool-cell{display:flex;align-items:center;gap:12px;min-width:0}
+  .pool-cell .strip{width:4px;height:36px;border-radius:2px;flex-shrink:0}
+  .pool-cell.weekly .strip{background:var(--lavender)}
+  .pool-cell.biweekly .strip{background:var(--coral)}
+  .pool-cell.triweekly .strip{background:var(--mint)}
+  .pool-cell.monthly .strip{background:var(--sand)}
+  .pool-cell.private .strip{background:#fafafa}
+  .pool-cell .name{font-family:'Space Grotesk';font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+  .pool-cell .addr{font-family:'Space Mono';font-size:10px;color:var(--text-faint)}
+
+  td.right{text-align:right;font-family:'Space Mono';font-weight:700;font-size:12px}
+  td.right.mint{color:var(--mint)}
+  td.right.coral{color:var(--coral)}
+
+  .pill{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.18em;padding:3px 9px;border-radius:999px;display:inline-block}
+  .pill.open{background:rgba(136,207,196,.12);color:var(--mint);border:1px solid rgba(136,207,196,.3)}
+  .pill.drawing{background:rgba(232,216,158,.12);color:var(--sand);border:1px solid rgba(232,216,158,.3)}
+  .pill.resolved{background:#171717;color:var(--text-mute);border:1px solid var(--border)}
+  .pill.empty{background:#171717;color:var(--text-faint);border:1px dashed var(--border)}
+  .pill.flag{background:rgba(232,153,153,.12);color:var(--coral);border:1px solid rgba(232,153,153,.3)}
+  .pill.creator{background:rgba(201,181,220,.08);color:var(--lavender);border:1px solid rgba(201,181,220,.2)}
+
+  .invite-bar{position:relative;background:#1a1a1a;height:6px;border-radius:99px;overflow:hidden}
+  .invite-bar > span{display:block;height:100%;background:var(--mint);border-radius:99px}
+
+  .panel-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed #262626;font-size:13px}
+  .panel-row:last-child{border-bottom:0}
+  .panel-row .l{display:flex;align-items:center;gap:8px}
+  .panel-row .l .dot{width:6px;height:6px;border-radius:50%}
+
+  .risk-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed #262626}
+  .risk-row:last-child{border-bottom:0}
+  .risk-row .icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .risk-row .icon.high{background:rgba(232,153,153,.14);color:var(--coral)}
+  .risk-row .icon.medium{background:rgba(232,216,158,.14);color:var(--sand)}
+  .risk-row .ttl{font-weight:600;font-size:13px;margin-bottom:2px}
+  .risk-row .desc{font-size:11px;color:var(--text-mute)}
+  .risk-row .cta{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text);background:transparent;border:1px solid var(--border);border-radius:999px;padding:6px 12px;cursor:pointer}
+
+  .btn{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;padding:9px 14px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--text);cursor:pointer;transition:.15s}
+  .btn:hover{border-color:#404040}
+  .btn.mint{background:var(--mint);color:#000;border-color:var(--mint)}
+
+  .paginator{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+
+  .invite-card{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-top:10px}
+  .invite-card .l{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim)}
+  .invite-card .v{font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:-.01em}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="color:#fff"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span class="mono uppercase" style="font-size:11px;color:var(--text-mute)">TOMBOLA</span>
+    <span class="badge">ADMIN</span>
+  </div>
+  <nav>
+    <a href="admin-1-executive.html">OVERVIEW</a>
+    <a href="admin-2-users.html">USERS</a>
+    <a href="#" class="active">POOLS</a>
+    <a href="#">TREASURY</a>
+    <a href="#">RISK</a>
+  </nav>
+  <div class="who"><span class="dot"></span><span>MARWAN · A9XZ…CDWY</span></div>
+</header>
+
+<main>
+  <div class="top">
+    <div>
+      <h1 class="h1">Pools & operator</h1>
+      <div class="sub" style="margin-top:6px">All public + private rounds · live state · refresh 14s</div>
+    </div>
+    <div>
+      <button class="chip">ALL</button>
+      <button class="chip on mint">OPEN</button>
+      <button class="chip">DRAWING</button>
+      <button class="chip">RESOLVED</button>
+      <button class="chip">EMPTY</button>
+      &nbsp;
+      <button class="chip">WEEKLY</button>
+      <button class="chip">BIWEEKLY</button>
+      <button class="chip">TRIWEEKLY</button>
+      <button class="chip">MONTHLY</button>
+      <button class="chip on lav">PRIVATE</button>
+    </div>
+  </div>
+
+  <section class="quick">
+    <div class="q"><div class="l">PUBLIC POOLS · LIFETIME</div><div class="v tabular">82</div><div class="s">4 LIVE · 78 RESOLVED</div></div>
+    <div class="q"><div class="l">PRIVATE POOLS · LIFETIME</div><div class="v lavender tabular">241</div><div class="s">12 LIVE · 211 RESOLVED · 18 EMPTY</div></div>
+    <div class="q"><div class="l">AVG POT · RESOLVED</div><div class="v mint tabular">88.6 SOL</div><div class="s">PUBLIC 142 · PRIVATE 31</div></div>
+    <div class="q"><div class="l">AVG TICKETS / POOL</div><div class="v tabular">317</div><div class="s">PUBLIC 612 · PRIVATE 28</div></div>
+    <div class="q"><div class="l">AVG PARTICIPANTS / POOL</div><div class="v tabular">42</div><div class="s">PUBLIC 88 · PRIVATE 5</div></div>
+    <div class="q"><div class="l">INVITE REDEMPTION</div><div class="v sand tabular">61%</div><div class="s">412 SENT · 251 REDEEMED</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="h">
+        <span class="title">All pools (sorted by close-time ASC, OPEN first)</span>
+        <span class="meta">SHOWING 16 OF 323</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>POOL</th>
+            <th>CREATOR</th>
+            <th class="right">TICKETS</th>
+            <th class="right">PARTICIPANTS</th>
+            <th class="right">POT</th>
+            <th class="right">FEES</th>
+            <th>STATE</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="pool-cell weekly"><div class="strip"></div><div><div class="name">WEEKLY #19</div><div class="addr">2UHK…Z8JA</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">2,418</td>
+            <td class="right tabular">142</td>
+            <td class="right tabular">241.80 SOL</td>
+            <td class="right mint tabular">1.21</td>
+            <td><span class="pill drawing">DRAWING · 1H 12M</span></td>
+            <td><span class="pill flag">STUCK</span></td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell weekly"><div class="strip"></div><div><div class="name">WEEKLY #20</div><div class="addr">6PLF…ZKPG</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">1,472</td>
+            <td class="right tabular">98</td>
+            <td class="right tabular">147.20 SOL</td>
+            <td class="right mint tabular">0.74</td>
+            <td><span class="pill open">OPEN · 1D 4H LEFT</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell biweekly"><div class="strip"></div><div><div class="name">BIWEEKLY #7</div><div class="addr">EaAL…PLBT</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">824</td>
+            <td class="right tabular">52</td>
+            <td class="right tabular">82.40 SOL</td>
+            <td class="right mint tabular">0.41</td>
+            <td><span class="pill open">OPEN · 6D 12H</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell triweekly"><div class="strip"></div><div><div class="name">TRIWEEKLY #5</div><div class="addr">QWYK…ZB1M</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">2,141</td>
+            <td class="right tabular">128</td>
+            <td class="right tabular">214.10 SOL</td>
+            <td class="right mint tabular">1.07</td>
+            <td><span class="pill open">OPEN · 11D 3H</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell monthly"><div class="strip"></div><div><div class="name">MONTHLY #3</div><div class="addr">2UHK…Z8JA</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">5,894</td>
+            <td class="right tabular">412</td>
+            <td class="right tabular">589.40 SOL</td>
+            <td class="right mint tabular">2.95</td>
+            <td><span class="pill open">OPEN · 18D 9H</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell private"><div class="strip"></div><div><div class="name">PRIVATE · HBQX…DWSX</div><div class="addr">CREATED 5D AGO</div></div></div></td>
+            <td><div style="font-size:12px"><span style="color:var(--text)">jpegmillions</span><br/><span class="mono" style="color:var(--text-faint);font-size:10px">7HrA…dY9q</span></div></td>
+            <td class="right tabular">110</td>
+            <td class="right tabular">2</td>
+            <td class="right tabular">0.11 SOL</td>
+            <td class="right mint tabular">0.0005</td>
+            <td><span class="pill open">OPEN</span></td>
+            <td><span class="pill flag">SELF-DEAL?</span></td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell private"><div class="strip"></div><div><div class="name">PRIVATE · DUKE…VWVB</div><div class="addr">CREATED 1H AGO</div></div></div></td>
+            <td><div style="font-size:12px"><span style="color:var(--text)">marwan</span><br/><span class="mono" style="color:var(--text-faint);font-size:10px">A9XZ…CDWY</span></div></td>
+            <td class="right tabular">1</td>
+            <td class="right tabular">1</td>
+            <td class="right tabular">0.01 SOL</td>
+            <td class="right mint tabular">0.00005</td>
+            <td><span class="pill open">OPEN · 21H 45M</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell private"><div class="strip"></div><div><div class="name">PRIVATE · AFRN…5FHF</div><div class="addr">CREATED 3H AGO</div></div></div></td>
+            <td><div style="font-size:12px"><span style="color:var(--text)">marwan</span><br/><span class="mono" style="color:var(--text-faint);font-size:10px">A9XZ…CDWY</span></div></td>
+            <td class="right tabular">1</td>
+            <td class="right tabular">1</td>
+            <td class="right tabular">0.01 SOL</td>
+            <td class="right mint tabular">0.00005</td>
+            <td><span class="pill open">OPEN · 21H 5M</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell private"><div class="strip"></div><div><div class="name">PRIVATE · 8GH3…aaPM</div><div class="addr">CREATED 6D AGO</div></div></div></td>
+            <td><div style="font-size:12px"><span style="color:var(--text)">jpegmillions</span><br/><span class="mono" style="color:var(--text-faint);font-size:10px">7HrA…dY9q</span></div></td>
+            <td class="right tabular">0</td>
+            <td class="right tabular">0</td>
+            <td class="right tabular">0.00 SOL</td>
+            <td class="right mint tabular">0.00</td>
+            <td><span class="pill empty">EMPTY · 0% REDEEM</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><div class="pool-cell weekly"><div class="strip"></div><div><div class="name">WEEKLY #18</div><div class="addr">QWYK…ZB1M</div></div></div></td>
+            <td><span class="pill creator">PROTOCOL</span></td>
+            <td class="right tabular">965</td>
+            <td class="right tabular">62</td>
+            <td class="right tabular">96.50 SOL</td>
+            <td class="right mint tabular">0.48</td>
+            <td><span class="pill resolved">RESOLVED · WINNER jpegmillions</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="paginator">
+        <span>SHOWING 1–10 OF 323 · 4 PUBLIC · 12 PRIVATE LIVE</span>
+        <div>
+          <button class="btn">PREV</button>
+          <button class="btn mint">1</button>
+          <button class="btn">2</button>
+          <button class="btn">…</button>
+          <button class="btn">33</button>
+          <button class="btn">NEXT</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="h"><span class="title">Operator alerts</span><span class="meta">3 OPEN</span></div>
+        <div class="risk-row">
+          <div class="icon high">!</div>
+          <div><div class="ttl">Stuck pool · WEEKLY #19</div><div class="desc">AwaitingVrf 1h 12m · keeper retries exhausted (3/3) · check Switchboard health</div></div>
+          <button class="btn">EXPLORER</button>
+          <button class="btn">INSPECT</button>
+        </div>
+        <div class="risk-row">
+          <div class="icon medium">▲</div>
+          <div><div class="ttl">Concentrated stake · PRIVATE HBQX…DWSX</div><div class="desc">Creator jpegmillions owns 92% of tickets · self-deal flag</div></div>
+          <button class="btn">EXPLORER</button>
+          <button class="btn">INSPECT</button>
+        </div>
+        <div class="risk-row">
+          <div class="icon medium">↺</div>
+          <div><div class="ttl">Rapid-fire buys · DUKE…VWVB</div><div class="desc">7 tx in 14s across 4 pools · within human limits but worth watching</div></div>
+          <button class="btn">EXPLORER</button>
+          <button class="btn">INSPECT</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h"><span class="title">Invite funnel · 30d</span><span class="meta">PRIVATE POOLS</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--lavender)"></span>POOLS WITH INVITES</span><span class="mono tabular" style="font-weight:700">48 / 241</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--mint)"></span>INVITES SENT</span><span class="mono tabular" style="font-weight:700">412</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--sand)"></span>INVITES REDEEMED</span><span class="mono tabular" style="font-weight:700">251</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--coral)"></span>INVITES REVOKED</span><span class="mono tabular" style="font-weight:700">14</span></div>
+        <div class="invite-card">
+          <div class="l"><span>REDEMPTION RATE</span><span>61%</span></div>
+          <div class="invite-bar"><span style="width:61%"></span></div>
+          <div class="v tabular" style="margin-top:10px;color:var(--mint)">61% friends accepted</div>
+          <div class="sub" style="margin-top:4px">Higher than the public 30D buy rate (44%) — invite quality is good</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h"><span class="title">Public vs private mix</span><span class="meta">30D · BY VOLUME</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--lavender)"></span>PUBLIC POOLS</span><span class="mono tabular" style="font-weight:700;color:var(--lavender)">9,820 SOL · 93%</span></div>
+        <div class="panel-row"><span class="l"><span class="dot" style="background:var(--mint)"></span>PRIVATE POOLS</span><span class="mono tabular" style="font-weight:700;color:var(--mint)">740 SOL · 7%</span></div>
+        <div style="margin-top:14px" class="invite-bar">
+          <span style="width:93%;background:var(--lavender)"></span>
+        </div>
+        <div class="sub" style="margin-top:8px">Private volume up 22% MoM · still niche, but growth signal is real</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid" style="grid-template-columns:1fr 1fr;margin-top:6px">
+    <div class="card">
+      <div class="h"><span class="title">Pool size distribution · 30d</span><span class="meta">RESOLVED POOLS</span></div>
+      <svg viewBox="0 0 540 200" style="width:100%;height:180px">
+        <g fill="#c9b5dc">
+          <rect x="20"  y="120" width="40" height="60"/>
+          <rect x="80"  y="80"  width="40" height="100"/>
+          <rect x="140" y="40"  width="40" height="140"/>
+          <rect x="200" y="20"  width="40" height="160"/>
+          <rect x="260" y="60"  width="40" height="120"/>
+          <rect x="320" y="100" width="40" height="80"/>
+          <rect x="380" y="130" width="40" height="50"/>
+          <rect x="440" y="155" width="40" height="25"/>
+          <rect x="500" y="170" width="20" height="10"/>
+        </g>
+        <g font-family="Space Mono" font-size="9" fill="#525252" text-anchor="middle" letter-spacing="1">
+          <text x="40" y="195">&lt;1</text>
+          <text x="100" y="195">1–10</text>
+          <text x="160" y="195">10–50</text>
+          <text x="220" y="195">50–100</text>
+          <text x="280" y="195">100–200</text>
+          <text x="340" y="195">200–500</text>
+          <text x="400" y="195">500–1K</text>
+          <text x="460" y="195">1–5K</text>
+          <text x="510" y="195">5K+</text>
+        </g>
+      </svg>
+      <div class="sub" style="margin-top:6px;text-align:right">SOL · MEDIAN 84 · P90 412</div>
+    </div>
+
+    <div class="card">
+      <div class="h"><span class="title">Time-to-fill distribution</span><span class="meta">RESOLVED · CREATE→CLOSE</span></div>
+      <svg viewBox="0 0 540 200" style="width:100%;height:180px">
+        <g fill="#88cfc4">
+          <rect x="20"  y="140" width="60" height="40"/>
+          <rect x="100" y="100" width="60" height="80"/>
+          <rect x="180" y="50"  width="60" height="130"/>
+          <rect x="260" y="30"  width="60" height="150"/>
+          <rect x="340" y="90"  width="60" height="90"/>
+          <rect x="420" y="130" width="60" height="50"/>
+        </g>
+        <g font-family="Space Mono" font-size="9" fill="#525252" text-anchor="middle" letter-spacing="1">
+          <text x="50" y="195">&lt;1H</text>
+          <text x="130" y="195">1–6H</text>
+          <text x="210" y="195">6–24H</text>
+          <text x="290" y="195">1–7D</text>
+          <text x="370" y="195">1–4W</text>
+          <text x="450" y="195">1M+</text>
+        </g>
+      </svg>
+      <div class="sub" style="margin-top:6px;text-align:right">N=289 · MOST POOLS RESOLVE WITHIN 7D OF CREATION</div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
