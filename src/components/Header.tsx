@@ -71,7 +71,13 @@ export function Header() {
   return (
     // relative so the absolute mobile dropdown anchors here; z-50 so the
     // dropdown overlays Hero content (which has its own stacking contexts).
-    <header className="relative z-50 mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
+    //
+    // The header spans the full viewport width (no max-w cap) so on wide
+    // monitors the logo sits flush-left and the wallet/profile cluster
+    // sits flush-right instead of pinching toward a centered 80rem
+    // column. Page content below still respects its own max-w-7xl
+    // container, so the body layout doesn't change.
+    <header className="relative z-50 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
       {/* Layout: [logo auto] [nav 1fr centered] [actions auto, hugs right].
           Old `sm:grid-cols-3` forced fixed 1/3-width columns, so the 4
           long nav labels overflowed the center third and bled into the
