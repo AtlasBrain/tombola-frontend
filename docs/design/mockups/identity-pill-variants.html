@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IdentityPill — design variants</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e;
+    --bg:#0a0a0a; --surface:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:40px 0 80px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1100px;margin:0 auto;padding:0 28px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:34px;letter-spacing:-.01em;text-transform:uppercase}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:8px}
+
+  .row{margin-top:32px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px}
+  .row .label{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .row .label .num{font-family:'Space Grotesk';font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+  .row .label .tag{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--mint);padding:4px 10px;border:1px solid rgba(136,207,196,.4);border-radius:999px;background:rgba(136,207,196,.08)}
+  .row .label .tag.neutral{color:var(--text-mute);border-color:var(--border);background:#0a0a0a}
+  .row .desc{font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.7;margin-bottom:18px}
+
+  .stage{display:flex;align-items:center;justify-content:center;gap:14px;background:#070707;border:1px dashed var(--border-soft);border-radius:14px;padding:30px 22px}
+  .stage.dark{background:radial-gradient(ellipse at 50% 50%, #14141a 0%, #070707 70%)}
+
+  /* Avatar — identicon stand-in (3×3 checker) */
+  .avatar{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#3a6f68,#243a35);overflow:hidden;position:relative}
+  .avatar::after{content:"";position:absolute;inset:0;background:
+    repeating-conic-gradient(#88cfc466 0% 25%, transparent 0% 50%) 0/12px 12px;
+    opacity:.45;
+  }
+  .avatar.lg{width:32px;height:32px}
+
+  /* ========== Variant 1 — Tear-corner WHITE (matches LEARN MORE) ========== */
+  .pill-tear{position:relative;isolation:isolate;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 7px;border:none;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#000;font-weight:700;transition:filter .2s}
+  .pill-tear::before{content:"";position:absolute;inset:0;z-index:-1;background-color:#fafafa;
+    clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+    transition:clip-path .4s cubic-bezier(.2,.8,.2,1), background-color .25s ease;
+  }
+  .pill-tear:hover::before{clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px))}
+  .pill-tear .name{padding-left:4px;letter-spacing:.08em}
+  .pill-tear .sep{width:1px;height:14px;background:rgba(0,0,0,.18);margin:0 4px}
+  .pill-tear .addr{color:rgba(0,0,0,.55);font-weight:400}
+  .pill-tear .caret{width:26px;height:26px;border-radius:50%;background:var(--lavender);display:inline-flex;align-items:center;justify-content:center;color:#000;font-size:12px;margin-left:4px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .pill-tear:hover .caret{transform:rotate(45deg)}
+
+  /* ========== Variant 2 — Tear-corner MINT (matches BUY A TICKET) ========== */
+  .pill-tear-mint{position:relative;isolation:isolate;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 7px;border:none;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#000;font-weight:700}
+  .pill-tear-mint::before{content:"";position:absolute;inset:0;z-index:-1;background-color:var(--mint);
+    clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+    transition:clip-path .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .pill-tear-mint:hover::before{clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px))}
+  .pill-tear-mint .name{padding-left:4px;letter-spacing:.08em}
+  .pill-tear-mint .sep{width:1px;height:14px;background:rgba(0,0,0,.22);margin:0 4px}
+  .pill-tear-mint .addr{color:rgba(0,0,0,.55);font-weight:400}
+  .pill-tear-mint .caret{width:26px;height:26px;border-radius:50%;background:#000;display:inline-flex;align-items:center;justify-content:center;color:#fafafa;font-size:12px;margin-left:4px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .pill-tear-mint:hover .caret{transform:rotate(45deg)}
+
+  /* ========== Variant 3 — Dark outline pill (matches SEARCH) ========== */
+  .pill-outline{display:inline-flex;align-items:center;gap:8px;padding:5px 8px 5px 5px;border:1px solid var(--border);background:#0a0a0a;border-radius:999px;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mute);transition:.15s}
+  .pill-outline:hover{border-color:#404040;color:var(--text)}
+  .pill-outline .name{color:var(--text);font-weight:700;letter-spacing:.08em;padding-left:4px}
+  .pill-outline .sep{width:1px;height:14px;background:var(--border);margin:0 4px}
+  .pill-outline .addr{color:var(--text-faint);font-weight:400}
+  .pill-outline .caret{width:22px;height:22px;border-radius:50%;background:#1a1a1a;display:inline-flex;align-items:center;justify-content:center;color:var(--text-mute);font-size:11px;margin-left:4px;transition:.2s}
+  .pill-outline:hover .caret{color:var(--text);background:#262626}
+
+  /* ========== Variant 4 — Dark + mint pulse (live indicator) ========== */
+  .pill-pulse{display:inline-flex;align-items:center;gap:8px;padding:5px 8px 5px 5px;border:1px solid rgba(136,207,196,.3);background:linear-gradient(135deg,rgba(136,207,196,.06),transparent 70%),#0a0a0a;border-radius:999px;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mute);transition:.15s;position:relative}
+  .pill-pulse:hover{border-color:rgba(136,207,196,.55);color:var(--text)}
+  .pill-pulse .name{color:var(--text);font-weight:700;letter-spacing:.08em;padding-left:4px;display:inline-flex;align-items:center;gap:8px}
+  .pill-pulse .dot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 3px rgba(136,207,196,.2);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(136,207,196,.2)}50%{box-shadow:0 0 0 6px rgba(136,207,196,.05)}}
+  .pill-pulse .sep{width:1px;height:14px;background:var(--border);margin:0 4px}
+  .pill-pulse .addr{color:var(--text-faint);font-weight:400}
+  .pill-pulse .caret{width:22px;height:22px;border-radius:50%;background:rgba(136,207,196,.15);display:inline-flex;align-items:center;justify-content:center;color:var(--mint);font-size:11px;margin-left:4px;transition:.2s}
+  .pill-pulse:hover .caret{background:var(--mint);color:#000}
+
+  /* ========== Variant 5 — Mint outline (matches Cancel/secondary buttons) ========== */
+  .pill-mint-outline{display:inline-flex;align-items:center;gap:8px;padding:5px 8px 5px 5px;border:1px solid rgba(136,207,196,.4);background:rgba(136,207,196,.08);border-radius:999px;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mint);transition:.15s;font-weight:700}
+  .pill-mint-outline:hover{background:rgba(136,207,196,.14);border-color:rgba(136,207,196,.6)}
+  .pill-mint-outline .name{padding-left:4px;letter-spacing:.08em}
+  .pill-mint-outline .sep{width:1px;height:14px;background:rgba(136,207,196,.3);margin:0 4px}
+  .pill-mint-outline .addr{color:rgba(136,207,196,.65);font-weight:400}
+  .pill-mint-outline .caret{width:22px;height:22px;border-radius:50%;background:rgba(136,207,196,.18);display:inline-flex;align-items:center;justify-content:center;color:var(--mint);font-size:11px;margin-left:4px;transition:.2s}
+  .pill-mint-outline:hover .caret{background:var(--mint);color:#000}
+
+  /* ========== Variant 6 — Lavender accent (matches BUY A TICKET) ========== */
+  .pill-lavender{display:inline-flex;align-items:center;gap:8px;padding:5px 8px 5px 5px;border:1px solid rgba(201,181,220,.35);background:#0a0a0a;border-radius:999px;cursor:pointer;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mute);transition:.15s}
+  .pill-lavender:hover{border-color:rgba(201,181,220,.6)}
+  .pill-lavender .name{color:var(--text);font-weight:700;letter-spacing:.08em;padding-left:4px}
+  .pill-lavender .sep{width:1px;height:14px;background:rgba(201,181,220,.25);margin:0 4px}
+  .pill-lavender .addr{color:var(--text-faint);font-weight:400}
+  .pill-lavender .caret{width:22px;height:22px;border-radius:50%;background:var(--lavender);display:inline-flex;align-items:center;justify-content:center;color:#000;font-size:12px;margin-left:4px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .pill-lavender:hover .caret{transform:rotate(45deg)}
+
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .pc .col{padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#0a0a0a;font-family:'Space Mono';font-size:11px;line-height:1.7;color:var(--text-mute)}
+  .pc h4{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;margin-bottom:6px}
+  .pc h4.good{color:var(--mint)}
+  .pc h4.bad{color:var(--coral)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>IdentityPill — design variants</h1>
+  <p class="lede">Hover each pill to see the on-brand effect (tear-corner clip + caret rotate). Pick one.</p>
+
+  <!-- ──────────────────────────── 1 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">1 · Tear-corner white</span>
+      <span class="tag">RECOMMENDED — matches "LEARN MORE" button</span>
+    </div>
+    <p class="desc">
+      Same visual language as the hero's <strong>LEARN MORE</strong> CTA: white background, ticket-corner clip-path that opens up on hover, lavender chip caret that rotates 45° on hover. Pure brand consistency, zero new visual vocabulary.
+    </p>
+    <div class="stage">
+      <button class="pill-tear">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>Re-uses the existing <code>fx-tear</code> CSS — zero new effects to maintain. Reads as a sibling of LEARN MORE / BUY A TICKET. The 45° caret rotate on hover is your signature flourish.</div>
+      <div class="col"><h4 class="bad">CONS</h4>White surface still slightly louder than the rest of the right cluster (bell + search are dark). Mitigated by matching the LEARN MORE button which is also white.</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────── 2 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">2 · Tear-corner mint</span>
+      <span class="tag">on-brand · primary accent</span>
+    </div>
+    <p class="desc">
+      Like variant 1 but the tear surface is <strong>MINT</strong> — matches the BUY A TICKET button's lavender cousin in spirit (color-coded CTA). Black caret circle instead of lavender so it doesn't fight the mint.
+    </p>
+    <div class="stage">
+      <button class="pill-tear-mint">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>Strong identity — your wallet pill becomes a brand-color anchor on every page. Mint reads as "you" (private pools use mint everywhere).</div>
+      <div class="col"><h4 class="bad">CONS</h4>Loud. Two CTAs already (LEARN MORE + BUY A TICKET); a third mint surface in the header can pull attention away from the hero.</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────── 3 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">3 · Dark outline pill</span>
+      <span class="tag neutral">quietest · matches SEARCH chip</span>
+    </div>
+    <p class="desc">
+      Same chrome as the SEARCH button: 1px neutral-800 border, transparent fill, mono label. The whole right cluster (search, bell, identity) now reads as one family of dark chips. Caret is a small grey circle.
+    </p>
+    <div class="stage">
+      <button class="pill-outline">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>Cluster cohesion — the entire right side reads as one design family. Doesn't shout. Lets the hero CTAs do the loud work.</div>
+      <div class="col"><h4 class="bad">CONS</h4>Identity becomes visually equal to "search" — for a wallet-gated product some operators want the wallet to feel more important. Loses the hover delight from variants 1/2.</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────── 4 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">4 · Dark + mint pulse</span>
+      <span class="tag">subtle accent · "you're connected" indicator</span>
+    </div>
+    <p class="desc">
+      Mostly the same dark chrome as variant 3 (so it lives in the same chip family as SEARCH and BELL), but with a small mint pulsing dot in front of the pseudo — same dot you use on "LIVE · 4 POOLS RUNNING". Reads as <em>"you are online"</em>.
+    </p>
+    <div class="stage">
+      <button class="pill-pulse">
+        <span class="avatar"></span>
+        <span class="name"><span class="dot"></span>MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>Quiet but alive — the pulsing dot signals "wallet active" without taking real-estate. Visual sibling of the LIVE pill, so already in your design vocabulary.</div>
+      <div class="col"><h4 class="bad">CONS</h4>Animated dots add a tiny visual draw that competes with the LIVE pill on the landing page. Consider only animating on the homepage / disabling elsewhere.</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────── 5 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">5 · Mint outline pill</span>
+      <span class="tag neutral">middle ground</span>
+    </div>
+    <p class="desc">
+      Mint outline + tinted background — the same recipe as your <strong>OPEN</strong> status pill but applied to identity. Mint reads as "you" without being a full mint fill. Caret becomes mint-on-mint until hover where it fills.
+    </p>
+    <div class="stage">
+      <button class="pill-mint-outline">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>On-brand mint without shouting. Caret fill on hover gives the same affordance as variants 1/2.</div>
+      <div class="col"><h4 class="bad">CONS</h4>Visually similar to the OPEN status pill — could create momentary confusion (is my wallet "open"?). Less of a problem when the avatar is present.</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────── 6 ──────────────────────────── -->
+  <div class="row">
+    <div class="label">
+      <span class="num">6 · Lavender caret on dark</span>
+      <span class="tag neutral">minimal change · just swap the white pill for dark</span>
+    </div>
+    <p class="desc">
+      Closest to your current implementation — same lavender caret circle (with the 45° rotate hover), but on a dark border-neutral-800 chrome instead of a white pill. One-line CSS swap from the live version.
+    </p>
+    <div class="stage">
+      <button class="pill-lavender">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="pc">
+      <div class="col"><h4 class="good">PROS</h4>Least disruptive change — keeps the lavender caret you've been using. Just darkens the pill chrome so it fits the rest of the right cluster.</div>
+      <div class="col"><h4 class="bad">CONS</h4>Lavender on dark border is a colorway you haven't really used elsewhere — net-new visual signal.</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────── recommendation ─────────────────────────── -->
+  <div class="row" style="border-color:rgba(136,207,196,.35);background:linear-gradient(135deg,rgba(136,207,196,.06),transparent 70%),#0c0c0c">
+    <div class="label">
+      <span class="num" style="color:var(--mint)">My pick</span>
+      <span class="tag">PICK ONE — TELL ME THE NUMBER</span>
+    </div>
+    <p class="desc" style="color:var(--text)">
+      <strong>Variant 1</strong> (tear-corner white) gives you the most brand consistency — it pairs the IdentityPill with LEARN MORE / BUY A TICKET and re-uses the existing <code>fx-tear</code> CSS. The lavender caret-rotate on hover is signature delight.<br/><br/>
+      <strong>Variant 4</strong> (dark + pulse) is the second pick if you'd rather have the entire right cluster (search + bell + identity) read as one quiet chip family, with just a tiny mint heartbeat to indicate "you are connected".<br/><br/>
+      Everything else is reasonable — but 1 and 4 are the cleanest fits.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
