@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola — Restoring How It Works + FAQ (mockups)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e;
+    --bg:#0a0a0a; --surface:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:32px 0 60px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .uppercase{text-transform:uppercase;letter-spacing:.15em}
+
+  .page{max-width:1700px;margin:0 auto;padding:0 28px}
+  h1.page-title{font-family:'Space Grotesk';font-weight:700;font-size:36px;letter-spacing:-.01em;text-transform:uppercase}
+  .sub{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:6px}
+
+  /* Demo frame */
+  .demo{margin-top:30px;border:1px solid var(--border);border-radius:18px;background:var(--surface);overflow:hidden}
+  .demo-meta{display:flex;justify-content:space-between;align-items:baseline;padding:18px 22px 6px;gap:18px}
+  .demo-meta h2{font-family:'Space Grotesk';font-weight:700;font-size:22px;letter-spacing:.01em;text-transform:uppercase}
+  .demo-meta .tag{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--mint);padding:4px 10px;border:1px solid rgba(136,207,196,.4);border-radius:999px;background:rgba(136,207,196,.08)}
+  .demo-meta .tag.warn{color:var(--sand);border-color:rgba(232,216,158,.4);background:rgba(232,216,158,.08)}
+  .demo-notes{padding:6px 22px 18px;font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.6}
+  .demo-stage{background:#070707;border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);padding:0;min-height:120px;position:relative}
+
+  /* Shared header chrome (used inside demos) */
+  .h-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 28px;position:relative}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand svg{display:block}
+  .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.04em}
+
+  .nav-link{padding:8px 12px;border-radius:8px;color:var(--text-mute);text-decoration:none;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em;transition:.15s}
+  .nav-link:hover{color:var(--text)}
+  .nav-link.active{color:var(--text);background:#1a1a1a}
+
+  .nav-bar{display:flex;align-items:center;gap:2px}
+
+  /* Right cluster */
+  .right{display:flex;align-items:center;gap:8px}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;background:#0a0a0a;color:var(--text-mute)}
+  .pill .kbd{padding:2px 6px;border:1px solid var(--border);border-radius:4px;font-size:9px;color:var(--text-faint);background:transparent}
+  .pill.profile{padding:5px 12px 5px 5px;border-color:var(--border);background:#0d0d0d}
+  .pill.profile .avatar{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#3f3f46,#18181b);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px}
+  .pill.profile .name{color:var(--text);font-weight:600;letter-spacing:.1em}
+  .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:#0a0a0a;display:inline-flex;align-items:center;justify-content:center;color:var(--text-mute);cursor:pointer;transition:.15s}
+  .icon-btn:hover{color:var(--text);border-color:#404040}
+  .pill.wallet{background:#fafafa;color:#000;padding:5px 4px 5px 14px;border:none}
+  .pill.wallet .go{width:24px;height:24px;border-radius:50%;background:var(--lavender);display:inline-flex;align-items:center;justify-content:center;color:#000;font-size:13px}
+  .pill.combo{padding:4px 4px 4px 5px;background:#fafafa;color:#000;border:none}
+  .pill.combo .avatar{width:24px;height:24px;border-radius:6px}
+  .pill.combo .name{color:#000;font-weight:700}
+  .pill.combo .addr{color:#000;opacity:.55;font-weight:400}
+  .pill.combo .go{width:24px;height:24px;border-radius:50%;background:var(--lavender);display:inline-flex;align-items:center;justify-content:center;color:#000;font-size:12px;margin-left:4px}
+  .more-btn{padding:7px 12px;border:1px solid var(--border);background:#0a0a0a;color:var(--text-mute);font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .more-btn:hover{color:var(--text);border-color:#404040}
+
+  /* Body preview underneath each demo */
+  .body-strip{padding:28px;display:flex;align-items:center;justify-content:center;gap:24px;background:linear-gradient(180deg,#070707,#0a0a0a)}
+  .body-strip .hero{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text-mute);font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em}
+  .body-strip .hero h3{font-family:'Space Grotesk';font-weight:700;font-size:48px;letter-spacing:-.01em;line-height:1;color:#fff;text-align:center}
+  .body-strip .hero .sub2{color:var(--text-faint)}
+  .hero-svg{position:absolute;left:50%;top:65px;transform:translateX(-50%);opacity:.35;pointer-events:none}
+
+  /* Option-3 popover */
+  .pop{position:absolute;top:60px;right:120px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;display:flex;flex-direction:column;min-width:220px;box-shadow:0 16px 40px rgba(0,0,0,.55);z-index:5}
+  .pop a{display:flex;align-items:center;gap:10px;padding:9px 12px;color:var(--text-mute);text-decoration:none;border-radius:8px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em}
+  .pop a:hover{background:#1a1a1a;color:var(--text)}
+  .pop a .ic{width:14px;height:14px;color:var(--text-faint)}
+  .pop .sep{height:1px;background:var(--border-soft);margin:4px 6px}
+
+  /* Option-4 left rail */
+  .rail{position:absolute;left:0;top:0;bottom:0;width:220px;background:#070707;border-right:1px solid var(--border-soft);padding:22px 14px;display:flex;flex-direction:column;gap:4px}
+  .rail .brand{margin:6px 6px 18px}
+  .rail .rail-section{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);padding:18px 12px 6px}
+  .rail a{display:flex;align-items:center;gap:10px;padding:9px 12px;color:var(--text-mute);text-decoration:none;border-radius:8px;font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+  .rail a:hover{color:var(--text);background:#111}
+  .rail a.active{background:#1a1a1a;color:var(--text);box-shadow:inset 2px 0 0 var(--mint)}
+  .rail a .dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint)}
+  .rail a.active .dot{background:var(--mint)}
+  .rail-stage-body{margin-left:220px;padding:18px 28px}
+  .rail-stage-body .h-row{padding:0 0 18px}
+
+  /* Two-row */
+  .row2{border-top:1px solid var(--border-soft);padding:10px 28px;display:flex;justify-content:center;gap:18px;background:#070707}
+  .row2 a{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-mute);text-decoration:none;padding:6px 10px;border-radius:8px}
+  .row2 a:hover{color:var(--text);background:#111}
+
+  /* Pros / cons block */
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px 22px 22px}
+  .pc .col{padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:#0a0a0a}
+  .pc h4{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;margin-bottom:8px}
+  .pc h4.good{color:var(--mint)}
+  .pc h4.bad{color:var(--coral)}
+  .pc ul{list-style:none;padding:0;font-size:13px;color:var(--text-mute);line-height:1.7}
+  .pc li{padding-left:18px;position:relative}
+  .pc li::before{content:"";position:absolute;left:0;top:.7em;width:6px;height:6px;border-radius:50%;background:var(--text-faint)}
+  .pc .col.good li::before{background:var(--mint)}
+  .pc .col.bad li::before{background:var(--coral)}
+
+  .verdict{padding:14px 22px 22px;font-family:'Space Mono';font-size:11px;letter-spacing:.05em;color:var(--text-mute);line-height:1.7}
+  .verdict b{color:var(--text);font-weight:700}
+  .verdict.tag-pick{color:var(--mint)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="page-title">Restoring How It Works + FAQ</h1>
+  <p class="sub">4 layout directions · pick one · all preserve the wallet pill flush-right and the nav centered on the hero axis</p>
+
+  <!-- ─────────────────────────────── OPTION 1 ─────────────────────────────── -->
+  <div class="demo">
+    <div class="demo-meta">
+      <h2>1 · Merge wallet + profile into one chip</h2>
+      <span class="tag">RECOMMENDED · smallest visual change</span>
+    </div>
+    <div class="demo-notes">
+      Today the right cluster has TWO things bound to your wallet — the avatar+pseudo profile button AND the bare wallet pill. Both render the same identity in different shapes. Combining them into one chip (avatar · pseudo · short address · open arrow) frees ~160px → enough room to fit HOW IT WORKS and FAQ back into the nav with zero layout drama.
+    </div>
+    <div class="demo-stage">
+      <div class="h-row">
+        <a class="brand" href="#">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="color:#fff">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-name">TOMBOLA</span>
+        </a>
+        <nav class="nav-bar">
+          <a class="nav-link" href="#">PUBLIC POOLS</a>
+          <a class="nav-link" href="#">CREATE POOL</a>
+          <a class="nav-link" href="#">MY TICKETS</a>
+          <a class="nav-link" href="#">LEADERBOARD</a>
+          <a class="nav-link" href="#">HOW IT WORKS</a>
+          <a class="nav-link" href="#">FAQ</a>
+        </nav>
+        <div class="right">
+          <span class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>SEARCH <span class="kbd">⌘K</span></span>
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          </button>
+          <button class="pill combo">
+            <span class="avatar">M</span>
+            <span class="name">MARWAN</span>
+            <span class="addr mono">· A9XZ…CDWY</span>
+            <span class="go">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="body-strip">
+      <svg class="hero-svg" width="540" height="200" viewBox="0 0 540 200">
+        <ellipse cx="270" cy="100" rx="260" ry="85" stroke="#c9b5dc55" stroke-width="1" fill="none"/>
+        <ellipse cx="270" cy="100" rx="220" ry="70" stroke="#e8999955" stroke-width="1" fill="none"/>
+      </svg>
+      <div class="hero">
+        <span>· LIVE · 4 POOLS RUNNING</span>
+        <h3>WHERE SOL<br/>WINS BIG</h3>
+        <span class="sub2">trustless on-chain raffles</span>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="col good"><h4 class="good">PROS</h4><ul>
+        <li>Nothing about the layout breaks — same 3-column flex with nav centered on the viewport axis.</li>
+        <li>Reduces visual clutter — one identity chip instead of two.</li>
+        <li>The combined chip still has a clickable area for "open my profile" + arrow for wallet actions.</li>
+        <li>All 6 nav items breathe comfortably ≥ 1400px wide; gracefully drops HOW IT WORKS + FAQ first on narrow widths.</li>
+      </ul></div>
+      <div class="col bad"><h4 class="bad">CONS</h4><ul>
+        <li>The wallet's adapter context menu (disconnect / change wallet) moves under the arrow button — slight UX shift.</li>
+        <li>Some users rely on the bare "A9XZ..CDWY" pill as a copy-paste affordance — needs a hover "copy" action to preserve.</li>
+      </ul></div>
+    </div>
+    <p class="verdict tag-pick"><b>verdict:</b> easiest path. ~30 minutes of work: collapse MyProfileButton + ConnectWalletButton into a single component. Nav restoration is a one-line change.</p>
+  </div>
+
+  <!-- ─────────────────────────────── OPTION 2 ─────────────────────────────── -->
+  <div class="demo">
+    <div class="demo-meta">
+      <h2>2 · &ldquo;More&rdquo; popover for secondary nav</h2>
+      <span class="tag">2nd recommendation · most conservative</span>
+    </div>
+    <div class="demo-notes">
+      Keep the four primary nav items in the top bar. Park HOW IT WORKS + FAQ (and future items like &ldquo;Docs&rdquo;, &ldquo;Roadmap&rdquo;, etc.) behind a small &ldquo;⋯&rdquo; or &ldquo;MORE&rdquo; button on the right. The wallet stays exactly where it is.
+    </div>
+    <div class="demo-stage">
+      <div class="h-row">
+        <a class="brand" href="#">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="color:#fff">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-name">TOMBOLA</span>
+        </a>
+        <nav class="nav-bar">
+          <a class="nav-link" href="#">PUBLIC POOLS</a>
+          <a class="nav-link" href="#">CREATE POOL</a>
+          <a class="nav-link" href="#">MY TICKETS</a>
+          <a class="nav-link" href="#">LEADERBOARD</a>
+          <button class="more-btn" aria-haspopup="menu" aria-expanded="true">
+            MORE
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </nav>
+        <div class="right">
+          <span class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>SEARCH <span class="kbd">⌘K</span></span>
+          <span class="pill profile"><span class="avatar">M</span><span class="name">MARWAN</span></span>
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          </button>
+          <span class="pill wallet"><span style="font-weight:700">A9XZ..CDWY</span><span class="go">→</span></span>
+        </div>
+        <!-- Popover (open state, for the mockup) -->
+        <div class="pop">
+          <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></svg>HOW IT WORKS</a>
+          <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 4v4h-4"/></svg>FAQ</a>
+          <div class="sep"></div>
+          <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7"/><path d="M21 3 10 14"/><path d="M21 14v7h-7"/><path d="M3 21l11-11"/></svg>GITHUB</a>
+          <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6"/><path d="M12 9v6"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>DOCS</a>
+        </div>
+      </div>
+    </div>
+    <div class="body-strip">
+      <svg class="hero-svg" width="540" height="200" viewBox="0 0 540 200">
+        <ellipse cx="270" cy="100" rx="260" ry="85" stroke="#c9b5dc55" stroke-width="1" fill="none"/>
+        <ellipse cx="270" cy="100" rx="220" ry="70" stroke="#e8999955" stroke-width="1" fill="none"/>
+      </svg>
+      <div class="hero">
+        <span>· LIVE · 4 POOLS RUNNING</span>
+        <h3>WHERE SOL<br/>WINS BIG</h3>
+        <span class="sub2">trustless on-chain raffles</span>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="col good"><h4 class="good">PROS</h4><ul>
+        <li>Wallet + profile + bell stay exactly as today — zero risk of regression on the wallet UX.</li>
+        <li>"MORE" is a known pattern; users intuit it immediately.</li>
+        <li>Room to grow — add /docs, /roadmap, /api later without touching the layout.</li>
+        <li>Keyboard-accessible if implemented as a real popover with role=menu.</li>
+      </ul></div>
+      <div class="col bad"><h4 class="bad">CONS</h4><ul>
+        <li>HOW IT WORKS is buried by one click — fine for FAQ, slightly worse for newcomer education.</li>
+        <li>Adds a new component (popover) and a tiny piece of state (open/closed).</li>
+      </ul></div>
+    </div>
+    <p class="verdict"><b>verdict:</b> safest. ~60 minutes of work: build a Popover primitive that closes on outside-click and escape, hook ⋯ to it. Reuses your existing mobile-menu close logic.</p>
+  </div>
+
+  <!-- ─────────────────────────────── OPTION 3 ─────────────────────────────── -->
+  <div class="demo">
+    <div class="demo-meta">
+      <h2>3 · Two-row header (primary above, secondary below)</h2>
+      <span class="tag warn">simple but uses vertical space</span>
+    </div>
+    <div class="demo-notes">
+      Top row keeps the existing logo · primary nav · right cluster. A thin second row underneath holds the &ldquo;reference&rdquo; links (HOW IT WORKS, FAQ, GITHUB, DOCS). Visually clean separation between &ldquo;places to act&rdquo; and &ldquo;things to read&rdquo;.
+    </div>
+    <div class="demo-stage">
+      <div class="h-row">
+        <a class="brand" href="#">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="color:#fff">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-name">TOMBOLA</span>
+        </a>
+        <nav class="nav-bar">
+          <a class="nav-link" href="#">PUBLIC POOLS</a>
+          <a class="nav-link" href="#">CREATE POOL</a>
+          <a class="nav-link" href="#">MY TICKETS</a>
+          <a class="nav-link" href="#">LEADERBOARD</a>
+        </nav>
+        <div class="right">
+          <span class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>SEARCH <span class="kbd">⌘K</span></span>
+          <span class="pill profile"><span class="avatar">M</span><span class="name">MARWAN</span></span>
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          </button>
+          <span class="pill wallet"><span style="font-weight:700">A9XZ..CDWY</span><span class="go">→</span></span>
+        </div>
+      </div>
+      <div class="row2">
+        <a href="#">HOW IT WORKS</a>
+        <a href="#">FAQ</a>
+        <a href="#">GITHUB</a>
+        <a href="#">DOCS</a>
+      </div>
+    </div>
+    <div class="body-strip">
+      <svg class="hero-svg" width="540" height="200" viewBox="0 0 540 200">
+        <ellipse cx="270" cy="100" rx="260" ry="85" stroke="#c9b5dc55" stroke-width="1" fill="none"/>
+        <ellipse cx="270" cy="100" rx="220" ry="70" stroke="#e8999955" stroke-width="1" fill="none"/>
+      </svg>
+      <div class="hero">
+        <span>· LIVE · 4 POOLS RUNNING</span>
+        <h3>WHERE SOL<br/>WINS BIG</h3>
+        <span class="sub2">trustless on-chain raffles</span>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="col good"><h4 class="good">PROS</h4><ul>
+        <li>Zero changes to top-bar geometry — no regressions.</li>
+        <li>Editorial hierarchy: "where to GO" vs "what to LEARN" — actually nicer UX for first-time visitors.</li>
+        <li>Easy to extend with more links without ever crowding the top row.</li>
+      </ul></div>
+      <div class="col bad"><h4 class="bad">CONS</h4><ul>
+        <li>Header is taller — costs ~40px of vertical real estate, pushes the hero down.</li>
+        <li>Two rows feel slightly heavier on mobile (can be hidden into the hamburger).</li>
+        <li>Some users overlook secondary rows; HOW IT WORKS engagement may drop.</li>
+      </ul></div>
+    </div>
+    <p class="verdict"><b>verdict:</b> safest visual but uses vertical pixels. Recommended only if you also plan to add &ldquo;Docs&rdquo; / &ldquo;Roadmap&rdquo; links — the row earns its keep at 4+ items. For just 2 items, option 1 is denser.</p>
+  </div>
+
+  <!-- ─────────────────────────────── OPTION 4 ─────────────────────────────── -->
+  <div class="demo">
+    <div class="demo-meta">
+      <h2>4 · Left rail / vertical sidebar nav</h2>
+      <span class="tag warn">largest design shift</span>
+    </div>
+    <div class="demo-notes">
+      Convert the entire nav to a left-side vertical rail (220px wide). Top bar shrinks to brand + right cluster only. Pages get 220px less horizontal width; the existing centered hero stays centered relative to the remaining canvas.
+    </div>
+    <div class="demo-stage" style="min-height:280px">
+      <aside class="rail">
+        <div class="brand">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="color:#fff">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+          <span class="brand-name">TOMBOLA</span>
+        </div>
+        <div class="rail-section">PLAY</div>
+        <a class="active" href="#"><span class="dot"></span>PUBLIC POOLS</a>
+        <a href="#"><span class="dot"></span>MY TICKETS</a>
+        <a href="#"><span class="dot"></span>LEADERBOARD</a>
+        <div class="rail-section">CREATE</div>
+        <a href="#"><span class="dot"></span>CREATE POOL</a>
+        <div class="rail-section">LEARN</div>
+        <a href="#"><span class="dot"></span>HOW IT WORKS</a>
+        <a href="#"><span class="dot"></span>FAQ</a>
+        <a href="#"><span class="dot"></span>GITHUB</a>
+      </aside>
+      <div class="rail-stage-body">
+        <div class="h-row">
+          <div></div>
+          <div class="right">
+            <span class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>SEARCH <span class="kbd">⌘K</span></span>
+            <span class="pill profile"><span class="avatar">M</span><span class="name">MARWAN</span></span>
+            <button class="icon-btn" aria-label="Notifications"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+            <span class="pill wallet"><span style="font-weight:700">A9XZ..CDWY</span><span class="go">→</span></span>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#070707,#0a0a0a);border-radius:18px;padding:50px;position:relative;overflow:hidden">
+          <svg width="540" height="180" viewBox="0 0 540 200" style="position:absolute;left:50%;top:20px;transform:translateX(-50%);opacity:.35">
+            <ellipse cx="270" cy="100" rx="260" ry="85" stroke="#c9b5dc55" stroke-width="1" fill="none"/>
+            <ellipse cx="270" cy="100" rx="220" ry="70" stroke="#e8999955" stroke-width="1" fill="none"/>
+          </svg>
+          <div style="position:relative;text-align:center">
+            <span class="mono uppercase" style="font-size:10px;color:var(--text-mute)">· LIVE · 4 POOLS RUNNING</span>
+            <h3 style="font-family:'Space Grotesk';font-weight:700;font-size:44px;letter-spacing:-.01em;line-height:1;margin-top:10px">WHERE SOL<br/>WINS BIG</h3>
+            <p style="font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);margin-top:14px">trustless on-chain raffles</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="col good"><h4 class="good">PROS</h4><ul>
+        <li>Unlimited nav slots — the rail can hold sectioned groups (PLAY / CREATE / LEARN).</li>
+        <li>Maps cleanly to the admin dashboard's nav (consistency across the product).</li>
+        <li>Top bar becomes minimal: just identity + utilities.</li>
+        <li>Each section gets its own visual group ("LEARN" cluster is obviously secondary).</li>
+      </ul></div>
+      <div class="col bad"><h4 class="bad">CONS</h4><ul>
+        <li>Biggest visual shift — feels like a different product on first visit.</li>
+        <li>The hero loses 220px of horizontal width on desktop; you'd want to re-tune the circle + floating-icon positions.</li>
+        <li>On wide monitors (≥1600px) the rail can feel orphaned at the far left.</li>
+        <li>More CSS work; mobile collapses to the existing hamburger.</li>
+      </ul></div>
+    </div>
+    <p class="verdict"><b>verdict:</b> bold but expensive. Use only if you're moving toward a more app-like surface (i.e. authenticated app with many sections). For a public-facing raffle landing page, the horizontal nav + option 1 or 2 reads more like a product site.</p>
+  </div>
+
+  <!-- ─────────────────────────────── Final recommendation ─────────────────────────────── -->
+  <div class="demo" style="border-color:rgba(136,207,196,.4);background:linear-gradient(135deg,rgba(136,207,196,.06),transparent 60%),#0c0c0c">
+    <div class="demo-meta">
+      <h2 style="color:var(--mint)">My recommendation</h2>
+      <span class="tag">PICK ONE</span>
+    </div>
+    <div class="demo-notes" style="color:var(--text)">
+      <p style="margin-bottom:14px"><strong>Combine option 1 + option 2:</strong> merge the wallet + profile chip (gains the room), AND add a small "MORE" popover for future overflow. That way HOW IT WORKS + FAQ sit cleanly in the nav today, and we keep a parking spot for the next 4–5 links you'll inevitably want to add (Docs · Roadmap · GitHub · API).</p>
+      <p>Concrete steps if you go this route:</p>
+      <ol style="margin:10px 0 0 20px;padding:0;color:var(--text-mute);line-height:1.7">
+        <li><strong>Collapse</strong> <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">MyProfileButton</code> + <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">ConnectWalletButton</code> into a single <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">IdentityPill</code> component.</li>
+        <li><strong>Restore</strong> <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">HOW IT WORKS</code> and <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">FAQ</code> in the homepage nav array (they were dropped in <code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">Header.tsx:25–30</code>).</li>
+        <li><strong>Add</strong> a hide-below-<code style="background:#1a1a1a;padding:1px 6px;border-radius:4px;color:var(--text)">xl</code> breakpoint on the FAQ link if you find the layout pinches on mid-width laptops (overflows back into the mobile menu there).</li>
+      </ol>
+      <p style="margin-top:14px">If you say the word, I'll implement the merged identity pill + restore both links in one commit. ~30 minutes.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
