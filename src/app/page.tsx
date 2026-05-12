@@ -59,7 +59,7 @@ export default async function Home() {
             </p>
           </div>
           <span className="hidden items-center gap-2 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-neutral-300 sm:inline-flex">
-            <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime" />
+            <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lavender" />
             LIVE · {CLUSTER.toUpperCase()}
           </span>
         </div>
@@ -82,7 +82,7 @@ export default async function Home() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 font-mono text-[10px] uppercase tracking-widest text-neutral-600 sm:flex-row">
           <span>© 2026 TOMBOLA · OPEN SOURCE</span>
           <div className="flex items-center gap-4">
-            <a href="https://github.com/AtlasBrain/Project-Tombola" target="_blank" rel="noreferrer" className="transition-colors hover:text-lime">GITHUB</a>
+            <a href="https://github.com/AtlasBrain/Project-Tombola" target="_blank" rel="noreferrer" className="transition-colors hover:text-lavender">GITHUB</a>
           </div>
         </div>
       </footer>

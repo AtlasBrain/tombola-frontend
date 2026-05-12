@@ -29,14 +29,12 @@ import {
   claimPoolInvite,
   getInvitesForWallet,
 } from "@/lib/pool-invite-client";
+import { CORAL, MINT } from "@/lib/colors";
 import { base64UrlToBytes } from "@/lib/private-pool-storage";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { pushNotification } from "@/lib/notifications";
 import { WalletLink } from "@/components/WalletLink";
 import { useToast } from "@/components/Toast";
-
-const MINT = "#88cfc4";
-const CORAL = "#e89999";
 
 interface Props {
   /** Pool PDA. */

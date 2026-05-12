@@ -25,6 +25,7 @@ import {
   getFriendLists,
   sendFriendAction,
 } from "@/lib/friend-client";
+import { MINT } from "@/lib/colors";
 import { useToast } from "@/components/Toast";
 
 interface Props {
@@ -32,7 +33,6 @@ interface Props {
   onClose: () => void;
 }
 
-const MINT = "#88cfc4";
 const DEBOUNCE_MS = 150;
 
 export function SearchPalette({ open, onClose }: Props) {

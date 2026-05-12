@@ -34,7 +34,7 @@ function ageSince(unix: number): string {
 
 function stateMeta(p: PoolView) {
   if (p.state === "Open") {
-    return { label: "OPEN", cls: "bg-lime/10 text-lime" };
+    return { label: "OPEN", cls: "bg-lavender/10 text-lavender" };
   }
   if (p.state === "AwaitingVrf") {
     return { label: "DRAWING", cls: "bg-[#e8d89e]/10 text-[#e8d89e]" };

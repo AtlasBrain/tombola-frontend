@@ -11,6 +11,7 @@ import { formatSol, shortAddress} from "@/lib/format";
 import { Metric, Stat } from "@/components/ui/Stat";
 import { UserName } from "@/components/UserName";
 import { Countdown } from "@/components/Countdown";
+import { MINT } from "@/lib/colors";
 
 // Heavy form modal — 178 LOC + transitively pulls CreatePoolForm + the
 // merkle-tree helpers. Only loaded when the creator clicks "+ Create new
@@ -27,8 +28,6 @@ import {
   useCreatorPools,
   type CreatorPoolRow as PoolRow,
 } from "@/hooks/useCreatorPools";
-
-const MINT = "#88cfc4";
 
 function durationLabel(openSec: number, closeSec: number): string {
   const secs = Math.max(0, closeSec - openSec);

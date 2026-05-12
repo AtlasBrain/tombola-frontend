@@ -24,8 +24,7 @@ import { getFriendLists } from "@/lib/friend-client";
 import { usePseudo } from "@/lib/pseudo-cache";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
 import { shortAddress } from "@/lib/format";
-
-const MINT = "#88cfc4";
+import { MINT } from "@/lib/colors";
 
 interface Props {
   /** Caller's wallet — drives which friends list we fetch. */

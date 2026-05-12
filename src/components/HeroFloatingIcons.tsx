@@ -11,7 +11,7 @@ export function HeroFloatingIcons() {
     <div className="pointer-events-none absolute inset-0 hidden md:block">
       {/* LEFT: ticket #047 */}
       <div className="float-a absolute left-[5%] top-[24%] h-20 w-20 rounded-2xl border border-neutral-800 bg-neutral-950 p-3 shadow-lg shadow-black/40">
-        <svg viewBox="0 0 40 40" className="h-full w-full text-lime" aria-hidden>
+        <svg viewBox="0 0 40 40" className="h-full w-full text-lavender" aria-hidden>
           <path fill="currentColor" d="M5 12h30v6a3 3 0 0 0 0 6v6H5v-6a3 3 0 0 0 0-6v-6z" />
           <line x1="14" y1="14" x2="14" y2="34" stroke="#0b0b0d" strokeWidth="2" strokeDasharray="2 2" />
           <text x="22" y="26" fill="#0b0b0d" fontFamily="Space Mono" fontSize="9" fontWeight="700">047</text>
@@ -51,7 +51,7 @@ export function HeroFloatingIcons() {
 
       {/* RIGHT: trophy */}
       <div className="float-e absolute right-[9%] top-[52%] h-20 w-20 rounded-2xl border border-neutral-800 bg-neutral-950 p-3 shadow-lg shadow-black/40">
-        <svg viewBox="0 0 40 40" className="h-full w-full text-lime" aria-hidden>
+        <svg viewBox="0 0 40 40" className="h-full w-full text-lavender" aria-hidden>
           <path fill="currentColor" d="M14 8h12v8a6 6 0 0 1-12 0V8zM10 10h4v6H10zM26 10h4v6h-4zM18 22h4v6h-4zM14 28h12v3H14z" />
         </svg>
       </div>

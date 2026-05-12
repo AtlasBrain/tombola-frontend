@@ -12,18 +12,15 @@ import {
   type BuyerFilter,
   type PoolMembership,
 } from "@/lib/buyer-pools";
+import { CORAL, LAVENDER, MINT, SAND } from "@/lib/colors";
 import { Metric, Stat } from "@/components/ui/Stat";
 import { UserName } from "@/components/UserName";
 import { useBuyerParticipations } from "@/hooks/useBuyerParticipations";
 
 // Brand palette tokens — match globals.css :root accents
-const ACCENT_LAVENDER = "#c9b5dc";
-const ACCENT_PINK = "#E89999";
-const ACCENT_MINT = "#88cfc4";
-const ACCENT_YELLOW = "#e8d89e";
 // Money-tone replacements (Q3b: brand instead of emerald/rose)
-const MONEY_POS = ACCENT_MINT;
-const MONEY_NEG = ACCENT_PINK;
+const MONEY_POS = MINT;
+const MONEY_NEG = CORAL;
 
 const POOL_KIND_LABELS: Record<number, string> = {
   0: "Weekly",
@@ -36,18 +33,18 @@ const POOL_KIND_LABELS: Record<number, string> = {
  *  match landing-page PoolCards; private pools take mint (matches the
  *  /pool/private design). */
 function accentFor(p: PoolMembership): string {
-  if (p.kind === "private") return ACCENT_MINT;
+  if (p.kind === "private") return MINT;
   switch (p.publicPoolType) {
     case 0:
-      return ACCENT_LAVENDER;
+      return LAVENDER;
     case 1:
-      return ACCENT_PINK;
+      return CORAL;
     case 2:
-      return ACCENT_MINT;
+      return MINT;
     case 3:
-      return ACCENT_YELLOW;
+      return SAND;
     default:
-      return ACCENT_LAVENDER;
+      return LAVENDER;
   }
 }
 
@@ -151,7 +148,7 @@ export function BuyerDashboard() {
         </p>
         <Link
           href="/#pools"
-          style={{ ["--tear-bg" as never]: ACCENT_LAVENDER }}
+          style={{ ["--tear-bg" as never]: LAVENDER }}
           className="btn-fx fx-tear mt-6 inline-flex items-center gap-2 px-5 py-3 font-display text-xs uppercase tracking-widest text-black transition hover:brightness-110"
         >
           BROWSE PUBLIC POOLS
@@ -266,9 +263,9 @@ function FilterChips({
         const active = filter === c.key;
         const activeStyle = active
           ? {
-              borderColor: ACCENT_LAVENDER,
-              background: `${ACCENT_LAVENDER}26`,
-              color: ACCENT_LAVENDER,
+              borderColor: LAVENDER,
+              background: `${LAVENDER}26`,
+              color: LAVENDER,
             }
           : undefined;
         return (

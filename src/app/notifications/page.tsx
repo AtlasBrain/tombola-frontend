@@ -14,8 +14,7 @@ import {
   type Notification,
   type NotificationKind,
 } from "@/lib/notifications";
-
-const MINT = "#88cfc4";
+import { MINT } from "@/lib/colors";
 
 const KIND_META: Record<NotificationKind, { glyph: string; color: string; label: string }> = {
   win:               { glyph: "🏆", color: "#88cfc4", label: "Wins" },
@@ -24,7 +23,7 @@ const KIND_META: Record<NotificationKind, { glyph: string; color: string; label:
   resolved:          { glyph: "✓",  color: "#737373", label: "Resolved" },
   created:           { glyph: "+",  color: "#88cfc4", label: "Created" },
   "fee-paid":        { glyph: "$",  color: "#e8d89e", label: "Fees" },
-  redeemed:          { glyph: "✦",  color: "#E89999", label: "Redeemed" },
+  redeemed:          { glyph: "✦",  color: "#e89999", label: "Redeemed" },
   invite:            { glyph: "🎟", color: "#88cfc4", label: "Pool invites" },
   "friend-request":  { glyph: "👤", color: "#c9b5dc", label: "Friends" },
   info:              { glyph: "i",  color: "#737373", label: "Info" },

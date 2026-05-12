@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
+import { MINT } from "@/lib/colors";
 
 // Heavy form modal — only loaded when the owner clicks "Edit profile".
 // Saves ~6 kB on the initial /u/[handle] payload for the common case
@@ -33,8 +34,6 @@ interface Props {
    *  in the parent page. */
   onProfileUpdated?: (next: ProfileRow) => void;
 }
-
-const MINT = "#88cfc4";
 
 /**
  * Option B layout: avatar (72px) + pseudo + rank + wallet + X + friends

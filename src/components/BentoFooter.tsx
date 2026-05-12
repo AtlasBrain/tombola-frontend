@@ -22,8 +22,8 @@ export function BentoFooter({
     <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-24">
       <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
         {/* Big brand tile (2x2) */}
-        <div className="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-neutral-900 bg-gradient-to-br from-lime/10 via-neutral-950 to-black p-8">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" className="text-lime" aria-hidden>
+        <div className="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-neutral-900 bg-gradient-to-br from-lavender/10 via-neutral-950 to-black p-8">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" className="text-lavender" aria-hidden>
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
             <circle cx="12" cy="12" r="3" fill="currentColor" />
             <line x1="12" y1="3"  x2="12" y2="6"  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -45,7 +45,7 @@ export function BentoFooter({
         <div className="flex flex-col justify-between rounded-3xl border border-neutral-900 bg-neutral-950 p-6">
           <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">TOTAL POT</span>
           <div>
-            <div className="font-display text-3xl uppercase text-lime tabular-nums">{totalPotSol.toFixed(2)}</div>
+            <div className="font-display text-3xl uppercase text-lavender tabular-nums">{totalPotSol.toFixed(2)}</div>
             <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">SOL · {totalRounds} ROUNDS</div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export function BentoFooter({
             href={`https://solscan.io/account/${programId}?cluster=${cluster}`}
             target="_blank"
             rel="noreferrer"
-            className="mt-3 break-all font-mono text-xs text-neutral-300 transition-colors hover:text-lime"
+            className="mt-3 break-all font-mono text-xs text-neutral-300 transition-colors hover:text-lavender"
           >
             {programId} ↗
           </a>
@@ -126,7 +126,7 @@ export function BentoFooter({
         <a
           href="#pools"
           style={{ ["--tear-bg" as string]: "#c9b5dc" } as React.CSSProperties}
-          className="btn-fx fx-tear-lg fx-stack flex items-center justify-center bg-lime p-6 text-center font-display text-lg uppercase text-black transition hover:brightness-110"
+          className="btn-fx fx-tear-lg fx-stack flex items-center justify-center bg-lavender p-6 text-center font-display text-lg uppercase text-black transition hover:brightness-110"
         >
           <span className="stack">
             <span>Buy a ticket →</span>

@@ -29,7 +29,7 @@ export function NetworkPill({ rpcUrl = DEFAULT_RPC_URL }: Props = {}) {
       title={rpcUrl}
       className="hidden items-center gap-1.5 rounded-full border border-neutral-800 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-neutral-300 sm:inline-flex"
     >
-      <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lime" />
+      <span className="pulse-soft inline-block h-1.5 w-1.5 rounded-full bg-lavender" />
       {cluster.toUpperCase()}
     </span>
   );

@@ -10,11 +10,7 @@ import {
   formatSolCompact,
   type GlobalPrivateStats,
 } from "@/lib/global-private-stats";
-
-const LAVENDER = "#c9b5dc";
-const PINK = "#E89999";
-const MINT = "#88cfc4";
-const YELLOW = "#e8d89e";
+import { CORAL, LAVENDER, MINT, SAND } from "@/lib/colors";
 
 // ============= Step icons =============
 function GearIcon({ accent }: { accent: string }) {
@@ -59,7 +55,7 @@ function CoinIcon({ accent }: { accent: string }) {
 const STEPS = [
   { num: 1, label: "Create", sub: "parameter the pool",   Icon: GearIcon,        accent: LAVENDER },
   { num: 2, label: "Share",  sub: "send invite links",    Icon: PaperPlaneIcon,  accent: MINT },
-  { num: 3, label: "Earn",   sub: "collect creator fee",  Icon: CoinIcon,        accent: YELLOW },
+  { num: 3, label: "Earn",   sub: "collect creator fee",  Icon: CoinIcon,        accent: SAND },
 ] as const;
 
 // ============= Live activity (mocked rows for now; can be wired to a real
@@ -67,8 +63,8 @@ const STEPS = [
 const ACTIVITY = [
   { c: MINT,     l: "Code redeemed",     w: "aBcD9zXq7mPLk2f4", t: "XyZ9kQrM5n8qP1vR", extra: "pool 2mrDTLyc…g8XR" },
   { c: LAVENDER, l: "+0.05 SOL minted",  w: "7xZQrm5n8qPaBcD9", t: "d8qPaBcD9zXq2L7m", extra: "ticket #142 · price 0.01 SOL" },
-  { c: YELLOW,   l: "Pool resolved",     w: "winner 9pQr8L2k7xMn", t: "2L7mWvBn3jKpQ4rS", extra: "pot 0.85 SOL · 47 tickets" },
-  { c: PINK,     l: "New pool",          w: "creator FCha8L9qWvBn", t: "WWe4Mx2nJk5RpQrA", extra: "whitelist · 100 codes · fee 2.5%" },
+  { c: SAND,   l: "Pool resolved",     w: "winner 9pQr8L2k7xMn", t: "2L7mWvBn3jKpQ4rS", extra: "pot 0.85 SOL · 47 tickets" },
+  { c: CORAL,     l: "New pool",          w: "creator FCha8L9qWvBn", t: "WWe4Mx2nJk5RpQrA", extra: "whitelist · 100 codes · fee 2.5%" },
   { c: MINT,     l: "Code redeemed",     w: "gM5n8qP1vRxL2k4f", t: "8qP1vRxL2k4f9zXq", extra: "pool 7yK4Lp2m…3vNb" },
   { c: LAVENDER, l: "+0.10 SOL minted",  w: "4uK0Lp2m9rXk1nB7", t: "1nB7Wv8DqT3jKpQ4", extra: "ticket #287 · price 0.05 SOL" },
 ];
@@ -127,7 +123,7 @@ export function HostRaffleSection() {
               <div className="mt-8 grid grid-cols-3 gap-4 sm:mt-auto sm:gap-8 lg:gap-12 lg:pt-8">
                 <Stat value={totalSol} label="SOL minted in private pools" color={LAVENDER} />
                 <Stat value={creators} label="Creators hosted a pool" color={MINT} />
-                <Stat value={redeemed} label="Invite codes redeemed" color={YELLOW} />
+                <Stat value={redeemed} label="Invite codes redeemed" color={SAND} />
               </div>
             </div>
 
@@ -260,7 +256,7 @@ function CreatePoolTicketButton() {
   return (
     <Link
       href="/create"
-      style={{ ["--tear-bg" as never]: PINK }}
+      style={{ ["--tear-bg" as never]: CORAL }}
       // .cta-halo is applied here (not on a wrapper) so its filter:
       // drop-shadow renders the glow against the actual rendered alpha
       // of the tear-corner pseudo, not a rectangular bounding box.
@@ -279,7 +275,7 @@ function CreatePoolTicketButton() {
       />
       <span
         className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black text-[10px]"
-        style={{ color: PINK }}
+        style={{ color: CORAL }}
       >
         →
       </span>
@@ -392,7 +388,7 @@ function FloatingIcons() {
       >
         <svg viewBox="0 0 40 40" className="h-full w-full">
           <path
-            fill={YELLOW}
+            fill={SAND}
             d="M20 4 L23 17 L36 20 L23 23 L20 36 L17 23 L4 20 L17 17 Z"
           />
         </svg>
@@ -408,7 +404,7 @@ function FloatingIcons() {
           style={{ boxShadow: "0 10px 26px rgba(232,216,158,0.35)" }}
         >
           <svg viewBox="0 0 40 40" className="h-full w-full">
-            <circle cx="20" cy="20" r="14" fill={YELLOW} />
+            <circle cx="20" cy="20" r="14" fill={SAND} />
             <text
               x="20"
               y="25"
@@ -439,12 +435,12 @@ function FloatingIcons() {
               cy="20"
               r="7"
               fill="none"
-              stroke={PINK}
+              stroke={CORAL}
               strokeWidth="2.5"
             />
-            <circle cx="13" cy="20" r="2.2" fill={PINK} />
-            <line x1="20" y1="20" x2="34" y2="20" stroke={PINK} strokeWidth="2.5" />
-            <line x1="29" y1="20" x2="29" y2="26" stroke={PINK} strokeWidth="2.5" />
+            <circle cx="13" cy="20" r="2.2" fill={CORAL} />
+            <line x1="20" y1="20" x2="34" y2="20" stroke={CORAL} strokeWidth="2.5" />
+            <line x1="29" y1="20" x2="29" y2="26" stroke={CORAL} strokeWidth="2.5" />
           </svg>
         </div>
       </div>
@@ -486,7 +482,7 @@ function FloatingIcons() {
           style={{ boxShadow: "0 6px 18px rgba(232,153,153,0.3)" }}
         >
           <svg viewBox="0 0 40 40" className="h-full w-full">
-            <rect x="6" y="6" width="28" height="28" rx="6" fill={PINK} />
+            <rect x="6" y="6" width="28" height="28" rx="6" fill={CORAL} />
             <circle cx="14" cy="14" r="2.4" fill="#0b0b0d" />
             <circle cx="26" cy="26" r="2.4" fill="#0b0b0d" />
             <circle cx="20" cy="20" r="2.4" fill="#0b0b0d" />

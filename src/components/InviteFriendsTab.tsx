@@ -23,6 +23,7 @@ import {
   revokePoolInvite,
   type InvitePublicView,
 } from "@/lib/pool-invite-client";
+import { MINT, SAND } from "@/lib/colors";
 import {
   bytesToBase64Url,
   loadCodesFromStorage,
@@ -31,9 +32,6 @@ import {
 import { FriendPicker } from "@/components/FriendPicker";
 import { WalletLink } from "@/components/WalletLink";
 import { useToast } from "@/components/Toast";
-
-const MINT = "#88cfc4";
-const SAND = "#e8d89e";
 
 interface Props {
   /** Pool address — keyed for the by-pool query. */

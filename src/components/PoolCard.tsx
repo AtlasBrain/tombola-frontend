@@ -62,7 +62,7 @@ export function PoolCard({ pool, rpcUrl }: { pool: PoolView; rpcUrl?: string }) 
     : "border border-neutral-800 bg-neutral-900/50 text-neutral-400";
 
   const hoverBorderClass =
-    pool.kind === "Weekly"    ? "hover:border-lime/40" :
+    pool.kind === "Weekly"    ? "hover:border-lavender/40" :
     pool.kind === "Biweekly"  ? "hover:border-[#E89999]/40" :
     pool.kind === "Triweekly" ? "hover:border-[#88cfc4]/40" :
                                 "hover:border-[#e8d89e]/40";

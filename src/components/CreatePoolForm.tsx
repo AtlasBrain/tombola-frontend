@@ -11,6 +11,7 @@ import {
   RaffleClient,
   AccessMode,
 } from "@tombola/sdk";
+import { MINT } from "@/lib/colors";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import { findMyPrivatePools, type RedemptionMode } from "@/lib/private-pools";
 import {
@@ -492,8 +493,6 @@ export function CreatePoolForm({ onCreated }: Props) {
     </form>
   );
 }
-
-const MINT = "#88cfc4";
 
 function MiniStatInput({
   id,

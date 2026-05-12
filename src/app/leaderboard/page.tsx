@@ -7,9 +7,7 @@ import { Header } from "@/components/Header";
 import { WalletLink } from "@/components/WalletLink";
 import { formatSol } from "@/lib/format";
 import { fetchLeaderboard, type Leaderboard } from "@/lib/leaderboard";
-
-const LAVENDER = "#c9b5dc";
-const MINT = "#88cfc4";
+import { LAVENDER, MINT } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 

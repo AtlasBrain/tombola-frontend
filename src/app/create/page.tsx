@@ -1,10 +1,9 @@
 import { Header } from "@/components/Header";
 import { CreatorDashboard } from "@/components/CreatorDashboard";
 import { CreateFloatingIcons } from "@/components/CreateFloatingIcons";
+import { MINT } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
-
-const MINT = "#88cfc4";
 
 export default function CreatePoolPage() {
   return (

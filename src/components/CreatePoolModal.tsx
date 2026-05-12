@@ -5,8 +5,7 @@ import Link from "next/link";
 import { CreatePoolForm, type CreateUiMode } from "@/components/CreatePoolForm";
 import { RedemptionLinkList } from "@/components/RedemptionLinkList";
 import { InviteFriendsTab } from "@/components/InviteFriendsTab";
-
-const MINT = "#88cfc4";
+import { MINT } from "@/lib/colors";
 
 interface CreatedPayload {
   poolAddress: string;

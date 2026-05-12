@@ -11,6 +11,14 @@
 @theme inline {
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-space-mono);
+  /* Accent color tokens — exposed to Tailwind v4 as utilities so
+     callers can use `text-mint`, `bg-mint`, `border-mint`, etc.
+     instead of inline hex constants scattered across 18 files. */
+  --color-mint: #88cfc4;
+  --color-lavender: #c9b5dc;
+  --color-coral: #e89999;
+  --color-sand: #e8d89e;
+  --color-rose: #e8a5c0;
 }
 
 :root {
@@ -21,18 +29,22 @@
   --ink: #f5f5f5;
   --line: rgba(255, 255, 255, 0.08);
 
-  /* Accent palette (no lime — see chat1.md design history) */
-  --lavender: #c9b5dc;
+  /* Canonical accent palette. Every component should reference these
+     via `var(--mint)` etc. — never inline hex. Added aliases (coral,
+     sand, rose) to match the names already used by inline constants
+     in 6+ files so the codemod resolves to consistent tokens. */
+  --mint:        #88cfc4;
+  --mint-dim:    #88cfc433;
+  --lavender:    #c9b5dc;
   --lavender-dim: #c9b5dc33;
-  --mint: #88cfc4;
-  --yellow: #e8d89e;
-  --pink: #e8a5c0;
+  --coral:       #e89999;   /* alias for the "pink" inline constants */
+  --sand:        #e8d89e;   /* alias of --yellow, the historical name */
+  --rose:        #e8a5c0;   /* the actual pink */
 
-  /* Aliases (prototype calls lavender "lime" — keep the alias so direct
-     copy-paste from public/redesign-v1-recolored.html keeps working
-     while we migrate. Kill these aliases after Stage 6.) */
-  --lime: var(--lavender);
-  --lime-dim: var(--lavender-dim);
+  /* Legacy aliases — kept to avoid a flag-day sweep. Prefer the
+     canonical names above for new code. */
+  --yellow:  var(--sand);
+  --pink:    var(--rose);
 }
 
 html,
@@ -322,12 +334,11 @@ section[id]:target { border-radius: 24px; animation: target-pulse 1.6s ease-out 
 .nav-link:hover::after { transform: scaleX(1); }
 .nav-link:active { background-color: rgba(201, 181, 220, 0.08); color: var(--lavender); }
 
-/* === Color utility classes (mockup uses .bg-lime, etc. — alias to lavender) === */
-.text-lime    { color: var(--lavender); }
-.bg-lime      { background: var(--lavender); }
-.ring-lime    { --tw-ring-color: var(--lavender); }
-.border-lime  { border-color: var(--lavender); }
-.bg-lime-soft { background: var(--lavender-dim); }
+/* Legacy `.bg-lime` / `.text-lime` / `.ring-lime` / `.border-lime`
+ * aliases were dropped 2026-05-12 after a codemod swept all callers
+ * to the equivalent `lavender` Tailwind utilities (now generated from
+ * the `--color-lavender` token in the @theme block). If you grep for
+ * "lime" in JSX/TSX and find a stray, just rename to `lavender`. */
 
 /* === Per-pool gradient cards (mockup uses .grad-weekly etc. on PoolCard) ===
  *  Use `background-image` (not shorthand `background`) so Tailwind's

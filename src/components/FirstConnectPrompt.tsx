@@ -14,8 +14,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { fetchProfile } from "@/lib/profile-client";
-
-const MINT = "#88cfc4";
+import { MINT } from "@/lib/colors";
 
 function dismissKey(wallet: string): string {
   return `tombola.firstConnectDismissed.${wallet}`;

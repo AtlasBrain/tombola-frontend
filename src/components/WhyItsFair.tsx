@@ -46,10 +46,10 @@ export function WhyItsFair() {
           </p>
           <div className="mt-6 flex items-center justify-between gap-2 rounded-2xl border border-neutral-800 bg-black p-4">
             <div className="text-center">
-              <div className="font-display text-3xl text-lime">10.18</div>
+              <div className="font-display text-3xl text-lavender">10.18</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">SOL POT</div>
             </div>
-            <svg width="40" height="20" viewBox="0 0 40 20" className="text-lime" aria-hidden>
+            <svg width="40" height="20" viewBox="0 0 40 20" className="text-lavender" aria-hidden>
               <line x1="2" y1="10" x2="34" y2="10" stroke="currentColor" strokeWidth="2" />
               <polyline points="28,4 34,10 28,16" fill="none" stroke="currentColor" strokeWidth="2" />
             </svg>
@@ -80,9 +80,9 @@ export function WhyItsFair() {
               <div key={b.label} className="flex items-center gap-2 font-mono text-[11px]">
                 <span className="w-20 text-neutral-500">{b.label}</span>
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-900">
-                  <div className="h-full rounded-full bg-lime" style={{ width: `${b.pct}%` }} />
+                  <div className="h-full rounded-full bg-lavender" style={{ width: `${b.pct}%` }} />
                 </div>
-                <span className="w-8 text-right text-lime">{b.count}</span>
+                <span className="w-8 text-right text-lavender">{b.count}</span>
               </div>
             ))}
           </div>

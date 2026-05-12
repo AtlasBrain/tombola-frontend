@@ -17,8 +17,7 @@ import { usePseudo } from "@/lib/pseudo-cache";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
 import { WalletLink } from "@/components/WalletLink";
 import { shortAddress } from "@/lib/format";
-
-const MINT = "#88cfc4";
+import { MINT } from "@/lib/colors";
 
 interface Props {
   /** Profile owner's wallet — the friend list to display. */

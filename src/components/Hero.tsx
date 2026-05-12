@@ -25,7 +25,7 @@ export function Hero() {
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         {/* Status pill */}
         <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-300">
-          <span className="pulse-soft h-1.5 w-1.5 rounded-full bg-lime" aria-hidden />
+          <span className="pulse-soft h-1.5 w-1.5 rounded-full bg-lavender" aria-hidden />
           LIVE · 4 POOLS RUNNING
         </span>
 
@@ -52,10 +52,10 @@ export function Hero() {
             href="#pools"
             onClick={handleScrollTo("pools")}
             style={{ ["--tear-bg" as never]: "#c9b5dc" }}
-            className="btn-fx fx-tear fx-stack flex items-center gap-2 bg-lime px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-black transition hover:brightness-110"
+            className="btn-fx fx-tear fx-stack flex items-center gap-2 bg-lavender px-2 py-2 pl-5 text-xs font-bold uppercase tracking-widest text-black transition hover:brightness-110"
           >
             <span className="stack"><span>BUY A TICKET</span><span>LET&rsquo;S GO →</span></span>
-            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-lime">→</span>
+            <span className="chip-flip flex h-7 w-7 items-center justify-center rounded-full bg-black text-lavender">→</span>
           </a>
         </div>
       </div>

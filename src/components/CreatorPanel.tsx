@@ -11,11 +11,7 @@ import {
   type CreatorPoolSummary,
   type CreatorStats,
 } from "@/lib/creator-stats";
-
-const LAVENDER = "#c9b5dc";
-const MINT = "#88cfc4";
-const YELLOW = "#e8d89e";
-const PINK = "#E89999";
+import { CORAL, LAVENDER, MINT, SAND } from "@/lib/colors";
 
 function durationLabel(openSec: number, closeSec: number): string {
   const secs = Math.max(0, closeSec - openSec);
@@ -56,13 +52,13 @@ function reputationBadge(stats: CreatorStats): {
   if (stats.payoutRate >= 80) {
     return {
       label: "Active",
-      color: YELLOW,
+      color: SAND,
       desc: `${stats.payoutRate.toFixed(0)}% of resolved pools paid out (${stats.resolvedCount - stats.paidOutCount} voided).`,
     };
   }
   return {
     label: "Mixed",
-    color: PINK,
+    color: CORAL,
     desc: `${stats.payoutRate.toFixed(0)}% payout rate · check pool history below.`,
   };
 }
@@ -234,9 +230,9 @@ function PoolCard({
         ? { label: "✓ Resolved", color: MINT }
         : { label: "Voided", color: "#737373" }
       : pool.state === 1
-        ? { label: "Drawing", color: YELLOW }
+        ? { label: "Drawing", color: SAND }
         : pool.closeTimeUnix * 1000 <= Date.now()
-          ? { label: "Closed", color: YELLOW }
+          ? { label: "Closed", color: SAND }
           : { label: "Open", color: MINT };
 
   return (

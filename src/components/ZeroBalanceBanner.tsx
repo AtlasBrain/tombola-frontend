@@ -11,8 +11,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { MINT } from "@/lib/colors";
 
-const MINT = "#88cfc4";
 const SESSION_DISMISS_KEY = "tombola.zeroBalanceBannerDismissed";
 
 export function ZeroBalanceBanner() {
