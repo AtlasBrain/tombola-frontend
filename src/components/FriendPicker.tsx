@@ -66,7 +66,10 @@ export function FriendPicker({
     },
   });
 
-  const friends = friendsQuery.data?.friends ?? [];
+  const friends = useMemo(
+    () => friendsQuery.data?.friends ?? [],
+    [friendsQuery.data],
+  );
 
   // Filter against the raw wallet substring + each row's resolved
   // pseudo. The pseudo lookup is a per-row hook so the filter respects

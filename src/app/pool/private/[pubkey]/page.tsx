@@ -14,6 +14,7 @@ import { DrawWinnerButton } from "@/components/DrawWinnerButton";
 import { RecentBuysTable, type BatchRow } from "@/components/RecentBuysTable";
 import { WinnerBanner } from "@/components/WinnerBanner";
 import { WinOdds } from "@/components/WinOdds";
+import { PoolInviteBanner } from "@/components/PoolInviteBanner";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import {
@@ -207,6 +208,11 @@ export default function PrivatePoolPage({
         onChange={bumpReload}
       />
       <main className="mx-auto max-w-3xl px-6 py-12">
+        {/* Friend invite banner — only renders for wallets with a
+            server-stored invite for this pool. One-click claim builds
+            the existing redeemInviteCodeWhitelist instruction. */}
+        <PoolInviteBanner poolAddress={pubkey} onClaimed={bumpReload} />
+
         {/* === HEADER CARD =========================================== */}
         <article className="grad-private rounded-3xl border border-neutral-800 bg-neutral-950 p-7">
           <header className="flex items-start justify-between gap-4">

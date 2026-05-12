@@ -52,7 +52,10 @@ export function InviteFriendsTab({ poolAddress }: Props) {
     queryFn: () => getInvitesForPool(poolAddress),
   });
 
-  const invites = invitesQuery.data ?? [];
+  const invites = useMemo(
+    () => invitesQuery.data ?? [],
+    [invitesQuery.data],
+  );
   const invitedWallets = useMemo(
     () => new Set(invites.map((i) => i.friend)),
     [invites],

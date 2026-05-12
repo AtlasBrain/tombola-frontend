@@ -619,45 +619,6 @@ function ModeRadio({
   );
 }
 
-function ModeOption({
-  active,
-  onClick,
-  title,
-  sub,
-}: {
-  active: boolean;
-  onClick: () => void;
-  title: string;
-  sub: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={
-        active
-          ? {
-              borderColor: `${MINT}66`,
-              background: `${MINT}1a`,
-            }
-          : undefined
-      }
-      className={`flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition ${
-        active ? "" : "border-transparent text-neutral-300 hover:bg-neutral-900/60"
-      }`}
-    >
-      <span
-        className="font-display text-sm uppercase"
-        style={active ? { color: MINT } : undefined}
-      >
-        {title}
-      </span>
-      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
-        {sub}
-      </span>
-    </button>
-  );
-}
 
 
 function validate(args: {

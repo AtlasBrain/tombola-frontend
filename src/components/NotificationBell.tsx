@@ -21,6 +21,7 @@ const KIND_META: Record<NotificationKind, { glyph: string; color: string }> = {
   created:  { glyph: "+",  color: "#88cfc4" },
   "fee-paid": { glyph: "$", color: "#e8d89e" },
   redeemed: { glyph: "✦",  color: "#E89999" },
+  invite:   { glyph: "🎟", color: "#88cfc4" },
   info:     { glyph: "i",  color: "#737373" },
 };
 

@@ -56,7 +56,10 @@ export function FriendsDrawer({ wallet, open, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const friends = friendsQuery.data?.lists.friends ?? [];
+  const friends = useMemo(
+    () => friendsQuery.data?.lists.friends ?? [],
+    [friendsQuery.data],
+  );
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) return friends;
