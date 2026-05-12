@@ -596,10 +596,11 @@ function ModeRadio({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span
-          className={`flex items-center gap-2 font-display text-sm uppercase tracking-tight ${
-            active ? "" : "text-neutral-100"
-          }`}
-          style={active ? { color: MINT } : undefined}
+          className="flex items-center gap-2 font-display text-sm uppercase tracking-tight"
+          // Inline color always wins over the inherited cascade — the
+          // form's button defaults were rendering near-black text on
+          // dark background otherwise.
+          style={{ color: active ? MINT : "#f5f5f5" }}
         >
           {title}
           {badge && (
