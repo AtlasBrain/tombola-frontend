@@ -29,7 +29,7 @@ import { explorerAddressUrl } from "@/lib/explorer-url";
 import { fetchProfile, type ProfileRow } from "@/lib/profile-client";
 import { getFriendLists } from "@/lib/friend-client";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
-import { CORAL, LAVENDER } from "@/lib/colors";
+import { CORAL, MINT } from "@/lib/colors";
 import { shortAddress } from "@/lib/format";
 
 const WalletMultiButton = dynamic(
@@ -139,10 +139,19 @@ export function IdentityPill({ mobile = false }: Props = {}) {
             ? `Identity menu — ${pendingIn} pending friend request${pendingIn === 1 ? "" : "s"}`
             : "Identity menu"
         }
+        // Mobile: full-width flat row inside the hamburger drawer.
+        // Desktop: brand-mint pill with ticket-corner tear (matches
+        // the BUY A TICKET / LEARN MORE CTAs in feel + hover effect).
+        // Typography mockup B: pseudo in Space Grotesk (display
+        // face — identity), address in Space Mono (technical face —
+        // mirrors the established hierarchy on /u/[handle] pages).
+        // The fx-tear ::before paints the mint surface and animates
+        // its clip-path; chip-flip rotates the caret 45° on hover.
+        style={mobile ? undefined : { ["--tear-bg" as never]: MINT }}
         className={
           mobile
             ? "flex h-12 w-full items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950 px-3 font-mono text-xs uppercase tracking-widest text-neutral-200 transition hover:border-neutral-600"
-            : "inline-flex items-center gap-2 rounded-full bg-neutral-100 py-1 pl-1 pr-1 font-mono text-[11px] uppercase tracking-wider text-neutral-900 shadow-sm transition hover:brightness-95"
+            : "btn-fx fx-tear group inline-flex items-center gap-2 py-1.5 pl-1.5 pr-1.5 text-neutral-900 transition"
         }
       >
         <IdentityAvatar
@@ -152,25 +161,39 @@ export function IdentityPill({ mobile = false }: Props = {}) {
           pendingIn={pendingIn}
           mobile={mobile}
         />
-        <span
-          className={mobile ? "flex-1 truncate text-left" : "max-w-[120px] truncate font-bold tracking-[0.08em]"}
-        >
-          {label}
-        </span>
-        {!mobile && (
+        {mobile ? (
+          <span className="flex-1 truncate text-left">{label}</span>
+        ) : (
           <>
-            {/* Short-address column, visible at xl+ so the pill stays
-                meaningful on wide screens. Falls back to just the
-                pseudo on narrower widths. */}
+            {/* `capitalize` upper-cases the first letter of the pseudo
+                so e.g. "marwan" reads as "Marwan" (the pseudo regex
+                forces lowercase, but the display can still be name-
+                like). When falling back to a short wallet address
+                we keep it case-sensitive (base58). */}
+            <span
+              className={`ml-1 max-w-[140px] truncate font-display text-[14px] font-bold leading-none tracking-tight ${
+                profile?.pseudo ? "capitalize" : ""
+              }`}
+            >
+              {label}
+            </span>
+            {/* Address column — visible at xl+ so the pill stays
+                meaningful on wide screens. Mono face matches the
+                /u/[handle] subheading + every other on-page address. */}
             {profile?.pseudo && (
-              <span className="hidden font-mono text-[10px] font-normal text-neutral-700 xl:inline">
-                · {shortAddress(wallet)}
-              </span>
+              <>
+                <span
+                  aria-hidden
+                  className="hidden h-3.5 w-px bg-black/20 xl:inline-block"
+                />
+                <span className="hidden font-mono text-[10px] font-normal leading-none text-black/55 xl:inline">
+                  {shortAddress(wallet)}
+                </span>
+              </>
             )}
             <span
               aria-hidden
-              className="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-bold text-neutral-900"
-              style={{ background: LAVENDER }}
+              className="chip-flip ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-black text-[11px] font-bold text-neutral-100"
             >
               ▾
             </span>
