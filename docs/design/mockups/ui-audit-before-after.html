@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UI audit — before / after examples</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #0d0d0e;
+    --card-2: #14141a;
+    --border: #1f1f23;
+    --divider: #2a2a2f;
+    --ink: #f5f5f5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --mint: #88cfc4;
+    --lavender: #c9b5dc;
+    --coral: #e89999;
+    --sand: #e8d89e;
+    --rose: #e8a5c0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 80px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .display { font-family: "Space Grotesk", "Inter", sans-serif; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .container { max-width: 1180px; margin: 0 auto; }
+
+  h1 { font-size: 32px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .lead { color: var(--muted-2); margin: 0 0 28px; font-size: 14px; max-width: 720px; }
+  .toc {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    padding: 16px 20px;
+    background: var(--card-2);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    margin-bottom: 36px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+  }
+  .toc a {
+    color: var(--mint);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  section.audit-item {
+    margin-bottom: 56px;
+    border-bottom: 1px dashed var(--divider);
+    padding-bottom: 40px;
+  }
+  section.audit-item:last-child { border-bottom: none; }
+
+  .header-row {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 8px;
+  }
+  .num {
+    font-family: "Space Grotesk";
+    font-weight: 700;
+    font-size: 32px;
+    color: var(--mint);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  h2 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .desc { color: var(--muted-2); font-size: 13px; margin: 0 0 22px; max-width: 760px; }
+
+  .ba-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 800px) { .ba-grid { grid-template-columns: 1fr; } }
+
+  .ba-panel {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .ba-panel header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted-2);
+  }
+  .ba-panel.before header { color: var(--coral); }
+  .ba-panel.after header  { color: var(--mint); }
+  .ba-panel header::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  .ba-panel .body {
+    padding: 22px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* shared bits */
+  .btn-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    color: var(--ink);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    font-weight: 600;
+  }
+  .btn-pill.mint { background: var(--mint); color: #000; border-color: transparent; font-weight: 700; }
+  .btn-pill.mint-outline { background: transparent; border-color: var(--mint); color: var(--mint); }
+  .btn-pill.ghost { background: transparent; }
+  .btn-pill.sm { padding: 4px 10px; font-size: 9px; }
+  kbd {
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.4);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+  }
+  code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  .note {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  hr.dashed { border: none; border-top: 1px dashed var(--divider); margin: 14px 0; }
+
+  /* === item-specific styles === */
+
+  /* HEADER */
+  .fake-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .fake-header .logo { display: flex; align-items: center; gap: 6px; font-family: "Space Grotesk"; font-weight: 700; font-size: 12px; }
+  .fake-header .nav-items {
+    display: flex; gap: 6px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted-2);
+    overflow: hidden;
+  }
+  .fake-header .right {
+    display: flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .fake-header .right > * {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    padding: 3px 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.3);
+    text-transform: uppercase;
+    color: var(--muted-2);
+  }
+  .fake-header.broken .nav-items { color: var(--muted-2); }
+  /* the overlap simulation: extra-wide nav clips under the right cluster */
+  .fake-header.broken {
+    position: relative;
+  }
+  .fake-header.broken .nav-items {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+    /* faux clip on the last items */
+    mask-image: linear-gradient(90deg, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, black 60%, transparent 100%);
+  }
+  .fake-header.broken .right {
+    position: relative;
+    z-index: 2;
+    box-shadow: -16px 0 14px -8px rgba(13,13,14,0.95);
+  }
+
+  /* COLOR SECTION */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .swatch {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .swatch .dot { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; }
+  .swatch .name { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink); }
+  .swatch .hex { font-family: "JetBrains Mono", monospace; font-size: 9px; color: var(--muted); }
+  pre.code-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink);
+    margin: 0;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre.code-block .red { color: var(--coral); }
+  pre.code-block .green { color: var(--mint); }
+  pre.code-block .muted { color: var(--muted); }
+
+  /* RADIUS SECTION */
+  .radius-row {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .radius-row > div {
+    width: 64px; height: 64px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    color: var(--muted-2);
+    text-align: center;
+    padding: 4px;
+  }
+
+  /* BUTTON HIERARCHY */
+  .btn-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
+    background: var(--mint);
+    color: #000;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    /* tear corner */
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
+  }
+  .btn-cta::after {
+    content: '→';
+    background: #000;
+    color: var(--mint);
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  /* STATUS PILLS */
+  .status-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .status {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .status.r-pill   { border-radius: 999px; }
+  .status.r-md     { border-radius: 4px; }
+  .status.plain    { padding: 3px 0; }
+  .status.s-open   { background: rgba(136,207,196,0.18); color: var(--mint); border: 1px solid rgba(136,207,196,0.35); }
+  .status.s-draw   { background: rgba(232,216,158,0.18); color: var(--sand); border: 1px solid rgba(232,216,158,0.35); }
+  .status.s-done   { background: rgba(115,115,115,0.18); color: var(--muted-2); border: 1px solid var(--border); }
+  .status.s-sent   { color: var(--sand); }
+  .status.s-redeem { color: var(--mint); }
+
+  /* TYPOGRAPHY */
+  .label-tier1 { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .label-9 { font-family: "JetBrains Mono", monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .label-10 { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .label-11 { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .label-xs { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+
+  /* CARDS */
+  .card-sample {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    padding: 14px;
+    color: var(--ink);
+  }
+  .card-sample h4 { margin: 0 0 4px; font-family: "Space Grotesk"; font-size: 14px; text-transform: uppercase; }
+  .card-sample p { margin: 0; font-size: 12px; color: var(--muted-2); }
+
+  /* MODAL */
+  .mock-modal {
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    border-radius: 12px;
+    padding: 14px;
+    background-image: radial-gradient(120% 100% at 50% 0%, rgba(136,207,196,0.10) 0%, transparent 60%);
+  }
+  .mock-modal header {
+    display: flex; align-items: start; justify-content: space-between;
+    border: none; padding: 0; gap: 10px;
+  }
+  .mock-modal h5 {
+    margin: 0;
+    font-family: "Space Grotesk";
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--mint);
+  }
+  .mock-modal .close-icon {
+    width: 24px; height: 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .mock-modal .close-pill {
+    border: 1px solid rgba(136,207,196,0.4);
+    background: rgba(136,207,196,0.06);
+    color: var(--mint);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* CONTRAST */
+  .contrast {
+    padding: 12px;
+    border-radius: 8px;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .contrast-sample {
+    display: flex; align-items: center; gap: 12px;
+    font-family: "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .contrast-sample .pass { color: var(--mint); font-size: 9px; }
+  .contrast-sample .fail { color: var(--coral); font-size: 9px; }
+  .ratio { font-size: 9px; color: var(--muted); font-family: "JetBrains Mono", monospace; }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1 class="display">UI audit — before / after</h1>
+  <p class="lead">Each section shows the current state on the left and the proposed fix on the right, with brief context. Hex values + class names match the codebase.</p>
+
+  <div class="toc">
+    <a href="#a1">1 · Header overlap</a>
+    <a href="#a2">2 · Color palette</a>
+    <a href="#a3">3 · Border-radius scale</a>
+    <a href="#a4">4 · Button hierarchy</a>
+    <a href="#a5">5 · Typography</a>
+    <a href="#a6">6 · Status pills</a>
+    <a href="#a7">7 · Modal close</a>
+    <a href="#a8">8 · Contrast (a11y)</a>
+    <a href="#a9">9 · Legacy lime alias</a>
+    <a href="#a10">10 · Spacing scale</a>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- 1. HEADER OVERLAP                                    -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a1">
+    <div class="header-row">
+      <div class="num">01</div>
+      <h2 class="display">Header overlap on mid-width desktop</h2>
+    </div>
+    <p class="desc">Reported by you. At viewports 1100-1300px the 6 nav items overflowed the center grid column and clipped under the right cluster.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 6 items, clips at mid width</header>
+        <div class="body">
+          <div class="fake-header broken">
+            <div class="logo">◎ TOMBOLA</div>
+            <div class="nav-items">
+              <span>PUBLIC POOLS</span>
+              <span>CREATE POOL</span>
+              <span>MY TICKETS</span>
+              <span>LEADERBOARD</span>
+              <span>HOW IT WORKS</span>
+              <span>FAQ</span>
+            </div>
+            <div class="right">
+              <span>⌘K SEARCH</span>
+              <span>MARWAN</span>
+              <span>🔔</span>
+              <span>A9XZ…CDWY</span>
+            </div>
+          </div>
+          <p class="note">Center column min-content exceeds its grid track → overlap.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · 4 items, fits comfortably</header>
+        <div class="body">
+          <div class="fake-header">
+            <div class="logo">◎ TOMBOLA</div>
+            <div class="nav-items">
+              <span>PUBLIC POOLS</span>
+              <span>CREATE POOL</span>
+              <span>MY TICKETS</span>
+              <span>LEADERBOARD</span>
+            </div>
+            <div class="right">
+              <span>⌘K SEARCH</span>
+              <span>MARWAN</span>
+              <span>🔔</span>
+              <span>A9XZ…CDWY</span>
+            </div>
+          </div>
+          <p class="note"><code>HOW IT WORKS</code> + <code>FAQ</code> moved to footer. <strong>Already shipped.</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 2. COLOR PALETTE                                     -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a2">
+    <div class="header-row">
+      <div class="num">02</div>
+      <h2 class="display">Color palette fragmentation</h2>
+    </div>
+    <p class="desc">CSS variables exist in <code>globals.css</code> but <strong>18 component files</strong> redeclare the same hex values inline. Casing drift (#E89999 vs #e89999) and naming drift (PINK ≠ <code>--pink</code>).</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · scattered inline hex</header>
+        <div class="body">
+          <pre class="code-block"><span class="muted">// src/components/CreatorDashboard.tsx</span>
+<span class="red">const MINT = "#88cfc4";</span>
+
+<span class="muted">// src/components/ProfileCard.tsx</span>
+<span class="red">const MINT = "#88cfc4";</span>
+
+<span class="muted">// src/components/InviteFriendsTab.tsx</span>
+<span class="red">const MINT = "#88cfc4";
+const SAND = "#e8d89e";</span>
+
+<span class="muted">// src/components/BuyerDashboard.tsx</span>
+<span class="red">const ACCENT_PINK = "#E89999";  // uppercase E</span>
+
+<span class="muted">// src/components/PoolInviteBanner.tsx</span>
+<span class="red">const CORAL = "#e89999";        // lowercase e</span>
+
+<span class="muted">// globals.css</span>
+<span class="red">--pink: #e8a5c0;                /* totally different */</span></pre>
+          <p class="note">Same color, 3 different names, 2 different casings. Visually identical, but maintenance pain.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · single source of truth</header>
+        <div class="body">
+          <pre class="code-block"><span class="muted">/* globals.css — canonical names */</span>
+<span class="green">--mint:     #88cfc4;
+--lavender: #c9b5dc;
+--coral:    #e89999;
+--sand:     #e8d89e;
+--rose:     #e8a5c0;</span>
+
+<span class="muted">// anywhere in the app</span>
+<span class="green">style={{ color: "var(--mint)" }}</span>
+<span class="muted">// or via Tailwind utilities</span>
+<span class="green">className="text-mint border-mint"</span></pre>
+          <p class="note">Drop all <code>const MINT = "#88cfc4"</code> declarations. Codemod = ~30 min.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div class="color-grid" style="grid-template-columns:repeat(5,1fr);">
+        <div class="swatch">
+          <div class="dot" style="background:var(--mint);"></div>
+          <div>
+            <div class="name">mint</div>
+            <div class="hex">#88cfc4</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="dot" style="background:var(--lavender);"></div>
+          <div>
+            <div class="name">lavender</div>
+            <div class="hex">#c9b5dc</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="dot" style="background:var(--coral);"></div>
+          <div>
+            <div class="name">coral</div>
+            <div class="hex">#e89999</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="dot" style="background:var(--sand);"></div>
+          <div>
+            <div class="name">sand</div>
+            <div class="hex">#e8d89e</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="dot" style="background:var(--rose);"></div>
+          <div>
+            <div class="name">rose</div>
+            <div class="hex">#e8a5c0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 3. BORDER RADIUS                                     -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a3">
+    <div class="header-row">
+      <div class="num">03</div>
+      <h2 class="display">Border-radius scale fragmentation</h2>
+    </div>
+    <p class="desc">6 different radius classes used today. Alert banners switch between <code>lg</code> and <code>2xl</code> for the same role.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 6 radii in active use</header>
+        <div class="body">
+          <div class="radius-row">
+            <div style="border-radius:4px;">md</div>
+            <div style="border-radius:8px;">lg</div>
+            <div style="border-radius:12px;">xl</div>
+            <div style="border-radius:16px;">2xl</div>
+            <div style="border-radius:20px;">3xl</div>
+            <div style="border-radius:999px;">full</div>
+          </div>
+          <p class="note">Same alert variant uses <code>rounded-lg</code> in one file, <code>rounded-2xl</code> in another.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · 4 levels locked</header>
+        <div class="body">
+          <div class="radius-row">
+            <div style="border-radius:12px;">xl ·<br/>inputs<br/>+<br/>tiles</div>
+            <div style="border-radius:16px;">2xl ·<br/>cards<br/>+<br/>banners</div>
+            <div style="border-radius:20px;">3xl ·<br/>heroes</div>
+            <div style="border-radius:999px;">full ·<br/>pills<br/>+<br/>badges</div>
+          </div>
+          <p class="note">Drop <code>rounded-md</code> + <code>rounded-lg</code> entirely. Documented in design tokens.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 4. BUTTON HIERARCHY                                  -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a4">
+    <div class="header-row">
+      <div class="num">04</div>
+      <h2 class="display">Button hierarchy is implicit</h2>
+    </div>
+    <p class="desc">Filled mint pill currently means BOTH "trigger wallet popup" AND "navigate". Users can't tell from shape alone whether a click will pop their wallet.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · no signal for "this signs"</header>
+        <div class="body">
+          <button class="btn-pill mint">+ Add Friend</button>
+          <button class="btn-pill mint">Set up profile</button>
+          <button class="btn-pill mint">View Pool</button>
+          <button class="btn-pill mint">Get SOL</button>
+          <p class="note">All four look identical. Two trigger signatures, two just navigate. User can't predict.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · shape encodes intent</header>
+        <div class="body">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-cta">Buy Ticket</button>
+            <span class="note" style="margin:0;">CTA · spends SOL</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-pill mint">+ Add Friend</button>
+            <span class="note" style="margin:0;">Primary · signs message</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-pill mint-outline">Set up profile</button>
+            <span class="note" style="margin:0;">Secondary · navigation</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-pill ghost">Skip</button>
+            <span class="note" style="margin:0;">Tertiary · dismiss / passive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 5. TYPOGRAPHY                                        -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a5">
+    <div class="header-row">
+      <div class="num">05</div>
+      <h2 class="display">Label typography drift</h2>
+    </div>
+    <p class="desc">Same role (small uppercase label) at 4 different sizes. <code>StatTile</code> uses 9px; <code>Metric</code> uses 10px; <code>Stat</code> uses 10px — visually inconsistent in mixed contexts.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 4 sizes for the same purpose</header>
+        <div class="body" style="gap:6px;">
+          <div class="label-9">label · 9px</div>
+          <div class="label-10">label · 10px</div>
+          <div class="label-11">label · 11px</div>
+          <div class="label-xs">label · 12px (text-xs)</div>
+          <p class="note">Pick by feel, not by rule. Adjacent components surface different sizes.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · 2 tiers, locked</header>
+        <div class="body" style="gap:8px;">
+          <div>
+            <div class="label-10">Tier 1 · 10px uppercase</div>
+            <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--mint);">+12.4 SOL</div>
+          </div>
+          <div>
+            <div class="label-10" style="font-size:10px;color:var(--muted-2);text-transform:none;letter-spacing:0;font-family:'Inter',sans-serif;">Tier 2 · 12px normal-case body footnote</div>
+          </div>
+          <p class="note">Tier 1 sits above big numbers · Tier 2 = body footnotes. Nothing else.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 6. STATUS PILLS                                      -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a6">
+    <div class="header-row">
+      <div class="num">06</div>
+      <h2 class="display">Status pill fragmentation</h2>
+    </div>
+    <p class="desc">Same semantic concept (state badge) rendered 4 different ways across pool dashboards, invite tabs, search results, friend rows.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 4 different treatments</header>
+        <div class="body">
+          <div class="status-row">
+            <span class="status r-pill s-open">▲ OPEN</span>
+            <span class="status r-pill s-draw">◷ DRAWING</span>
+            <span class="status r-pill s-done">✓ RESOLVED</span>
+          </div>
+          <div class="status-row">
+            <span class="status plain s-sent">SENT</span>
+            <span class="status plain s-redeem">REDEEMED ✓</span>
+          </div>
+          <div class="status-row">
+            <span class="status r-md" style="background:var(--mint);color:#000;">FRIENDS</span>
+            <span class="status plain" style="color:var(--sand);">Accept on profile →</span>
+          </div>
+          <p class="note">3 shapes (full pill, plain text, rounded square) + 3 color treatments.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · single <code>&lt;StatusPill /&gt;</code></header>
+        <div class="body">
+          <div class="status-row">
+            <span class="status r-pill s-open">▲ OPEN</span>
+            <span class="status r-pill s-draw">◷ DRAWING</span>
+            <span class="status r-pill s-done">✓ RESOLVED</span>
+          </div>
+          <div class="status-row">
+            <span class="status r-pill s-draw">SENT</span>
+            <span class="status r-pill s-open">REDEEMED ✓</span>
+          </div>
+          <div class="status-row">
+            <span class="status r-pill s-open">FRIENDS</span>
+            <span class="status r-pill s-draw">PENDING ↺</span>
+          </div>
+          <p class="note">One shape, one component, per-<code>kind</code> tokens. Color = semantic, not vibe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 7. MODAL CLOSE AFFORDANCE                            -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a7">
+    <div class="header-row">
+      <div class="num">07</div>
+      <h2 class="display">Modal close affordances drift</h2>
+    </div>
+    <p class="desc">CreatePoolModal: pill labelled "Cancel" / "Done". EditProfileModal: × icon. SearchPalette: esc only. FriendsDrawer: × icon. Same dismiss action, four UI patterns.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 4 different close shapes</header>
+        <div class="body" style="gap:10px;">
+          <div class="mock-modal">
+            <header>
+              <h5>Parameters</h5>
+              <span class="close-pill">CANCEL</span>
+            </header>
+          </div>
+          <div class="mock-modal">
+            <header>
+              <h5>Edit profile</h5>
+              <span class="close-icon">×</span>
+            </header>
+          </div>
+          <div class="mock-modal" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
+            <header><h5 style="color:var(--ink);">⌘K Search</h5><span>esc only</span></header>
+          </div>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · × icon + esc, everywhere</header>
+        <div class="body" style="gap:10px;">
+          <div class="mock-modal">
+            <header>
+              <h5>Parameters</h5>
+              <span class="close-icon">×</span>
+            </header>
+          </div>
+          <div class="mock-modal">
+            <header>
+              <h5>Edit profile</h5>
+              <span class="close-icon">×</span>
+            </header>
+          </div>
+          <div class="mock-modal">
+            <header>
+              <h5>⌘K Search</h5>
+              <span class="close-icon">×</span>
+            </header>
+          </div>
+          <p class="note">Pill button only for "Done" on success screens (post-create acknowledgment).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 8. CONTRAST                                          -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a8">
+    <div class="header-row">
+      <div class="num">08</div>
+      <h2 class="display">Accessibility — text contrast fails at 9px</h2>
+    </div>
+    <p class="desc">WCAG AA requires 4.5:1 contrast for body text under 18px. <code>text-neutral-600</code> on <code>bg-neutral-950</code> at 9px fails.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · multiple combos fail</header>
+        <div class="body">
+          <div class="contrast">
+            <div class="contrast-sample">
+              <span style="color:#737373;font-size:9px;">neutral-500 · 9px label</span>
+              <span class="ratio">3.5 : 1</span>
+              <span class="fail">FAIL</span>
+            </div>
+            <div class="contrast-sample">
+              <span style="color:#525252;font-size:9px;">neutral-600 · 9px label</span>
+              <span class="ratio">2.7 : 1</span>
+              <span class="fail">FAIL</span>
+            </div>
+            <div class="contrast-sample">
+              <span style="color:#404040;font-size:10px;">neutral-700 · 10px label</span>
+              <span class="ratio">1.9 : 1</span>
+              <span class="fail">FAIL</span>
+            </div>
+          </div>
+          <p class="note">Several stat sub-texts in the wild use these. Borderline unreadable on small screens.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · lift the minimum to neutral-400</header>
+        <div class="body">
+          <div class="contrast">
+            <div class="contrast-sample">
+              <span style="color:#a3a3a3;font-size:10px;">neutral-400 · 10px label</span>
+              <span class="ratio">6.1 : 1</span>
+              <span class="pass">PASS</span>
+            </div>
+            <div class="contrast-sample">
+              <span style="color:#a3a3a3;font-size:12px;">neutral-400 · 12px body</span>
+              <span class="ratio">6.1 : 1</span>
+              <span class="pass">PASS</span>
+            </div>
+            <div class="contrast-sample">
+              <span style="color:var(--mint);font-size:10px;">mint · 10px label</span>
+              <span class="ratio">8.4 : 1</span>
+              <span class="pass">PASS</span>
+            </div>
+          </div>
+          <p class="note">Drop <code>text-neutral-600</code> for any label under 12px. Reserve <code>text-neutral-500</code> for ≥12px only.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 9. LEGACY LIME ALIAS                                 -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a9">
+    <div class="header-row">
+      <div class="num">09</div>
+      <h2 class="display">Legacy <code>lime</code> alias is misleading</h2>
+    </div>
+    <p class="desc"><code>globals.css</code> has <code>.bg-lime { background: var(--lavender); }</code>. The class says lime; the color is lavender. Holdover from an early mockup that never got renamed.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · misleading alias</header>
+        <div class="body">
+          <pre class="code-block"><span class="muted">/* globals.css */</span>
+<span class="red">.bg-lime      { background: var(--lavender); }
+.ring-lime    { --tw-ring-color: var(--lavender); }
+.border-lime  { border-color: var(--lavender); }
+.bg-lime-soft { background: var(--lavender-dim); }</span>
+
+<span class="muted">// Hero.tsx, AllRoundsTable.tsx, page.tsx</span>
+<span class="red">&lt;span className="bg-lime"&gt;</span>  <span class="muted">// renders lavender 🤔</span></pre>
+          <p class="note">New devs grep "lime", find nothing relevant. Or see <code>.bg-lime</code> in JSX and expect green.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · accurate names</header>
+        <div class="body">
+          <pre class="code-block"><span class="green">// Use semantic Tailwind utilities</span>
+<span class="green">&lt;span className="bg-lavender"&gt;</span>
+<span class="green">&lt;span className="ring-mint"&gt;</span>
+<span class="green">&lt;span className="border-mint"&gt;</span>
+
+<span class="muted">// Or inline with CSS vars</span>
+<span class="green">style={{ background: "var(--lavender)" }}</span></pre>
+          <p class="note">Removes legacy alias entirely. Sweep is mechanical — ~10 minutes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- 10. SPACING SCALE                                    -->
+  <!-- ==================================================== -->
+  <section class="audit-item" id="a10">
+    <div class="header-row">
+      <div class="num">10</div>
+      <h2 class="display">Spacing chosen ad-hoc</h2>
+    </div>
+    <p class="desc">Within a single component you'll see <code>gap-2</code>, <code>gap-2.5</code>, <code>gap-3</code>, <code>gap-4</code>. Cards mix <code>p-4 / p-5 / p-6 / p-7</code> for visually identical surface roles.</p>
+
+    <div class="ba-grid">
+      <div class="ba-panel before">
+        <header>Before · 4 step values for similar roles</header>
+        <div class="body">
+          <div class="card-sample" style="padding:16px;border-radius:12px;">
+            <h4 style="font-size:13px;">p-4 (16px)</h4>
+            <p>Used in profile-row alert.</p>
+          </div>
+          <div class="card-sample" style="padding:20px;border-radius:12px;">
+            <h4 style="font-size:13px;">p-5 (20px)</h4>
+            <p>Used in pool-row card.</p>
+          </div>
+          <div class="card-sample" style="padding:24px;border-radius:12px;">
+            <h4 style="font-size:13px;">p-6 (24px)</h4>
+            <p>Used in admin section.</p>
+          </div>
+          <div class="card-sample" style="padding:28px;border-radius:12px;">
+            <h4 style="font-size:13px;">p-7 (28px)</h4>
+            <p>Used in CreatePoolModal.</p>
+          </div>
+          <p class="note">Decision rule: vibes.</p>
+        </div>
+      </div>
+      <div class="ba-panel after">
+        <header>After · 3-tier rule by surface role</header>
+        <div class="body">
+          <div class="card-sample" style="padding:12px;border-radius:12px;">
+            <h4 style="font-size:13px;">Tight · p-3 (12px)</h4>
+            <p>List rows, dense tiles.</p>
+          </div>
+          <div class="card-sample" style="padding:20px;border-radius:16px;">
+            <h4 style="font-size:13px;">Default · p-5 (20px)</h4>
+            <p>Cards, profile blocks, pool rows.</p>
+          </div>
+          <div class="card-sample" style="padding:28px;border-radius:20px;">
+            <h4 style="font-size:13px;">Hero · p-7 (28px)</h4>
+            <p>Modal panels, top-of-page heroes.</p>
+          </div>
+          <p class="note">3 tiers. Documented as a design token.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== -->
+  <!-- SUMMARY                                              -->
+  <!-- ==================================================== -->
+  <section class="audit-item" style="border-bottom:none;">
+    <div class="header-row">
+      <div class="num">▸</div>
+      <h2 class="display">If you greenlight all 10</h2>
+    </div>
+    <p class="desc">~2 dev-days of mostly mechanical sweeps. Zero behavior change. Build stays green throughout. The app stops feeling accreted.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-cta">Ship it</button>
+      <button class="btn-pill mint-outline">Pick a subset</button>
+      <button class="btn-pill ghost">Park for later</button>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
