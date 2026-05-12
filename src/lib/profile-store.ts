@@ -9,6 +9,10 @@
 // `src/lib/profile-auth.ts`. This file is the bare KV layer — no auth here.
 
 import { getRedis } from "./kv/redis";
+import {
+  addPseudoToIndex,
+  removePseudoFromIndex,
+} from "./pseudo-index";
 
 const PROFILE_PREFIX = "profile:";
 const PSEUDO_PREFIX = "pseudo:";
@@ -120,10 +124,12 @@ export async function saveProfile(
     writes.push(
       r.set(`${PSEUDO_PREFIX}${next.pseudo.toLowerCase()}`, next.wallet),
     );
+    writes.push(addPseudoToIndex(next.pseudo, next.wallet));
   }
   // Release the old pseudo if it changed (so other wallets can claim it).
   if (prev?.pseudo && prev.pseudo !== next.pseudo) {
     writes.push(r.del(`${PSEUDO_PREFIX}${prev.pseudo.toLowerCase()}`));
+    writes.push(removePseudoFromIndex(prev.pseudo, prev.wallet));
   }
   await Promise.all(writes);
 }

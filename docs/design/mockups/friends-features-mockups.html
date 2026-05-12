@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Friends — Search · Profile · Pool invites (3 design options)</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #0d0d0e;
+    --card-2: #14141a;
+    --border: #1f1f23;
+    --divider: #2a2a2f;
+    --ink: #f5f5f5;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --mint: #88cfc4;
+    --lavender: #c9b5dc;
+    --coral: #e89999;
+    --sand: #e8d89e;
+    --rose: #e8a5c0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .display { font-family: "Space Grotesk", "Inter", sans-serif; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .grid { display: grid; gap: 24px; }
+  .container { max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h3 { font-size: 14px; margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted-2); }
+  .lead { color: var(--muted-2); margin: 0 0 20px; font-size: 14px; }
+  .option {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 36px;
+  }
+  .option-title {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .pill.mint { background: rgba(136, 207, 196, 0.16); color: var(--mint); border: 1px solid rgba(136, 207, 196, 0.35); }
+  .pill.lavender { background: rgba(201, 181, 220, 0.18); color: var(--lavender); border: 1px solid rgba(201, 181, 220, 0.35); }
+  .pill.coral { background: rgba(232, 153, 153, 0.18); color: var(--coral); border: 1px solid rgba(232, 153, 153, 0.35); }
+  .pill.sand { background: rgba(232, 216, 158, 0.18); color: var(--sand); border: 1px solid rgba(232, 216, 158, 0.35); }
+  .surfaces {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  }
+  .surface {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .surface header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .surface .body { padding: 14px; }
+
+  /* ── Generic UI bits ─────────────────────────────────────────── */
+  .avatar {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #4a4a55, #1e1e26);
+    color: #f5f5f5;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+  }
+  .av-32 { width: 32px; height: 32px; font-size: 13px; }
+  .av-40 { width: 40px; height: 40px; font-size: 16px; }
+  .av-48 { width: 48px; height: 48px; font-size: 18px; }
+  .av-72 { width: 72px; height: 72px; font-size: 26px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    color: var(--ink);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .btn:hover { filter: brightness(1.15); }
+  .btn.mint { background: var(--mint); color: #000; border-color: transparent; font-weight: 700; }
+  .btn.lavender { background: var(--lavender); color: #000; border-color: transparent; font-weight: 700; }
+  .btn.ghost { background: transparent; }
+  .btn.muted { color: var(--muted-2); }
+  .btn.sm { padding: 4px 9px; font-size: 9px; }
+
+  .input {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+    color: var(--ink);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+  }
+  .input:focus { border-color: var(--lavender); }
+  .input-icon {
+    position: relative;
+  }
+  .input-icon svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted);
+  }
+  .input-icon .input { padding-left: 36px; }
+
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .row:hover { background: rgba(255,255,255,0.03); }
+  .row .meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .row .name { font-size: 13px; font-weight: 600; }
+  .row .sub { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--muted); }
+  .row .trailing { display: flex; align-items: center; gap: 6px; }
+
+  .privacy-lock {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .friend-tile {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .check {
+    width: 18px; height: 18px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .check.on {
+    background: var(--mint);
+    border-color: var(--mint);
+    color: #000;
+  }
+
+  .toast {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(136, 207, 196, 0.12);
+    border: 1px solid rgba(136, 207, 196, 0.4);
+    color: var(--mint);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* Header skin for option mockup */
+  .fake-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    margin-bottom: 16px;
+  }
+  .fake-header .logo { display: flex; align-items: center; gap: 8px; font-family: "Space Grotesk"; font-weight: 700; }
+  .fake-header .center { flex: 1; max-width: 380px; margin: 0 18px; }
+  .fake-header .right { display: flex; align-items: center; gap: 8px; }
+  .nav { font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+  /* Spotlight (slash search) */
+  .spotlight {
+    background: rgba(13, 13, 14, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 8px;
+    max-width: 540px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  /* Profile card */
+  .profile-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card-2);
+    padding: 18px;
+  }
+
+  /* Modal mock */
+  .modal {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    background-image: radial-gradient(120% 100% at 50% 0%, rgba(136,207,196,0.16) 0%, transparent 60%);
+  }
+  .tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    width: fit-content;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .tab { padding: 6px 14px; border-radius: 999px; cursor: pointer; color: var(--muted-2); }
+  .tab.active { background: var(--mint); color: #000; font-weight: 700; }
+
+  .toc {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--card-2);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    margin-bottom: 36px;
+    font-size: 12px;
+  }
+  .toc a { color: var(--mint); text-decoration: none; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .toc strong { display: block; color: var(--ink); margin-bottom: 4px; }
+  .label-small {
+    font-family: "JetBrains Mono", monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+  }
+
+  hr.divider { border: none; border-top: 1px dashed var(--divider); margin: 14px 0; }
+
+  /* Notif card */
+  .notif {
+    border: 1px solid rgba(136, 207, 196, 0.4);
+    background: linear-gradient(135deg, rgba(136,207,196,0.12), rgba(136,207,196,0.02));
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .friend-row-with-actions {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .friend-row-with-actions:last-child { border-bottom: none; }
+
+  .swap-list {
+    display: flex; flex-direction: column;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="display">Friends — 3 design options</h1>
+  <p class="lead">Three integrated proposals covering: (1) user search, (2) friends list on profile, (3) friend invites for private pools. Pick one to implement, or mix surfaces across options.</p>
+
+  <div class="toc">
+    <div><strong>Option A — Header Spotlight</strong><a href="#A">Jump ↓</a></div>
+    <div><strong>Option B — Dedicated Friends Page</strong><a href="#B">Jump ↓</a></div>
+    <div><strong>Option C — In-context everywhere</strong><a href="#C">Jump ↓</a></div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- OPTION A — Spotlight in header + Friends drawer + Step in CreatePool   -->
+  <!-- ====================================================================== -->
+  <section id="A" class="option">
+    <div class="option-title">
+      <span class="pill mint">Option A</span>
+      <h2 class="display">Header Spotlight + Friends drawer + Invite step</h2>
+    </div>
+    <p class="lead">Search lives in the header. Friends list opens as a slide-in drawer from the profile card. Pool invites are a new step inside the existing CreatePoolModal success screen, sitting next to the redemption-link list.</p>
+
+    <div class="surfaces">
+
+      <!-- A1 — Header with always-visible search -->
+      <div class="surface">
+        <header>1 · Header — global search</header>
+        <div class="body">
+          <div class="fake-header">
+            <div class="logo">◎ TOMBOLA</div>
+            <div class="center">
+              <div class="input-icon">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input class="input" placeholder="Search wallets, pseudos…" value="mar">
+              </div>
+            </div>
+            <div class="right">
+              <span class="nav">MY TICKETS</span>
+              <span class="btn ghost mono" style="font-size:10px">⌘K</span>
+            </div>
+          </div>
+          <p class="label-small" style="margin-top:14px;">Live results dropdown anchored under the input:</p>
+          <div class="spotlight" style="margin-top:8px;">
+            <div class="row">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div class="meta">
+                <div class="name">marwan <span class="privacy-lock">· public</span></div>
+                <div class="sub">7Qx…m1nT · 14 friends</div>
+              </div>
+              <span class="btn sm muted">→</span>
+            </div>
+            <div class="row">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">M</span>
+              <div class="meta">
+                <div class="name">martian <span class="privacy-lock">🔒 private</span></div>
+                <div class="sub">9Pb…k2xZ</div>
+              </div>
+              <span class="btn sm muted">→</span>
+            </div>
+            <div class="row">
+              <span class="avatar av-32" style="background:#444;">9</span>
+              <div class="meta">
+                <div class="name mono">9zXr…f3pQ</div>
+                <div class="sub">no pseudo claimed</div>
+              </div>
+              <span class="btn sm muted">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A2 — Profile card with friends drawer -->
+      <div class="surface">
+        <header>2 · Profile — friends drawer</header>
+        <div class="body">
+          <div class="profile-card">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <span class="avatar av-72" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div style="flex:1;">
+                <div class="display" style="font-size:18px;">MARWAN</div>
+                <div class="mono" style="font-size:11px;color:var(--muted);">7Qx…m1nT ↗</div>
+                <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+                  <button class="btn ghost sm">14 friends ▸</button>
+                  <span class="mono" style="font-size:11px;color:var(--muted);">@marwan_x ✓</span>
+                </div>
+              </div>
+              <button class="btn mint">+ ADD FRIEND</button>
+            </div>
+            <hr class="divider">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="friend-tile" style="flex:1;min-width:130px;">
+                <span class="label-small">NET PnL</span>
+                <span class="display" style="color:var(--mint);font-size:16px;margin-left:auto;">+12.4 SOL</span>
+              </div>
+              <div class="friend-tile" style="flex:1;min-width:130px;">
+                <span class="label-small">WINS</span>
+                <span class="display" style="font-size:16px;margin-left:auto;">3</span>
+              </div>
+            </div>
+          </div>
+          <p class="label-small" style="margin-top:14px;">Clicking "14 friends" slides in a drawer from the right:</p>
+          <div class="surface" style="margin-top:8px;background:var(--card);border-color:rgba(136,207,196,0.35);">
+            <header style="color:var(--mint);">FRIENDS · 14<span class="btn ghost sm">×</span></header>
+            <div class="body" style="padding:6px 8px;">
+              <div class="input-icon" style="margin-bottom:6px;">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input class="input" style="font-size:12px;padding:8px 10px 8px 32px;" placeholder="Filter friends…">
+              </div>
+              <div class="row">
+                <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+                <div class="meta"><div class="name">alice</div><div class="sub">since 12d</div></div>
+              </div>
+              <div class="row">
+                <span class="avatar av-32" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+                <div class="meta"><div class="name">bob_007</div><div class="sub">since 8d</div></div>
+              </div>
+              <div class="row">
+                <span class="avatar av-32" style="background:#444;">9</span>
+                <div class="meta"><div class="name mono">9aBcd…rT8K</div><div class="sub">no pseudo</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A3 — CreatePoolModal post-success: invite-friends step -->
+      <div class="surface">
+        <header>3 · CreatePool success — invite friends</header>
+        <div class="body">
+          <div class="modal">
+            <div style="display:flex;justify-content:space-between;align-items:start;">
+              <div>
+                <span class="label-small" style="color:var(--mint);">POOL CREATED</span>
+                <div class="display" style="font-size:22px;color:var(--mint);">You're live</div>
+              </div>
+              <button class="btn ghost">Done</button>
+            </div>
+            <div style="margin-top:16px;">
+              <div class="tabs">
+                <span class="tab">INVITE LINKS</span>
+                <span class="tab active">INVITE FRIENDS</span>
+              </div>
+              <p class="label-small" style="margin-top:12px;">Pick from your friends list. Each friend gets one code allocated automatically — no link to send.</p>
+              <div class="row" style="border:1px solid var(--border);margin-bottom:6px;">
+                <span class="check on">✓</span>
+                <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+                <div class="meta"><div class="name">alice</div><div class="sub">friends since 12d</div></div>
+              </div>
+              <div class="row" style="border:1px solid var(--border);margin-bottom:6px;">
+                <span class="check on">✓</span>
+                <span class="avatar av-32" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+                <div class="meta"><div class="name">bob_007</div><div class="sub">friends since 8d</div></div>
+              </div>
+              <div class="row" style="border:1px solid var(--border);margin-bottom:6px;">
+                <span class="check">  </span>
+                <span class="avatar av-32" style="background:#444;">9</span>
+                <div class="meta"><div class="name mono">9aBcd…rT8K</div><div class="sub">friends since 3d</div></div>
+              </div>
+              <hr class="divider">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="mono" style="font-size:11px;color:var(--muted);">2 of 10 codes allocated</span>
+                <button class="btn mint">SEND 2 INVITES</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A4 — Friend side: notification -->
+      <div class="surface">
+        <header>4 · Recipient — invite shows up in notifications</header>
+        <div class="body">
+          <div class="notif">
+            <div style="display:flex;align-items:start;gap:10px;">
+              <span class="avatar av-40" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div style="flex:1;">
+                <div style="font-size:13px;">🎟 <strong>marwan</strong> invited you to a private pool</div>
+                <div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">9zXr…f3pQ · 0.05 SOL/ticket · closes in 2d 14h</div>
+              </div>
+            </div>
+            <hr class="divider">
+            <div style="display:flex;gap:8px;">
+              <button class="btn mint" style="flex:1;">CLAIM INVITE</button>
+              <button class="btn ghost">VIEW POOL</button>
+            </div>
+          </div>
+          <p class="label-small" style="margin-top:14px;">Clicking CLAIM INVITE auto-fires the existing redemption flow (the server has the code+proof stored against your wallet). Once redeemed, your wallet is whitelisted and you can buy tickets as normal.</p>
+        </div>
+      </div>
+
+    </div>
+    <hr class="divider">
+    <p class="mono" style="font-size:11px;color:var(--muted-2);">
+      <strong style="color:var(--mint);">Best for:</strong> users who want search constantly accessible (everywhere ⌘K works). Drawer keeps the profile card compact. Invite step is opt-in — creators who just want links never see it.
+    </p>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- OPTION B — Dedicated /friends page                                     -->
+  <!-- ====================================================================== -->
+  <section id="B" class="option">
+    <div class="option-title">
+      <span class="pill lavender">Option B</span>
+      <h2 class="display">Dedicated Friends page + Inline list on profile + Invite tab</h2>
+    </div>
+    <p class="lead">A full <code>/friends</code> page that owns search, list, requests. Profile shows a compact 6-friend grid linking to the page. CreatePoolModal grows a tab for friend invites.</p>
+
+    <div class="surfaces">
+
+      <!-- B1 — Profile inline friends grid -->
+      <div class="surface">
+        <header>1 · Profile — inline friends grid</header>
+        <div class="body">
+          <div class="profile-card">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <span class="avatar av-72" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div style="flex:1;">
+                <div class="display" style="font-size:18px;">MARWAN</div>
+                <div class="mono" style="font-size:11px;color:var(--muted);">7Qx…m1nT · 14 friends</div>
+              </div>
+              <button class="btn mint">+ ADD FRIEND</button>
+            </div>
+            <hr class="divider">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span class="label-small">FRIENDS · 14</span>
+              <a class="mono" href="#" style="font-size:10px;color:var(--mint);text-transform:uppercase;letter-spacing:.15em;text-decoration:none;">SEE ALL →</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);margin:0 auto;display:flex;">A</span>
+                <div class="mono" style="font-size:9px;color:var(--muted);margin-top:4px;">alice</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:linear-gradient(135deg,#e89999,#5e3838);margin:0 auto;display:flex;">B</span>
+                <div class="mono" style="font-size:9px;color:var(--muted);margin-top:4px;">bob_007</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:#444;margin:0 auto;display:flex;">9</span>
+                <div class="mono" style="font-size:9px;color:var(--muted);margin-top:4px;">9aB…rT8K</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:linear-gradient(135deg,#e8d89e,#665a3e);margin:0 auto;display:flex;">D</span>
+                <div class="mono" style="font-size:9px;color:var(--muted);margin-top:4px;">dev_lab</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);margin:0 auto;display:flex;">E</span>
+                <div class="mono" style="font-size:9px;color:var(--muted);margin-top:4px;">eve</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <span class="avatar av-40" style="background:#444;color:var(--mint);margin:0 auto;display:flex;">+8</span>
+                <div class="mono" style="font-size:9px;color:var(--mint);margin-top:4px;">more</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B2 — /friends page -->
+      <div class="surface">
+        <header>2 · /friends — dedicated page</header>
+        <div class="body">
+          <div class="input-icon">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="input" placeholder="Find a player or paste a wallet…" value="mar">
+          </div>
+          <div class="tabs" style="margin-top:14px;">
+            <span class="tab active">FRIENDS · 14</span>
+            <span class="tab">REQUESTS · 2</span>
+            <span class="tab">DISCOVER</span>
+          </div>
+          <hr class="divider">
+          <div class="friend-row-with-actions">
+            <span class="avatar av-40" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+            <div class="meta" style="flex:1;">
+              <div class="name">alice</div>
+              <div class="sub">7Qx…m1nT · 2 mutual</div>
+            </div>
+            <button class="btn ghost sm">UNFRIEND</button>
+          </div>
+          <div class="friend-row-with-actions">
+            <span class="avatar av-40" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+            <div class="meta" style="flex:1;">
+              <div class="name">bob_007</div>
+              <div class="sub">9Pb…k2xZ · 5 mutual</div>
+            </div>
+            <button class="btn ghost sm">UNFRIEND</button>
+          </div>
+          <div class="friend-row-with-actions">
+            <span class="avatar av-40" style="background:#444;">9</span>
+            <div class="meta" style="flex:1;">
+              <div class="name mono">9aBcd…rT8K</div>
+              <div class="sub">no pseudo · 0 mutual</div>
+            </div>
+            <button class="btn ghost sm">UNFRIEND</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- B3 — Requests tab -->
+      <div class="surface">
+        <header>3 · /friends — requests tab</header>
+        <div class="body">
+          <div class="tabs">
+            <span class="tab">FRIENDS · 14</span>
+            <span class="tab active">REQUESTS · 2</span>
+            <span class="tab">DISCOVER</span>
+          </div>
+          <hr class="divider">
+          <p class="label-small" style="margin-bottom:8px;">INCOMING</p>
+          <div class="friend-row-with-actions">
+            <span class="avatar av-40" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">C</span>
+            <div class="meta" style="flex:1;">
+              <div class="name">carol</div>
+              <div class="sub">2h ago</div>
+            </div>
+            <button class="btn mint sm">ACCEPT</button>
+            <button class="btn ghost sm">DECLINE</button>
+          </div>
+          <hr class="divider">
+          <p class="label-small" style="margin-bottom:8px;">SENT</p>
+          <div class="friend-row-with-actions">
+            <span class="avatar av-40" style="background:linear-gradient(135deg,#e8d89e,#665a3e);">D</span>
+            <div class="meta" style="flex:1;">
+              <div class="name">dev_lab</div>
+              <div class="sub">waiting · 1d</div>
+            </div>
+            <button class="btn ghost sm">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- B4 — CreatePool tab -->
+      <div class="surface">
+        <header>4 · CreatePool — Friends-only access mode</header>
+        <div class="body">
+          <p class="label-small" style="margin-bottom:8px;">Access mode now has THREE radio options at pool-creation time:</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="friend-tile">
+              <input type="radio" checked>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;">WHITELIST · invite codes</div>
+                <div class="mono" style="font-size:10px;color:var(--muted);">existing — generate N codes to hand out</div>
+              </div>
+            </div>
+            <div class="friend-tile" style="border-color:var(--mint);background:rgba(136,207,196,0.08);">
+              <input type="radio">
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;color:var(--mint);">FRIENDS · pick from list ★</div>
+                <div class="mono" style="font-size:10px;color:var(--muted);">new — no codes, friends auto-claim from inbox</div>
+              </div>
+            </div>
+            <div class="friend-tile">
+              <input type="radio">
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;">PUBLIC · one code per ticket</div>
+                <div class="mono" style="font-size:10px;color:var(--muted);">existing — bearer-token codes, anyone can use</div>
+              </div>
+            </div>
+          </div>
+          <hr class="divider">
+          <p class="label-small" style="margin-bottom:6px;">When "FRIENDS" is selected, the code-count input is replaced by a friend picker:</p>
+          <div class="row" style="border:1px solid var(--border);margin-bottom:4px;">
+            <span class="check on">✓</span>
+            <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+            <div class="meta"><div class="name">alice</div></div>
+          </div>
+          <div class="row" style="border:1px solid var(--border);margin-bottom:4px;">
+            <span class="check on">✓</span>
+            <span class="avatar av-32" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+            <div class="meta"><div class="name">bob_007</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <hr class="divider">
+    <p class="mono" style="font-size:11px;color:var(--muted-2);">
+      <strong style="color:var(--lavender);">Best for:</strong> users who treat "Friends" as a first-class destination, not a sidebar. Dedicated page absorbs search + requests + discovery; profile stays clean. Invite-as-access-mode is a single radio choice instead of a post-creation step.
+    </p>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- OPTION C — In-context everywhere                                       -->
+  <!-- ====================================================================== -->
+  <section id="C" class="option">
+    <div class="option-title">
+      <span class="pill coral">Option C</span>
+      <h2 class="display">Slash-command search + Profile section + Admin invites</h2>
+    </div>
+    <p class="lead">No header chrome. Hit <code>/</code> from anywhere to open a search palette. Profile shows a friends section by default (no drawer). Invites managed from the per-pool admin page so you can add friends after creation as the pool fills up.</p>
+
+    <div class="surfaces">
+
+      <!-- C1 — Slash palette -->
+      <div class="surface">
+        <header>1 · ⌘K / slash — search palette</header>
+        <div class="body">
+          <p class="label-small">Tap <kbd style="border:1px solid var(--border);padding:1px 6px;border-radius:4px;background:rgba(0,0,0,0.4);">/</kbd> from any page. Overlay search with keyboard nav (↑/↓/Enter).</p>
+          <div class="spotlight" style="margin-top:10px;">
+            <div class="input-icon" style="margin-bottom:6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input class="input" placeholder="Search…" value="mar" autofocus>
+            </div>
+            <p class="label-small" style="padding:0 6px 4px;color:var(--mint);">PEOPLE</p>
+            <div class="row" style="background:rgba(255,255,255,0.05);">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div class="meta">
+                <div class="name">marwan</div>
+                <div class="sub">7Qx…m1nT · friends · 14 mutual</div>
+              </div>
+              <span class="mono" style="font-size:9px;color:var(--muted);">↵</span>
+            </div>
+            <div class="row">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">M</span>
+              <div class="meta">
+                <div class="name">martian <span class="privacy-lock">🔒</span></div>
+                <div class="sub">9Pb…k2xZ · strangers</div>
+              </div>
+            </div>
+            <p class="label-small" style="padding:0 6px 4px;color:var(--mint);margin-top:6px;">YOUR PRIVATE POOLS</p>
+            <div class="row">
+              <span style="font-size:18px;">⚡</span>
+              <div class="meta"><div class="name">"Friday market crash"</div><div class="sub">9zXr…f3pQ · 4/10 redeemed</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C2 — Profile w/ friends section -->
+      <div class="surface">
+        <header>2 · Profile — friends list as a section</header>
+        <div class="body">
+          <div class="profile-card">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <span class="avatar av-72" style="background:linear-gradient(135deg,#88cfc4,#3a6b65);">M</span>
+              <div style="flex:1;">
+                <div class="display" style="font-size:18px;">MARWAN</div>
+                <div class="mono" style="font-size:11px;color:var(--muted);">7Qx…m1nT ↗ · 14 friends</div>
+              </div>
+              <button class="btn mint">+ ADD FRIEND</button>
+            </div>
+            <hr class="divider">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span class="label-small">FRIENDS</span>
+              <div style="display:flex;gap:6px;">
+                <span class="btn ghost sm" style="background:var(--mint);color:#000;border-color:transparent;font-weight:700;">FRIENDS</span>
+                <span class="btn ghost sm">INCOMING · 2</span>
+                <span class="btn ghost sm">SENT</span>
+              </div>
+            </div>
+            <div class="row" style="border-bottom:1px dashed var(--divider);">
+              <span class="avatar av-40" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+              <div class="meta"><div class="name">alice</div><div class="sub">+8.2 SOL · 12d</div></div>
+              <span class="mono" style="font-size:9px;color:var(--mint);">FRIENDS</span>
+            </div>
+            <div class="row" style="border-bottom:1px dashed var(--divider);">
+              <span class="avatar av-40" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+              <div class="meta"><div class="name">bob_007</div><div class="sub">−1.4 SOL · 8d</div></div>
+              <span class="mono" style="font-size:9px;color:var(--mint);">FRIENDS</span>
+            </div>
+            <div class="row">
+              <span class="avatar av-40" style="background:#444;">9</span>
+              <div class="meta"><div class="name mono">9aBcd…rT8K</div><div class="sub">no pseudo · 3d</div></div>
+              <span class="mono" style="font-size:9px;color:var(--mint);">FRIENDS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C3 — Admin page invite section -->
+      <div class="surface">
+        <header>3 · /create/my-pools/[pubkey] — invite friends</header>
+        <div class="body">
+          <p class="label-small">Pool admin page gains a new card next to "Redemption links":</p>
+          <div style="margin-top:10px;padding:14px;border:1px solid rgba(136,207,196,0.4);border-radius:12px;background:rgba(136,207,196,0.04);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="display" style="font-size:14px;color:var(--mint);">Invite friends</div>
+                <p class="mono" style="font-size:10px;color:var(--muted);margin:2px 0 0;">Allocate codes from your unused 6/10 pool</p>
+              </div>
+              <button class="btn mint sm">+ ADD</button>
+            </div>
+            <hr class="divider">
+            <div class="friend-row-with-actions" style="border:none;padding:6px 0;">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#c9b5dc,#3a3551);">A</span>
+              <div class="meta" style="flex:1;"><div class="name">alice</div></div>
+              <span class="mono" style="font-size:10px;color:var(--mint);">SENT 2h</span>
+            </div>
+            <div class="friend-row-with-actions" style="border:none;padding:6px 0;">
+              <span class="avatar av-32" style="background:linear-gradient(135deg,#e89999,#5e3838);">B</span>
+              <div class="meta" style="flex:1;"><div class="name">bob_007</div></div>
+              <span class="mono" style="font-size:10px;color:var(--sand);">REDEEMED ✓</span>
+            </div>
+            <div class="friend-row-with-actions" style="border:none;padding:6px 0;">
+              <span class="avatar av-32" style="background:#444;">9</span>
+              <div class="meta" style="flex:1;"><div class="name mono">9aBcd…rT8K</div></div>
+              <button class="btn ghost sm">SEND</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C4 — Recipient pool page strip -->
+      <div class="surface">
+        <header>4 · Recipient — pool page top banner</header>
+        <div class="body">
+          <p class="label-small">When a friend opens the pool page and has a server-stored invite, a one-click claim banner replaces the "Connect wallet" prompt:</p>
+          <div class="notif" style="margin-top:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🎟</span>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;">You're invited!</div>
+                <div class="mono" style="font-size:10px;color:var(--muted);">
+                  <strong style="color:var(--mint);">marwan</strong> reserved a seat for you in this pool · 0.05 SOL/ticket
+                </div>
+              </div>
+              <button class="btn mint">CLAIM &amp; UNLOCK</button>
+            </div>
+          </div>
+          <p class="label-small" style="margin-top:12px;">One signature, redeems server-side stored code+proof, whitelists wallet, refreshes page. Then the normal buy-ticket flow appears.</p>
+        </div>
+      </div>
+
+    </div>
+    <hr class="divider">
+    <p class="mono" style="font-size:11px;color:var(--muted-2);">
+      <strong style="color:var(--coral);">Best for:</strong> power-user / keyboard-driven feel. Search is invisible until invoked; friends live where you already are (profile, pool admin). Inviting can happen at any time over the pool's life, not just at creation.
+    </p>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- Comparison table                                                       -->
+  <!-- ====================================================================== -->
+  <section class="option">
+    <h2 class="display" style="margin-bottom:18px;">At-a-glance comparison</h2>
+    <div style="overflow-x:auto;">
+      <table class="mono" style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--muted-2);text-transform:uppercase;letter-spacing:0.1em;font-size:10px;">Question</th>
+            <th style="text-align:left;padding:8px 12px;color:var(--mint);text-transform:uppercase;font-size:10px;">A · Header</th>
+            <th style="text-align:left;padding:8px 12px;color:var(--lavender);text-transform:uppercase;font-size:10px;">B · /friends page</th>
+            <th style="text-align:left;padding:8px 12px;color:var(--coral);text-transform:uppercase;font-size:10px;">C · In-context</th>
+          </tr>
+        </thead>
+        <tbody style="font-size:12px;">
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Where do I search?</td>
+            <td style="padding:10px 12px;">Header input · always visible</td>
+            <td style="padding:10px 12px;">/friends top bar</td>
+            <td style="padding:10px 12px;"><kbd style="border:1px solid var(--border);padding:1px 4px;border-radius:3px;">/</kbd> opens palette</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Friends list location</td>
+            <td style="padding:10px 12px;">Slide-in drawer from profile</td>
+            <td style="padding:10px 12px;">Dedicated page + 6 avatar grid on profile</td>
+            <td style="padding:10px 12px;">Full section in profile, tabbed</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Where do I invite friends?</td>
+            <td style="padding:10px 12px;">Tab in CreatePool success screen</td>
+            <td style="padding:10px 12px;">3rd radio at pool-creation time (replaces codes)</td>
+            <td style="padding:10px 12px;">Pool admin page (anytime post-creation)</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Invite-link fallback?</td>
+            <td style="padding:10px 12px;">Yes — both tabs side-by-side</td>
+            <td style="padding:10px 12px;">Yes — pick code-mode at creation</td>
+            <td style="padding:10px 12px;">Yes — links section unchanged</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Recipient UX</td>
+            <td style="padding:10px 12px;">Notification card</td>
+            <td style="padding:10px 12px;">Notification card</td>
+            <td style="padding:10px 12px;">Banner on pool page</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--divider);">
+            <td style="padding:10px 12px;color:var(--muted-2);">Implementation surface</td>
+            <td style="padding:10px 12px;">Header + ProfileCard + CreatePoolModal</td>
+            <td style="padding:10px 12px;">+ New /friends route, CreatePoolForm radio</td>
+            <td style="padding:10px 12px;">Search command + ProfileCard + admin page</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;color:var(--muted-2);">Effort estimate</td>
+            <td style="padding:10px 12px;">Medium</td>
+            <td style="padding:10px 12px;">Medium-Large (new route)</td>
+            <td style="padding:10px 12px;">Medium</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <hr class="divider">
+    <p class="mono" style="font-size:11px;color:var(--muted-2);">
+      Backend pieces are <em>identical</em> across all three options:<br>
+      &nbsp;&nbsp;• <code>GET /api/users/search?q=…</code> — server-side pseudo prefix search (new)<br>
+      &nbsp;&nbsp;• <code>POST /api/pool-invite</code> — creator signs, allocates a code+proof to a friend's wallet (new)<br>
+      &nbsp;&nbsp;• <code>GET /api/pool-invite/[wallet]</code> — list invites for me (new)<br>
+      &nbsp;&nbsp;• <code>POST /api/pool-invite/claim</code> — friend signs, server-side calls existing redeem flow on their behalf (new)<br>
+      &nbsp;&nbsp;• KV schema additions: <code>pseudo-index:*</code> (search), <code>pool-invite:&lt;pool&gt;:&lt;friend&gt;</code> (stored invite)<br>
+    </p>
+  </section>
+
+</div>
+</body>
+</html>
