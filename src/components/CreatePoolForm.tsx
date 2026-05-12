@@ -596,7 +596,9 @@ function ModeRadio({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span
-          className="flex items-center gap-2 font-display text-sm uppercase tracking-tight"
+          className={`flex items-center gap-2 font-display text-sm uppercase tracking-tight ${
+            active ? "" : "text-neutral-100"
+          }`}
           style={active ? { color: MINT } : undefined}
         >
           {title}
