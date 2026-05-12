@@ -7,9 +7,10 @@
 
 import { useFriendRequestNotifications } from "@/hooks/useFriendRequestNotifications";
 import { usePoolInviteNotifications } from "@/hooks/usePoolInviteNotifications";
+import { FirstConnectPrompt } from "@/components/FirstConnectPrompt";
 
 export function AppNotificationListeners() {
   useFriendRequestNotifications();
   usePoolInviteNotifications();
-  return null;
+  return <FirstConnectPrompt />;
 }

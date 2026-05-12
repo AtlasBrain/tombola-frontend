@@ -15,10 +15,17 @@
 //     a single wallet result even if there's no stored profile (so the
 //     user can navigate to that wallet's page directly)
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { searchUsers, type UserSearchResult } from "@/lib/user-search-client";
 import { shortAddress } from "@/lib/format";
+import {
+  getFriendLists,
+  sendFriendAction,
+} from "@/lib/friend-client";
+import { useToast } from "@/components/Toast";
 
 interface Props {
   open: boolean;
@@ -31,11 +38,62 @@ const DEBOUNCE_MS = 150;
 export function SearchPalette({ open, onClose }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { publicKey, signMessage } = useWallet();
+  const { push: pushToast } = useToast();
+  const qc = useQueryClient();
+  const viewer = publicKey?.toBase58() ?? null;
   const [q, setQ] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIdx, setSelectedIdx] = useState(0);
+  /** Per-row "request in flight" state so the +Add button can show a
+   *  spinner without locking the rest of the list. */
+  const [addingWallet, setAddingWallet] = useState<string | null>(null);
+
+  // Viewer's friend lists — drives the per-row badge (Friends / Pending
+  // / +Add). Reuses the same react-query cache key the bell + profile
+  // already populate, so this is a cheap join.
+  const friendsQuery = useQuery({
+    enabled: !!viewer && open,
+    queryKey: ["friends", viewer, null],
+    queryFn: async () => {
+      const lists = await getFriendLists(viewer!);
+      return { relationship: null, lists };
+    },
+  });
+  const friendsSets = useMemo(() => {
+    const lists = friendsQuery.data?.lists;
+    return {
+      friends: new Set(lists?.friends ?? []),
+      pendingOut: new Set(lists?.pendingOut ?? []),
+      pendingIn: new Set(lists?.pendingIn ?? []),
+    };
+  }, [friendsQuery.data]);
+
+  async function onClickAdd(target: string) {
+    if (!viewer || !signMessage) {
+      pushToast("error", "Connect a wallet that supports signMessage.");
+      return;
+    }
+    setAddingWallet(target);
+    try {
+      await sendFriendAction({
+        wallet: viewer,
+        signMessage,
+        target,
+        action: "request",
+      });
+      pushToast("success", "Friend request sent.");
+      // Bump the friends cache so the row flips to "Pending" without a
+      // refetch round-trip.
+      await qc.invalidateQueries({ queryKey: ["friends", viewer, null] });
+    } catch (e) {
+      pushToast("error", e instanceof Error ? e.message : String(e));
+    } finally {
+      setAddingWallet(null);
+    }
+  }
 
   // Focus the input on open + reset state on close. The native dialog API
   // would do this for us but a plain div lets us keep the focus-trap
@@ -183,56 +241,107 @@ export function SearchPalette({ open, onClose }: Props) {
               const initial = (r.pseudo ?? r.wallet ?? "?")
                 .charAt(0)
                 .toUpperCase();
+              const isSelf = viewer === r.wallet;
+              const isFriend = friendsSets.friends.has(r.wallet);
+              const isPendingOut = friendsSets.pendingOut.has(r.wallet);
+              const isPendingIn = friendsSets.pendingIn.has(r.wallet);
+              const isAdding = addingWallet === r.wallet;
               return (
-                <button
+                <div
                   key={r.wallet}
-                  type="button"
                   role="option"
                   aria-selected={selected}
-                  onClick={() => navigateTo(r)}
                   onMouseEnter={() => setSelectedIdx(i)}
                   className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition ${
                     selected ? "bg-neutral-900" : ""
                   }`}
                 >
-                  <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #3f3f46, #18181b)",
-                      color: "#f5f5f5",
-                    }}
+                  <button
+                    type="button"
+                    onClick={() => navigateTo(r)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                    aria-label={`Open ${r.pseudo ?? r.wallet}'s profile`}
                   >
-                    {initial}
-                  </span>
-                  <span className="flex min-w-0 flex-col">
-                    <span className="flex items-center gap-2 text-[13px] font-semibold text-neutral-100">
-                      {r.pseudo ? (
-                        <>
-                          {r.pseudo}
-                          {!r.isPublic && (
-                            <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
-                              🔒 private
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="font-mono text-[12px] text-neutral-200">
-                          {shortAddress(r.wallet)}
-                        </span>
-                      )}
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #3f3f46, #18181b)",
+                        color: "#f5f5f5",
+                      }}
+                    >
+                      {initial}
                     </span>
-                    <span className="font-mono text-[10px] text-neutral-500">
-                      {r.pseudo ? shortAddress(r.wallet) : "no pseudo claimed"}
+                    <span className="flex min-w-0 flex-col">
+                      <span className="flex items-center gap-2 text-[13px] font-semibold text-neutral-100">
+                        {r.pseudo ? (
+                          <>
+                            {r.pseudo}
+                            {!r.isPublic && (
+                              <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+                                🔒 private
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="font-mono text-[12px] text-neutral-200">
+                            {shortAddress(r.wallet)}
+                          </span>
+                        )}
+                      </span>
+                      <span className="font-mono text-[10px] text-neutral-500">
+                        {r.pseudo ? shortAddress(r.wallet) : "no pseudo claimed"}
+                      </span>
                     </span>
+                  </button>
+                  {/* Trailing action — depends on the relationship.
+                      Self = no action; friends/pending = small label;
+                      strangers = inline +Add (saves a navigation hop). */}
+                  <span className="ml-auto flex shrink-0 items-center gap-2">
+                    {isSelf ? (
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600">
+                        You
+                      </span>
+                    ) : isFriend ? (
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-widest"
+                        style={{ color: MINT }}
+                      >
+                        ✓ Friends
+                      </span>
+                    ) : isPendingOut ? (
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">
+                        Sent
+                      </span>
+                    ) : isPendingIn ? (
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-widest"
+                        style={{ color: "#e8d89e" }}
+                      >
+                        Accept on profile →
+                      </span>
+                    ) : viewer ? (
+                      <button
+                        type="button"
+                        onClick={() => onClickAdd(r.wallet)}
+                        disabled={isAdding}
+                        aria-label={`Send friend request to ${r.pseudo ?? r.wallet}`}
+                        style={{ background: MINT, color: "#000" }}
+                        className="rounded-full px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-widest transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isAdding ? "…" : "+ Add"}
+                      </button>
+                    ) : null}
+                    {selected && !isAdding && (
+                      <span
+                        className="font-mono text-[10px] uppercase tracking-widest"
+                        style={{ color: MINT }}
+                      >
+                        ↵
+                      </span>
+                    )}
                   </span>
-                  <span
-                    className="ml-auto font-mono text-[10px] uppercase tracking-widest"
-                    style={{ color: selected ? MINT : "#525252" }}
-                  >
-                    {selected ? "↵" : ""}
-                  </span>
-                </button>
+                </div>
               );
             })}
           </div>
