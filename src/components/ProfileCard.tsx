@@ -1,9 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletIdenticon } from "@/components/WalletIdenticon";
-import { EditProfileModal } from "@/components/EditProfileModal";
+
+// Heavy form modal — only loaded when the owner clicks "Edit profile".
+// Saves ~6 kB on the initial /u/[handle] payload for the common case
+// (a viewer who is NOT the profile owner and never opens the editor).
+const EditProfileModal = dynamic(
+  () =>
+    import("@/components/EditProfileModal").then((m) => ({
+      default: m.EditProfileModal,
+    })),
+  { ssr: false },
+);
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
 import type { ProfileRow } from "@/lib/profile-client";

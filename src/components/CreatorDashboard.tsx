@@ -2,13 +2,25 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { type RedemptionMetric } from "@/lib/creator-pools";
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { WalletLink } from "@/components/WalletLink";
 import { formatSol, shortAddress} from "@/lib/format";
-import { CreatePoolModal } from "@/components/CreatePoolModal";
 import { Metric, Stat } from "@/components/ui/Stat";
+
+// Heavy form modal — 178 LOC + transitively pulls CreatePoolForm + the
+// merkle-tree helpers. Only loaded when the creator clicks "+ Create new
+// pool", which keeps the initial /create payload smaller for the common
+// "just browse my pools" view.
+const CreatePoolModal = dynamic(
+  () =>
+    import("@/components/CreatePoolModal").then((m) => ({
+      default: m.CreatePoolModal,
+    })),
+  { ssr: false },
+);
 import {
   useCreatorPools,
   type CreatorPoolRow as PoolRow,
