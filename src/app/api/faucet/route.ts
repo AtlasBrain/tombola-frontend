@@ -8,8 +8,12 @@ import {
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { getRedis } from "@/lib/kv/redis";
 import { isRateLimited } from "@/lib/kv/ratelimit";
+import {
+  finalizeUsed,
+  releaseReservation,
+  reserveCode,
+} from "@/lib/faucet-claim";
 
 // Run on the Node runtime (not Edge) — Upstash & web3.js need Node APIs.
 // Dynamic + short maxDuration: each request is fast and never cached.
@@ -26,64 +30,6 @@ const RPC_URL =
   process.env.VALIDATOR_RPC_URL ??
   process.env.NEXT_PUBLIC_VALIDATOR_RPC ??
   "";
-
-// Upstash Redis for durable used-code tracking (survives redeploys).
-// Falls back to in-process Map if env vars aren't set — fine for local dev,
-// not for production (resets on each cold start, useless under multi-region).
-const memUsed = new Set<string>();
-
-/** Two-stage claim:
- *
- *   1. `reserveCode` — atomic `SET NX EX 60` with a "pending" marker.
- *      Returns false if another request already holds the code OR the code
- *      was permanently claimed. Crash between this and finalize lets the
- *      TTL expire after 60s so the code becomes claimable again.
- *
- *   2. `finalizeUsed` — long-TTL overwrite once the SOL transfer confirmed.
- *
- *   3. `releaseReservation` — undo a still-pending reservation when the
- *      transfer fails BEFORE confirmation. Safe: we only delete keys whose
- *      value matches our "pending:" marker so we never wipe a finalized
- *      claim.
- */
-const RESERVATION_TTL_SEC = 60;
-const CLAIM_TTL_SEC = 365 * 24 * 3600;
-const PENDING_PREFIX = "pending:";
-
-async function reserveCode(code: string, wallet: string): Promise<boolean> {
-  const redis = getRedis();
-  if (!redis) {
-    if (memUsed.has(code)) return false;
-    memUsed.add(code);
-    return true;
-  }
-  const res = await redis.set(
-    `tombola:faucet:used:${code}`,
-    `${PENDING_PREFIX}${wallet}`,
-    { nx: true, ex: RESERVATION_TTL_SEC },
-  );
-  return res !== null;
-}
-
-async function finalizeUsed(code: string, wallet: string): Promise<void> {
-  const redis = getRedis();
-  if (!redis) return; // memUsed already contains the code from reserveCode
-  await redis.set(`tombola:faucet:used:${code}`, wallet, { ex: CLAIM_TTL_SEC });
-}
-
-async function releaseReservation(code: string, wallet: string): Promise<void> {
-  const redis = getRedis();
-  if (!redis) {
-    memUsed.delete(code);
-    return;
-  }
-  // Only delete if the value is still our pending marker; protects against
-  // a concurrent finalize that races with this rollback.
-  const cur = await redis.get<string>(`tombola:faucet:used:${code}`);
-  if (cur === `${PENDING_PREFIX}${wallet}`) {
-    await redis.del(`tombola:faucet:used:${code}`);
-  }
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));

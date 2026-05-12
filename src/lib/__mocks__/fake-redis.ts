@@ -16,6 +16,10 @@ export class FakeRedis {
   store = new Map<string, AnyVal>();
   // Set values keyed by the same namespace.
   sets = new Map<string, Set<string>>();
+  // Last TTL (in seconds) attached to each key by the most recent set().
+  // Not honored — keys don't actually expire — but exposed so tests can
+  // assert that the production code passed the right ex option.
+  ttls = new Map<string, number | undefined>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async get<T = any>(key: string): Promise<T | null> {
@@ -29,6 +33,7 @@ export class FakeRedis {
   ): Promise<"OK" | null> {
     if (opts?.nx && this.store.has(key)) return null;
     this.store.set(key, value);
+    this.ttls.set(key, opts?.ex);
     return "OK";
   }
 
