@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/admin/cron/alert-scan",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
