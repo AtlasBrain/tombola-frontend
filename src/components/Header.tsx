@@ -77,7 +77,7 @@ export function Header() {
     // sits flush-right instead of pinching toward a centered 80rem
     // column. Page content below still respects its own max-w-7xl
     // container, so the body layout doesn't change.
-    <header className="relative z-50 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+    <header className="relative z-50 px-3 py-4 sm:px-4 sm:py-5">
       {/* Layout: [logo auto] [nav 1fr centered] [actions auto, hugs right].
           Old `sm:grid-cols-3` forced fixed 1/3-width columns, so the 4
           long nav labels overflowed the center third and bled into the
