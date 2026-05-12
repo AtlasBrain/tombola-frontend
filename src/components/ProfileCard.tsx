@@ -22,6 +22,7 @@ import { sendFriendAction, type Relationship } from "@/lib/friend-client";
 import { useToast } from "@/components/Toast";
 import { StatTile } from "@/components/ui/Stat";
 import { useProfileData } from "@/hooks/useProfileData";
+import { FriendsDrawer } from "@/components/FriendsDrawer";
 
 interface Props {
   profile: ProfileRow;
@@ -51,6 +52,7 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
   const viewer = publicKey?.toBase58() ?? null;
   const isOwner = viewer !== null && viewer === profile.wallet;
   const [editOpen, setEditOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // All three data fetches (friendship, stats, activity) live in one hook
@@ -142,11 +144,30 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
                   )}
                 </a>
               )}
-              <span className="text-neutral-600">
-                {friendCount === null
-                  ? "…"
-                  : `${friendCount} friend${friendCount === 1 ? "" : "s"}`}
-              </span>
+              {/* Friend count — clickable when the friend list is visible to
+                  the viewer (public profile, or the owner looking at their
+                  own private profile). Private profiles viewed by strangers
+                  keep the count as plain text. */}
+              {friendCount === null ? (
+                <span className="text-neutral-600">…</span>
+              ) : profile.isPublic || isOwner ? (
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(true)}
+                  disabled={friendCount === 0}
+                  aria-label={`Open friends list — ${friendCount} ${
+                    friendCount === 1 ? "friend" : "friends"
+                  }`}
+                  className="inline-flex items-center gap-1 rounded-full border border-neutral-800 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neutral-400 transition hover:border-neutral-600 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  👥 {friendCount} friend{friendCount === 1 ? "" : "s"}
+                  {friendCount > 0 && <span aria-hidden>▸</span>}
+                </button>
+              ) : (
+                <span className="text-neutral-600">
+                  {friendCount} friend{friendCount === 1 ? "" : "s"}
+                </span>
+              )}
             </div>
           </div>
 
@@ -341,6 +362,16 @@ export function ProfileCard({ profile, rpcUrl, onProfileUpdated }: Props) {
           onClose={() => setEditOpen(false)}
         />
       )}
+
+      {/* Friends drawer — gated by privacy at render time. Friend list is
+          public info (one-hop), so private profiles still expose their
+          accepted-friends list to the owner; non-owner viewers see a
+          disabled pill (handled above) and never instantiate the drawer. */}
+      <FriendsDrawer
+        wallet={profile.wallet}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </>
   );
 }

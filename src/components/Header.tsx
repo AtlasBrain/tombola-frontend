@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { MyProfileButton } from "@/components/MyProfileButton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { SearchPaletteHost } from "@/components/SearchPaletteHost";
 import { smoothScrollToId } from "@/lib/smooth-scroll";
 
 type NavItem =
@@ -107,6 +108,24 @@ export function Header() {
 
         {/* RIGHT: status + CTA + mobile menu toggle */}
         <div className="flex items-center gap-2 sm:justify-self-end">
+          <SearchPaletteHost
+            trigger={(openPalette) => (
+              <button
+                type="button"
+                onClick={openPalette}
+                aria-label="Search users"
+                title="Search (⌘K or /)"
+                className="hidden h-9 items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-950 px-3 font-mono text-[10px] uppercase tracking-widest text-neutral-400 transition hover:border-neutral-600 hover:text-neutral-200 sm:inline-flex"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <span>Search</span>
+                <kbd className="ml-1 rounded border border-neutral-800 px-1 text-[9px] text-neutral-500">⌘K</kbd>
+              </button>
+            )}
+          />
           <div className="hidden sm:block">
             <MyProfileButton />
           </div>
