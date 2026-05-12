@@ -17,13 +17,13 @@ const EditProfileModal = dynamic(
 );
 import { explorerAddressUrl } from "@/lib/explorer-url";
 import { formatSol, shortAddress} from "@/lib/format";
+import { usePseudo } from "@/lib/pseudo-cache";
 import type { ProfileRow } from "@/lib/profile-client";
 import { sendFriendAction, type Relationship } from "@/lib/friend-client";
 import { useToast } from "@/components/Toast";
 import { StatTile } from "@/components/ui/Stat";
 import { useProfileData } from "@/hooks/useProfileData";
 import { FriendsDrawer } from "@/components/FriendsDrawer";
-import { UserName } from "@/components/UserName";
 import Link from "next/link";
 
 interface Props {
@@ -444,6 +444,12 @@ function PendingRequestRow({
   busy: boolean;
   onRespond: (accept: boolean) => void;
 }) {
+  // Look up the pseudo directly so we can pick the right layout:
+  //   • pseudo claimed → pseudo as heading, shortAddress as subheading
+  //   • no pseudo      → just the short address (no subheading) —
+  //                      otherwise we'd render the wallet twice in
+  //                      two different truncations.
+  const pseudo = usePseudo(requester);
   return (
     <li className="flex items-center gap-2 rounded-lg border border-amber-700/30 bg-neutral-950/60 px-2.5 py-2">
       <Link
@@ -453,13 +459,20 @@ function PendingRequestRow({
       >
         <WalletIdenticon wallet={requester} size={32} />
         <span className="flex min-w-0 flex-col">
-          <UserName
-            wallet={requester}
-            className="truncate text-sm font-semibold text-neutral-100"
-          />
-          <span className="font-mono text-[10px] text-neutral-500">
-            {requester.slice(0, 6)}…{requester.slice(-4)}
-          </span>
+          {pseudo ? (
+            <>
+              <span className="truncate text-sm font-semibold text-neutral-100">
+                {pseudo}
+              </span>
+              <span className="font-mono text-[10px] text-neutral-500">
+                {shortAddress(requester)}
+              </span>
+            </>
+          ) : (
+            <span className="truncate font-mono text-sm font-semibold text-neutral-100">
+              {shortAddress(requester)}
+            </span>
+          )}
         </span>
       </Link>
       <button

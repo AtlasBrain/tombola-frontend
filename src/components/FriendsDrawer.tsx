@@ -174,13 +174,24 @@ function FriendRow({
     <div className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-neutral-900">
       <WalletIdenticon wallet={wallet} size={40} initialOverride={initial} />
       <span className="flex min-w-0 flex-1 flex-col">
-        <WalletLink
-          wallet={wallet}
-          className="truncate text-[13px] font-semibold text-neutral-100"
-        />
-        <span className="font-mono text-[10px] text-neutral-500">
-          {pseudo ? shortAddress(wallet) : "no pseudo"}
-        </span>
+        {pseudo ? (
+          <>
+            <WalletLink
+              wallet={wallet}
+              className="truncate text-[13px] font-semibold text-neutral-100"
+            />
+            <span className="font-mono text-[10px] text-neutral-500">
+              {shortAddress(wallet)}
+            </span>
+          </>
+        ) : (
+          // No pseudo claimed — show the wallet ONCE as the primary
+          // label, no subheading. Avoids "wallet over wallet" rendering.
+          <WalletLink
+            wallet={wallet}
+            className="truncate font-mono text-[13px] font-semibold text-neutral-100"
+          />
+        )}
       </span>
       <span
         className="font-mono text-[9px] uppercase tracking-widest text-neutral-700 transition group-hover:text-neutral-400"
