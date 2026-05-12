@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IdentityPill — typography variants (tear-corner mint)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e;
+    --bg:#0a0a0a; --surface:#0f0f0f; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:40px 0 80px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1100px;margin:0 auto;padding:0 28px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:34px;letter-spacing:-.01em;text-transform:uppercase}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:8px}
+
+  .row{margin-top:32px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px}
+  .row .label{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .row .label .num{font-family:'Space Grotesk';font-weight:700;font-size:17px;text-transform:uppercase;letter-spacing:.04em}
+  .row .label .tag{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--mint);padding:4px 10px;border:1px solid rgba(136,207,196,.4);border-radius:999px;background:rgba(136,207,196,.08)}
+  .row .label .tag.neutral{color:var(--text-mute);border-color:var(--border);background:#0a0a0a}
+  .row .desc{font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.7;margin-bottom:14px}
+  .row .desc strong{color:var(--text)}
+
+  .stage{display:flex;align-items:center;justify-content:center;gap:14px;background:#070707;border:1px dashed var(--border-soft);border-radius:14px;padding:34px 22px}
+  .stage.tight{padding:24px 22px}
+
+  /* Avatar — identicon stand-in (3×3 checker) */
+  .avatar{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#3a6f68,#243a35);overflow:hidden;position:relative}
+  .avatar::after{content:"";position:absolute;inset:0;background:
+    repeating-conic-gradient(#88cfc466 0% 25%, transparent 0% 50%) 0/12px 12px;
+    opacity:.45;
+  }
+
+  /* ===== Shared tear-corner mint base ===== */
+  .pill{position:relative;isolation:isolate;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 7px;border:none;cursor:pointer;color:#000;transition:filter .2s}
+  .pill::before{content:"";position:absolute;inset:0;z-index:-1;background-color:var(--mint);
+    clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+    transition:clip-path .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .pill:hover::before{clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px))}
+  .pill .sep{width:1px;height:14px;background:rgba(0,0,0,.22);margin:0 4px}
+  .pill .addr{color:rgba(0,0,0,.55)}
+  .pill .caret{width:26px;height:26px;border-radius:50%;background:#000;display:inline-flex;align-items:center;justify-content:center;color:#fafafa;font-size:12px;margin-left:4px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .pill:hover .caret{transform:rotate(45deg)}
+
+  /* ───────── Type variants ───────── */
+
+  /* A — current: Mono uppercase, bold */
+  .type-mono-up .name        {font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding-left:4px}
+  .type-mono-up .addr        {font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:400}
+
+  /* B — Display name, mono address (mixed case) */
+  .type-display-name .name   {font-family:'Space Grotesk';font-size:14px;font-weight:700;letter-spacing:-.005em;padding-left:6px;line-height:1}
+  .type-display-name .addr   {font-family:'Space Mono';font-size:10px;letter-spacing:.04em;font-weight:400;line-height:1}
+
+  /* C — Display all-caps tight tracking */
+  .type-display-caps .name   {font-family:'Space Grotesk';font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;padding-left:6px;line-height:1}
+  .type-display-caps .addr   {font-family:'Space Mono';font-size:10px;letter-spacing:.04em;font-weight:400;line-height:1}
+
+  /* D — Display all-caps with extra wide tracking (matches FONT IN HERO) */
+  .type-display-wide .name   {font-family:'Space Grotesk';font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;padding-left:6px;line-height:1}
+  .type-display-wide .addr   {font-family:'Space Mono';font-size:10px;letter-spacing:.05em;font-weight:400;line-height:1}
+
+  /* E — Pseudo only, no address (compact) */
+  .type-pseudo-only .name    {font-family:'Space Grotesk';font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;padding-left:6px;line-height:1}
+
+  /* F — Mono pseudo only, no address */
+  .type-mono-only .name      {font-family:'Space Mono';font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding-left:6px;line-height:1}
+
+  /* G — Two-line stacked (pseudo + address) */
+  .pill.stacked              {gap:10px;padding:5px 6px 5px 6px}
+  .type-stacked .col         {display:flex;flex-direction:column;gap:1px;padding-left:4px}
+  .type-stacked .name        {font-family:'Space Grotesk';font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1;color:#000}
+  .type-stacked .addr        {font-family:'Space Mono';font-size:9px;letter-spacing:.05em;font-weight:400;line-height:1;color:rgba(0,0,0,.55)}
+
+  /* H — Display lowercase (handle vibe) */
+  .type-display-lower .name  {font-family:'Space Grotesk';font-size:14px;font-weight:600;letter-spacing:-.01em;padding-left:6px;line-height:1;text-transform:lowercase}
+  .type-display-lower .addr  {font-family:'Space Mono';font-size:10px;letter-spacing:.04em;font-weight:400;line-height:1;color:rgba(0,0,0,.5)}
+
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .pc .col{padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#0a0a0a;font-family:'Space Mono';font-size:11px;line-height:1.7;color:var(--text-mute)}
+  .pc h4{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;margin-bottom:6px}
+  .pc h4.good{color:var(--mint)}
+  .pc h4.bad{color:var(--coral)}
+
+  /* Header context — show pill alongside other right-cluster chips */
+  .context{display:flex;align-items:center;gap:8px;background:radial-gradient(ellipse at 100% 50%,#14141a 0%,#070707 70%);border:1px dashed var(--border-soft);border-radius:14px;padding:18px 22px;margin-top:14px}
+  .context .chip-search{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);background:#0a0a0a;border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-mute)}
+  .context .chip-search .kbd{padding:2px 6px;border:1px solid var(--border);border-radius:4px;font-size:9px;color:var(--text-faint)}
+  .context .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:#0a0a0a;display:inline-flex;align-items:center;justify-content:center;color:var(--text-mute)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Tear-corner mint · typography options</h1>
+  <p class="lede">Same brand-mint pill, eight typographic treatments. Each is shown standalone + alongside the SEARCH chip and bell so you can see how it sits in the header.</p>
+
+  <!-- A -->
+  <div class="row">
+    <div class="label">
+      <span class="num">A · Mono uppercase, bold (current)</span>
+      <span class="tag neutral">CURRENTLY LIVE</span>
+    </div>
+    <p class="desc">
+      Space Mono, ALL CAPS, bold weight, wide tracking. Both pseudo and address use the same face. Consistent with status pills (OPEN, RESOLVED, etc.) and section labels across the app — but identical treatment for the human name and the technical address makes them blur together.
+    </p>
+    <div class="stage">
+      <button class="pill type-mono-up">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-mono-up">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="row">
+    <div class="label">
+      <span class="num">B · Display name, mono address</span>
+      <span class="tag">RECOMMENDED — mirrors KPI/heading hierarchy</span>
+    </div>
+    <p class="desc">
+      Pseudo uses <strong>Space Grotesk</strong> (the display face you use for KPIs, headings, "WHERE SOL WINS BIG", pool numbers) — the name reads as a name. Address stays in Space Mono. Reflects the established hierarchy: display for identity, mono for technical data.
+    </p>
+    <div class="stage">
+      <button class="pill type-display-name">
+        <span class="avatar"></span>
+        <span class="name">Marwan</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-display-name">
+        <span class="avatar"></span>
+        <span class="name">Marwan</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="row">
+    <div class="label">
+      <span class="num">C · Display all-caps, tight tracking</span>
+      <span class="tag neutral">on-brand · matches AllRoundsTable headings</span>
+    </div>
+    <p class="desc">
+      Same Space Grotesk but UPPERCASE with tight letter-spacing — the exact treatment used for AllRoundsTable section titles and PoolCard cadence labels. Feels like a "section label" rather than a name.
+    </p>
+    <div class="stage">
+      <button class="pill type-display-caps">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-display-caps">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="row">
+    <div class="label">
+      <span class="num">D · Display caps, wide tracking</span>
+      <span class="tag neutral">matches the hero "LIVE · 4 POOLS" pill</span>
+    </div>
+    <p class="desc">
+      Space Grotesk uppercase with wide letter-spacing (~.18em) — same texture as the hero's status pill and the LEARN MORE button label. Most editorial / press-release looking option.
+    </p>
+    <div class="stage">
+      <button class="pill type-display-wide">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-display-wide">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="row">
+    <div class="label">
+      <span class="num">E · Pseudo only · no address</span>
+      <span class="tag neutral">compact · address lives in dropdown</span>
+    </div>
+    <p class="desc">
+      Drop the address from the pill entirely (it's still in the dropdown menu when clicked). The pill becomes much more compact — useful at narrow widths. Avatar + pseudo + caret is enough at a glance; address shows on hover/click.
+    </p>
+    <div class="stage">
+      <button class="pill type-pseudo-only">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-pseudo-only">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="row">
+    <div class="label">
+      <span class="num">F · Mono pseudo only</span>
+      <span class="tag neutral">terminal vibe · matches StatusPill type</span>
+    </div>
+    <p class="desc">
+      Like E but the pseudo stays in Space Mono. Reads as a "tag" / "status indicator" rather than a name. Probably the most "crypto-native" feeling.
+    </p>
+    <div class="stage">
+      <button class="pill type-mono-only">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-mono-only">
+        <span class="avatar"></span>
+        <span class="name">MARWAN</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- G -->
+  <div class="row">
+    <div class="label">
+      <span class="num">G · Two-line stacked (pseudo / address)</span>
+      <span class="tag neutral">most information density · slightly taller pill</span>
+    </div>
+    <p class="desc">
+      Pseudo on top, address underneath — like a business card. Slightly taller pill (~36px vs ~30px), but no horizontal width penalty. Matches the per-row treatment in the search palette and user table.
+    </p>
+    <div class="stage">
+      <button class="pill stacked type-stacked">
+        <span class="avatar"></span>
+        <span class="col">
+          <span class="name">MARWAN</span>
+          <span class="addr">A9XZ…CDWY</span>
+        </span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill stacked type-stacked">
+        <span class="avatar"></span>
+        <span class="col">
+          <span class="name">MARWAN</span>
+          <span class="addr">A9XZ…CDWY</span>
+        </span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- H -->
+  <div class="row">
+    <div class="label">
+      <span class="num">H · Display lowercase (handle vibe)</span>
+      <span class="tag neutral">friendlier · feels like X/Twitter handle</span>
+    </div>
+    <p class="desc">
+      Space Grotesk lowercase, mixed-weight — pseudos read like Discord/Twitter handles. Friendlier, less "all-caps shouting". Address stays mono but slightly dimmer.
+    </p>
+    <div class="stage">
+      <button class="pill type-display-lower">
+        <span class="avatar"></span>
+        <span class="name">marwan</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+    <div class="context">
+      <span class="chip-search">SEARCH <span class="kbd">⌘K</span></span>
+      <span class="icon-btn">🔔</span>
+      <button class="pill type-display-lower">
+        <span class="avatar"></span>
+        <span class="name">marwan</span>
+        <span class="sep"></span>
+        <span class="addr">A9XZ…CDWY</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Recommendation -->
+  <div class="row" style="border-color:rgba(136,207,196,.35);background:linear-gradient(135deg,rgba(136,207,196,.06),transparent 70%),#0c0c0c">
+    <div class="label">
+      <span class="num" style="color:var(--mint)">My picks</span>
+      <span class="tag">PICK A LETTER</span>
+    </div>
+    <p class="desc" style="color:var(--text)">
+      <strong>B (display name, mono address)</strong> is the most on-brand — it mirrors the established hierarchy where Space Grotesk handles identity/headings (KPIs, pool names, "WHERE SOL WINS BIG") and Space Mono handles technical data (addresses, status labels, kbd hints).<br/><br/>
+      <strong>C (display all-caps, tight)</strong> is the second pick if you want the pill to feel less like a "name" and more like a "label" matching the rest of the all-caps treatment in your design.<br/><br/>
+      Reply with a letter (or describe a mash-up) and I'll wire it in.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
