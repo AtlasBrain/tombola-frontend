@@ -14,6 +14,7 @@
 import "server-only";
 import { friendCountsByWallet } from "@/lib/admin/metrics/friends-bulk";
 import { PROTOCOL_FEE_BPS, BPS_DEN, computeWinnerShare } from "@/lib/admin/metrics/fees";
+import { loadRiskThresholds } from "@/lib/admin/risk-config";
 import type { ProtocolSnapshot } from "@/lib/admin/snapshot";
 
 export interface UserRow {
@@ -80,6 +81,7 @@ interface PerWalletAccum {
 export async function aggregateUsers(
   snap: ProtocolSnapshot,
 ): Promise<UsersPayload> {
+  const thresholds = loadRiskThresholds();
   // Bucket pools by address for cheap join during batch iteration.
   const poolByAddress = new Map<string, ProtocolSnapshot["pools"][number]>();
   for (const p of snap.pools) poolByAddress.set(p.address, p);
@@ -154,7 +156,7 @@ export async function aggregateUsers(
     const won = a?.won ?? 0n;
     const spentOnResolved = countSpendOnResolved(snap, wallet, poolByAddress);
     const netPnL = won - spentOnResolved;
-    const flags = riskFlagsFor(a, profile);
+    const flags = riskFlagsFor(a, profile, thresholds);
     if (flags.length > 0) flagged += 1;
     rows.push({
       wallet,
@@ -209,15 +211,17 @@ function countSpendOnResolved(
 function riskFlagsFor(
   a: PerWalletAccum | undefined,
   profile: { wallet: string } | undefined,
+  thresholds: ReturnType<typeof loadRiskThresholds>,
 ): string[] {
   const flags: string[] = [];
   if (!a) return flags;
-  // High-activity: >25 distinct pools.
-  if (a.poolsTouched.size > 25) flags.push("HIGH_ACTIVITY");
-  // Big spender lifetime: >50 SOL.
-  if (a.spent > 50n * 1_000_000_000n) flags.push("BIG_SPENDER");
-  // No profile claimed but heavy spend — possible bot.
-  if (!profile && a.spent > 10n * 1_000_000_000n) {
+  if (a.poolsTouched.size > thresholds.highActivityPoolCount) {
+    flags.push("HIGH_ACTIVITY");
+  }
+  if (a.spent >= thresholds.bigSpenderLamports) {
+    flags.push("BIG_SPENDER");
+  }
+  if (!profile && a.spent >= thresholds.unclaimedHighSpendLamports) {
     flags.push("UNCLAIMED_HIGH_SPEND");
   }
   return flags;

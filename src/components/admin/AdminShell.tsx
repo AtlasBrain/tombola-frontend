@@ -21,6 +21,7 @@ const NAV: ReadonlyArray<{ href: string; label: string; enabled: boolean }> = [
   { href: "/admin/pools", label: "POOLS", enabled: true },
   { href: "/admin/treasury", label: "TREASURY", enabled: true },
   { href: "/admin/risk", label: "RISK", enabled: true },
+  { href: "/admin/audit", label: "AUDIT", enabled: true },
 ];
 
 interface Props {

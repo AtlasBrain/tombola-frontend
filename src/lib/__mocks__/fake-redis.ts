@@ -107,28 +107,64 @@ export class FakeRedis {
     return this.zsets.get(key)?.size ?? 0;
   }
 
-  /** Lex range — supports `[<from>` (inclusive) and `[<to>` (inclusive) only,
-   *  matching Upstash's documented usage. `(` (exclusive) and `+`/`-` (open)
-   *  aren't needed by our callers; tests pass concrete bounds. */
+  /** Range query — supports two modes used by the production code:
+   *    • byLex (inclusive bounds, no `(` exclusivity, no open `+/-`)
+   *    • byScore (numeric bounds, optional rev for desc order)
+   *  Tests pass concrete bounds. */
   async zrange(
     key: string,
-    min: string,
-    max: string,
-    opts?: { byLex?: boolean; offset?: number; count?: number },
+    min: string | number,
+    max: string | number,
+    opts?: {
+      byLex?: boolean;
+      byScore?: boolean;
+      rev?: boolean;
+      offset?: number;
+      count?: number;
+    },
   ): Promise<string[]> {
     const z = this.zsets.get(key);
     if (!z) return [];
-    if (!opts?.byLex) {
-      throw new Error("FakeRedis.zrange currently only supports byLex:true");
+    if (opts?.byScore) {
+      const lo = typeof min === "number" ? min : Number(min);
+      const hi = typeof max === "number" ? max : Number(max);
+      const entries = [...z.entries()].filter(
+        ([, score]) => score >= lo && score <= hi,
+      );
+      entries.sort((a, b) =>
+        opts.rev ? b[1] - a[1] : a[1] - b[1],
+      );
+      const offset = opts.offset ?? 0;
+      const count = opts.count ?? entries.length;
+      return entries.slice(offset, offset + count).map(([m]) => m);
     }
-    const lo = parseLex(min);
-    const hi = parseLex(max);
+    if (!opts?.byLex) {
+      throw new Error(
+        "FakeRedis.zrange requires { byLex:true } or { byScore:true }",
+      );
+    }
+    const lo = parseLex(String(min));
+    const hi = parseLex(String(max));
     const all = [...z.keys()].sort();
     let matches = all.filter((m) => m >= lo && m <= hi);
     const offset = opts?.offset ?? 0;
     const count = opts?.count ?? matches.length;
     matches = matches.slice(offset, offset + count);
     return matches;
+  }
+
+  /** TTL — recorded for inspection, but the fake does not actually
+   *  evict. Matches the rest of the fake's TTL behavior. */
+  async expire(key: string, seconds: number): Promise<number> {
+    if (
+      this.store.has(key) ||
+      this.sets.has(key) ||
+      this.zsets.has(key)
+    ) {
+      this.ttls.set(key, seconds);
+      return 1;
+    }
+    return 0;
   }
 
   pipeline() {

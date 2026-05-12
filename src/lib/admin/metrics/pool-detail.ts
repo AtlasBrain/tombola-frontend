@@ -11,6 +11,7 @@ import {
   computeWinnerShare,
   computeTreasuryShare,
 } from "@/lib/admin/metrics/fees";
+import { loadRiskThresholds } from "@/lib/admin/risk-config";
 import type { ProtocolSnapshot } from "@/lib/admin/snapshot";
 
 export interface PoolDetail {
@@ -50,7 +51,6 @@ export interface PoolDetail {
   flags: string[];
 }
 
-const STUCK_THRESHOLD_SEC = 60 * 60;
 const BY_POOL_PREFIX = "pool-invites-by-pool:";
 const INVITE_PREFIX = "pool-invite:";
 
@@ -93,14 +93,19 @@ export async function aggregatePoolDetail(
   const creator = computeCreatorFee(pool.totalPotLamports, creatorBps);
   const winner = computeWinnerShare(pool.totalPotLamports, creatorBps);
 
+  const thresholds = loadRiskThresholds();
   const nowSec = Math.floor(Date.now() / 1000);
   const flags: string[] = [];
-  if (pool.state === 1 && nowSec - pool.closeTimeUnix > STUCK_THRESHOLD_SEC) {
+  if (
+    pool.state === 1 &&
+    nowSec - pool.closeTimeUnix > thresholds.stuckThresholdSec
+  ) {
     flags.push("STUCK");
   }
   if (pool.totalTickets > 0n) {
+    const pctScaled = BigInt(thresholds.concentratedStakePct);
     for (const v of byOwner.values()) {
-      if (v.tickets * 100n > pool.totalTickets * 80n) {
+      if (v.tickets * 100n > pool.totalTickets * pctScaled) {
         flags.push("CONCENTRATED_STAKE");
         break;
       }
@@ -112,9 +117,10 @@ export async function aggregatePoolDetail(
     pool.winner === pool.creator
   ) {
     const ownerQty = byOwner.get(pool.creator)?.tickets ?? 0n;
+    const pctScaled = BigInt(thresholds.selfDealOwnerPct);
     if (
       pool.totalTickets > 0n &&
-      ownerQty * 100n >= pool.totalTickets * 50n
+      ownerQty * 100n >= pool.totalTickets * pctScaled
     ) {
       flags.push("SELF_DEAL_SUSPECT");
     }

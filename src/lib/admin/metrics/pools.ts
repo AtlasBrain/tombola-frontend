@@ -8,6 +8,7 @@
 import "server-only";
 import { getRedis } from "@/lib/kv/redis";
 import { computeProtocolFee, computeCreatorFee, computeTreasuryShare } from "@/lib/admin/metrics/fees";
+import { loadRiskThresholds } from "@/lib/admin/risk-config";
 import type { ProtocolSnapshot } from "@/lib/admin/snapshot";
 
 export interface PoolRow {
@@ -51,11 +52,10 @@ export interface PoolsPayload {
   generatedAt: number;
 }
 
-const STUCK_THRESHOLD_SEC = 60 * 60; // 1h in AwaitingVrf
-
 export async function aggregatePools(
   snap: ProtocolSnapshot,
 ): Promise<PoolsPayload> {
+  const thresholds = loadRiskThresholds();
   // Bucket batches by pool address.
   const byPool = new Map<string, Map<string, bigint>>(); // pool → owner → tickets
   for (const b of snap.batches) {
@@ -89,23 +89,31 @@ export async function aggregatePools(
     const participants = ownersMap.size;
     const flags: string[] = [];
 
-    // Stuck: AwaitingVrf for > 1h.
-    if (p.state === 1 && nowSec - p.closeTimeUnix > STUCK_THRESHOLD_SEC) {
+    // Stuck: AwaitingVrf longer than configured threshold.
+    if (
+      p.state === 1 &&
+      nowSec - p.closeTimeUnix > thresholds.stuckThresholdSec
+    ) {
       flags.push("STUCK");
     }
-    // Concentrated stake: any owner > 80%.
+    // Concentrated stake.
     if (p.totalTickets > 0n) {
+      const pctScaled = BigInt(thresholds.concentratedStakePct);
       for (const qty of ownersMap.values()) {
-        if (qty * 100n > p.totalTickets * 80n) {
+        if (qty * 100n > p.totalTickets * pctScaled) {
           flags.push("CONCENTRATED_STAKE");
           break;
         }
       }
     }
-    // Self-deal: private + creator owns ≥50% + creator won.
+    // Self-deal: private + creator owns ≥ threshold + creator won.
     if (p.kind === "private" && p.state === 2 && p.winner === p.creator) {
       const ownerQty = ownersMap.get(p.creator) ?? 0n;
-      if (p.totalTickets > 0n && ownerQty * 100n >= p.totalTickets * 50n) {
+      const pctScaled = BigInt(thresholds.selfDealOwnerPct);
+      if (
+        p.totalTickets > 0n &&
+        ownerQty * 100n >= p.totalTickets * pctScaled
+      ) {
         flags.push("SELF_DEAL_SUSPECT");
       }
     }

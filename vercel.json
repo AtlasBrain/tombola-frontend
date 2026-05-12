@@ -3,6 +3,10 @@
     {
       "path": "/api/keeper/tick",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/admin/cron/alert-scan",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

@@ -24,6 +24,7 @@ import {
   verifySession,
   type AdminSessionPayload,
 } from "./session";
+import { recordAuditEvent } from "./audit-store";
 
 export type AdminGate =
   | { ok: true; wallet: string; session: AdminSessionPayload }
@@ -32,7 +33,10 @@ export type AdminGate =
 export async function requireAdmin(req: NextRequest): Promise<AdminGate> {
   const token = req.cookies.get(ADMIN_SESSION_COOKIE)?.value;
   const session = verifySession(token);
+  const path = pathOf(req);
   if (!session) {
+    // 401s aren't logged — they're typically anonymous probes with no
+    // wallet to attribute. We'd just be writing noise.
     return {
       ok: false,
       response: NextResponse.json(
@@ -44,7 +48,14 @@ export async function requireAdmin(req: NextRequest): Promise<AdminGate> {
   if (!isAdminWallet(session.wallet)) {
     // Session cookie is structurally valid but the wallet has been
     // removed from the allow-list since the cookie was minted — treat
-    // as fully revoked.
+    // as fully revoked. Log the rejection so the founder can spot
+    // attempts from stale cookies after a rotation.
+    void recordAuditEvent({
+      wallet: session.wallet,
+      method: req.method,
+      path,
+      status: 403,
+    }).catch(() => {});
     return {
       ok: false,
       response: NextResponse.json(
@@ -53,5 +64,23 @@ export async function requireAdmin(req: NextRequest): Promise<AdminGate> {
       ),
     };
   }
+  // Successful access — log "who hit what when" before the route runs.
+  // We never block on this; if Redis is down, the route still proceeds.
+  void recordAuditEvent({
+    wallet: session.wallet,
+    method: req.method,
+    path,
+    status: 200,
+  }).catch(() => {});
   return { ok: true, wallet: session.wallet, session };
+}
+
+/** Pull just the pathname from the request — strips query strings so
+ *  audit rows are easy to group. */
+function pathOf(req: NextRequest): string {
+  try {
+    return new URL(req.url).pathname;
+  } catch {
+    return "";
+  }
 }

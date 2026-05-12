@@ -8,6 +8,7 @@
 import "server-only";
 import { getFriendLists } from "@/lib/friend-store";
 import { computeWinnerShare } from "@/lib/admin/metrics/fees";
+import { loadRiskThresholds } from "@/lib/admin/risk-config";
 import type { ProtocolSnapshot } from "@/lib/admin/snapshot";
 
 export interface PoolEntry {
@@ -178,14 +179,20 @@ export async function aggregateUserDetail(
     // Redis unavailable — leave empty arrays.
   }
 
+  const thresholds = loadRiskThresholds();
   const flags: string[] = [];
-  if (myBatchesByPool.size > 25) flags.push("HIGH_ACTIVITY");
-  if (lifetimeSpent > 50n * 1_000_000_000n) flags.push("BIG_SPENDER");
-  if (!profile && lifetimeSpent > 10n * 1_000_000_000n) {
+  if (myBatchesByPool.size > thresholds.highActivityPoolCount) {
+    flags.push("HIGH_ACTIVITY");
+  }
+  if (lifetimeSpent >= thresholds.bigSpenderLamports) {
+    flags.push("BIG_SPENDER");
+  }
+  if (!profile && lifetimeSpent >= thresholds.unclaimedHighSpendLamports) {
     flags.push("UNCLAIMED_HIGH_SPEND");
   }
   // Self-deal check: any private pool the wallet created where they
-  // won + they bought ≥50% of tickets.
+  // won + they bought ≥ threshold% of tickets.
+  const pctScaled = BigInt(thresholds.selfDealOwnerPct);
   for (const p of snap.pools) {
     if (
       p.kind === "private" &&
@@ -196,7 +203,7 @@ export async function aggregateUserDetail(
       const mine = myBatchesByPool.get(p.address);
       if (mine && p.totalTickets > 0n) {
         const sharePct = (mine.tickets * 100n) / p.totalTickets;
-        if (sharePct >= 50n) {
+        if (sharePct >= pctScaled) {
           flags.push("SELF_DEAL_SUSPECT");
           break;
         }
