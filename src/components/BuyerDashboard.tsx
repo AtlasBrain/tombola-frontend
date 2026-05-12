@@ -161,7 +161,22 @@ export function BuyerDashboard() {
     );
   }
 
-  const live = visible!.filter((p) => p.state !== "Resolved");
+  // Live: soonest-closing on top (ASC by close_time). The base list is
+  // sorted DESC for the History section (most recent resolutions first);
+  // we override only for Live so the buyer immediately sees what's
+  // about to draw. Pools already past their close_time (state still
+  // Open but countdown would read "—") sink to the bottom alongside
+  // AwaitingVrf pools.
+  const nowSec = Math.floor(Date.now() / 1000);
+  const live = visible!
+    .filter((p) => p.state !== "Resolved")
+    .slice()
+    .sort((a, b) => {
+      const aClosed = a.closeTimeUnix <= nowSec;
+      const bClosed = b.closeTimeUnix <= nowSec;
+      if (aClosed !== bClosed) return aClosed ? 1 : -1;
+      return a.closeTimeUnix - b.closeTimeUnix;
+    });
   const history = visible!.filter((p) => p.state === "Resolved");
 
   return (
