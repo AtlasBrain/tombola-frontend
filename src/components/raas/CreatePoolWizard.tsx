@@ -3,12 +3,19 @@
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
+import { Transaction, PublicKey } from "@solana/web3.js";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { createSolanaRpc, type Address, type TransactionSigner } from "@solana/kit";
+import { RaffleClient, AccessMode, PROGRAM_ID, findPrivatePoolPda } from "@tombola/sdk-v2";
+import { kitToWeb3 } from "@/lib/kit-to-web3";
 import type { Tenant } from "@/types/raas";
 
 interface Props {
   tenant: Tenant;
   solUsd: number; // 0 if unavailable
 }
+
+const LAMPORTS_PER_SOL = 1_000_000_000;
 
 const DURATIONS = [
   { label: "1 hour", seconds: 3600 },
@@ -20,6 +27,7 @@ const DURATIONS = [
 
 export function CreatePoolWizard({ tenant, solUsd }: Props) {
   const { publicKey, signTransaction } = useWallet();
+  const { connection } = useConnection();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -41,15 +49,77 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      throw new Error(
-        "STUB: chain submit wired in Task 12 commit",
+      // Mirror BuyTicketPrivateButton's signer shim pattern exactly.
+      const creatorSigner = {
+        address: publicKey.toBase58(),
+      } as unknown as TransactionSigner;
+
+      const rpc = createSolanaRpc(connection.rpcEndpoint);
+      const client = new RaffleClient({ rpc });
+
+      // pool_id: Date.now() truncated to 31 bits fits safely in u64
+      const poolId = BigInt(Date.now() & 0x7fffffff);
+      const ticketPriceLamports = BigInt(Math.round(priceSol * LAMPORTS_PER_SOL));
+      const durationSeconds = BigInt(duration);
+
+      // Public mode = WhitelistMode (numeric enum = 0) with all-zero merkle root.
+      // Any wallet can buy once via buy_ticket_private after the operator
+      // whitelists them; in Public mode the operator never gates anyone.
+      // Zero root is the agreed sentinel (Plan 2 Risk §3 / D-071).
+      const kitIx = await client.createPrivatePool({
+        creator: creatorSigner,
+        poolId,
+        ticketPrice: ticketPriceLamports,
+        duration: durationSeconds,
+        creatorFeeBps,
+        accessMode: AccessMode.WhitelistMode,
+        merkleRoot: new Uint8Array(32),
+      });
+
+      const tx = new Transaction().add(kitToWeb3(kitIx));
+      tx.feePayer = publicKey;
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+      tx.recentBlockhash = blockhash;
+
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+      });
+      await connection.confirmTransaction(
+        { signature: sig, blockhash, lastValidBlockHeight },
+        "confirmed",
       );
+
+      // Derive pool PDA using sdk-v2 helper (no hand-construction).
+      const [poolPdaAddress] = await findPrivatePoolPda(
+        PROGRAM_ID as Address,
+        publicKey.toBase58() as Address,
+        poolId,
+      );
+      const poolPubkey = new PublicKey(poolPdaAddress).toBase58();
+
+      // Attribute the pool to this tenant.
+      const res = await fetch(`/api/r/pool/${poolPubkey}/attribute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenant_slug: tenant.slug }),
+      });
+      if (!res.ok) {
+        // Attribution failure is non-fatal for the creator (pool is on-chain already).
+        console.warn("Pool attribution failed:", await res.text());
+      }
+
+      router.push(`/r/${tenant.slug}/pool/${poolPubkey}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setSubmitting(false);
     }
   }
+
+  // description is captured in state for future use (e.g. metadata upload)
+  void description;
 
   return (
     <div className="space-y-6">
@@ -141,10 +211,6 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
       >
         {submitting ? "Creating…" : "Create raffle"}
       </button>
-
-      {/* unused vars kept to avoid re-work in Task 12 */}
-      <span data-tenant-slug={tenant.slug} className="hidden" />
-      <span data-router={router ? "yes" : "no"} className="hidden" />
     </div>
   );
 }
