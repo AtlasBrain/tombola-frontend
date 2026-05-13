@@ -2,6 +2,7 @@ import "server-only";
 import { createSolanaRpc, address, isSome } from "@solana/kit";
 import { fetchMaybePrivatePool } from "@tombola/sdk-v2/generated/accounts/privatePool";
 import { PoolState } from "@tombola/sdk-v2/generated/types/poolState";
+import { AccessMode } from "@tombola/sdk-v2/generated/types/accessMode";
 
 const RPC_URL =
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
@@ -15,8 +16,21 @@ export interface PoolFetchedState {
   total_pot_lamports: string;
   creator_fee_bps: number;
   state: "Open" | "AwaitingVrf" | "Resolved";
+  access_mode: "WhitelistMode" | "OneCodePerTicket" | "PublicMode";
   winner: string | null;
   winning_ticket: number | null;
+}
+
+const ACCESS_MODE_LABELS = {
+  [AccessMode.WhitelistMode]: "WhitelistMode",
+  [AccessMode.OneCodePerTicket]: "OneCodePerTicket",
+  [AccessMode.PublicMode]: "PublicMode",
+} as const;
+
+function mapAccessMode(
+  m: AccessMode,
+): "WhitelistMode" | "OneCodePerTicket" | "PublicMode" {
+  return ACCESS_MODE_LABELS[m] ?? "WhitelistMode";
 }
 
 function mapPoolState(
@@ -56,6 +70,7 @@ export async function fetchPoolState(
     total_pot_lamports: data.totalPot.toString(),
     creator_fee_bps: data.creatorFeeBps,
     state: mapPoolState(data.state),
+    access_mode: mapAccessMode(data.accessMode),
     winner: isSome(data.winner) ? (data.winner.value as string) : null,
     winning_ticket: isSome(data.winningTicket)
       ? Number(data.winningTicket.value)

@@ -113,10 +113,11 @@ export default async function PoolDetailPage({ params }: Props) {
           tenantDisplayName={tenant.display_name}
         />
 
-        {pool.state === "Open" && remainingMs > 0 && (
+        {pool.state === "Open" && remainingMs > 0 && pool.access_mode === "PublicMode" && (
           <BrandedBuyButton
             poolPubkey={pubkey}
             ticketPriceLamports={pool.ticket_price_lamports}
+            totalTickets={pool.total_tickets}
             tenantPrimaryColor={tenant.branding.primary_color}
           />
         )}
