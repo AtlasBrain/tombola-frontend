@@ -10,6 +10,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ToastProvider } from "./Toast";
+import { PhantomConnectProvider } from "@/lib/raas/phantom-connect";
 
 // Wallet-adapter modal styles. Imported once at the provider boundary;
 // Tailwind layer order keeps our utilities winning where they conflict.
@@ -54,14 +55,16 @@ export function WalletProviders({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={[]} autoConnect>
-        <WalletModalProvider>
-          <QueryClientProvider client={queryClient}>
-            <ToastProvider>{children}</ToastProvider>
-          </QueryClientProvider>
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <PhantomConnectProvider>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={[]} autoConnect>
+          <WalletModalProvider>
+            <QueryClientProvider client={queryClient}>
+              <ToastProvider>{children}</ToastProvider>
+            </QueryClientProvider>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </PhantomConnectProvider>
   );
 }
