@@ -4,10 +4,7 @@ import { useState, useCallback } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { type PublicKey, type TransactionInstruction } from "@solana/web3.js";
 import { StripeOnrampDialog } from "./StripeOnrampDialog";
-import { usdcMintFor } from "@/lib/raas/usdc-mint";
-
-// Phase D TODO: swap+buy wiring deferred.
-// Imports for jupiter-swap, bundle-tx, and ConfirmSwapAndBuyModal will be added in Phase D.
+import { ConfirmSwapAndBuyModal } from "./ConfirmSwapAndBuyModal";
 
 const LAMPORTS_PER_SOL = 1_000_000_000n;
 const USDC_DECIMALS = 6;
@@ -27,9 +24,8 @@ interface Props {
   quantity: number;
   tenantPrimaryColor: string;
   /**
-   * Pre-built buy_ticket_private instruction for the given (pool, buyer, quantity).
-   * Caller provides this; component doesn't construct it — keeps the wallet-bridge
-   * details out of this component.
+   * Build the buy_ticket_public_mode TransactionInstruction for the given
+   * signer. Caller provides this; keeps wallet-bridge details out of here.
    */
   buildBuyInstruction: (signer: PublicKey) => Promise<TransactionInstruction>;
 }
@@ -39,32 +35,30 @@ export function BuyWithCardButton({
   ticketPriceLamports,
   quantity,
   tenantPrimaryColor,
-  buildBuyInstruction: _buildBuyInstruction,
+  buildBuyInstruction,
 }: Props) {
-  const { publicKey } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [phase, setPhase] = useState<Phase>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Calculate USDC needed: convert ticket price to USD, then over-fund by 5%
-  // to absorb swap slippage. Need a SOL/USD price feed for accuracy; for now
-  // we hard-code an estimate. Production: pull from CoinGecko or Pyth (Task 9).
+  // to absorb swap slippage.
+  // ExactOut mode means Jupiter sizes the swap precisely; the 5% buffer here
+  // is only for the Stripe onramp amount (we need to fund slightly more USDC
+  // than the swap will consume so the ATA has enough).
   const totalCostLamports = ticketPriceLamports * BigInt(quantity);
   const totalCostSol = Number(totalCostLamports) / Number(LAMPORTS_PER_SOL);
-  const SOL_USD_ESTIMATE = 200; // overridable via a server-side price fetch (Task 9)
-  const usdcNeeded = Math.ceil(totalCostSol * SOL_USD_ESTIMATE * 1.05); // +5% slippage buffer
-  // usdcAtomic is used in Phase D when ConfirmSwapAndBuyModal is wired in
-  void (BigInt(usdcNeeded) * 10n ** BigInt(USDC_DECIMALS));
-  void usdcMintFor; // imported to satisfy the dependency — Phase D will use it
+  const SOL_USD_ESTIMATE = 200; // rough estimate for Stripe onramp sizing
+  const usdcNeeded = Math.ceil(totalCostSol * SOL_USD_ESTIMATE * 1.05); // +5% buffer
+  const usdcAtomic = BigInt(usdcNeeded) * 10n ** BigInt(USDC_DECIMALS);
 
   const cluster = (process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "").includes("devnet")
     ? ("devnet" as const)
     : ("mainnet-beta" as const);
 
   const handleStripeComplete = useCallback(() => {
+    // USDC delivered — transition to ConfirmSwapAndBuyModal flow.
     setPhase("waiting_for_usdc");
-    // Phase D stub: swap+buy bundle not yet wired.
-    // When Phase D lands, this transitions to ConfirmSwapAndBuyModal.
-    console.log("USDC delivered, swap+buy not wired yet (Phase D)");
   }, []);
 
   const handleStripeCancel = useCallback(() => {
@@ -79,12 +73,19 @@ export function BuyWithCardButton({
   const onClick = () => {
     setErrorMsg(null);
     if (!publicKey) {
-      setErrorMsg("Connect a wallet first (or sign in with Google/Apple if Privy is configured).");
+      setErrorMsg(
+        "Connect a wallet first (or sign in with Google/Apple if Privy is configured).",
+      );
       setPhase("error");
       return;
     }
     setPhase("stripe_open");
   };
+
+  const isModalPhase =
+    phase === "waiting_for_usdc" ||
+    phase === "ready_to_sign" ||
+    phase === "submitting";
 
   return (
     <>
@@ -103,9 +104,7 @@ export function BuyWithCardButton({
         {phase === "error" && "Try again"}
       </button>
 
-      {errorMsg && (
-        <p className="mt-2 text-sm text-red-300">{errorMsg}</p>
-      )}
+      {errorMsg && <p className="mt-2 text-sm text-red-300">{errorMsg}</p>}
 
       <StripeOnrampDialog
         open={phase === "stripe_open"}
@@ -117,8 +116,22 @@ export function BuyWithCardButton({
         onError={handleStripeError}
       />
 
-      {/* Phase D: ConfirmSwapAndBuyModal will be mounted here once jupiter-swap
-          and bundle-tx are implemented. See plan Phase D Task 8. */}
+      {isModalPhase && publicKey && signTransaction && (
+        <ConfirmSwapAndBuyModal
+          phase={phase as "waiting_for_usdc" | "ready_to_sign" | "submitting"}
+          setPhase={setPhase}
+          setError={(m) => {
+            setErrorMsg(m);
+            setPhase("error");
+          }}
+          buyer={publicKey}
+          signTransaction={signTransaction}
+          usdcAtomicNeeded={usdcAtomic}
+          totalCostLamports={totalCostLamports}
+          buildBuyInstruction={buildBuyInstruction}
+          cluster={cluster}
+        />
+      )}
     </>
   );
 }
