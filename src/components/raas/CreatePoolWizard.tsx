@@ -62,17 +62,16 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
       const ticketPriceLamports = BigInt(Math.round(priceSol * LAMPORTS_PER_SOL));
       const durationSeconds = BigInt(duration);
 
-      // Public mode = WhitelistMode (numeric enum = 0) with all-zero merkle root.
-      // Any wallet can buy once via buy_ticket_private after the operator
-      // whitelists them; in Public mode the operator never gates anyone.
-      // Zero root is the agreed sentinel (Plan 2 Risk §3 / D-071).
+      // PublicMode (enum = 2): any wallet can buy directly via
+      // buy_ticket_public_mode — no invite code or whitelist needed.
+      // merkleRoot MUST be all-zero for PublicMode (enforced on-chain).
       const kitIx = await client.createPrivatePool({
         creator: creatorSigner,
         poolId,
         ticketPrice: ticketPriceLamports,
         duration: durationSeconds,
         creatorFeeBps,
-        accessMode: AccessMode.WhitelistMode,
+        accessMode: AccessMode.PublicMode,
         merkleRoot: new Uint8Array(32),
       });
 
