@@ -9,6 +9,7 @@ import { createSolanaRpc, type Address, type TransactionSigner } from "@solana/k
 import { RaffleClient, AccessMode, PROGRAM_ID, findPrivatePoolPda } from "@tombola/sdk-v2";
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import type { Tenant } from "@/types/raas";
+import { PoolModePicker, type PoolMode } from "./PoolModePicker";
 
 interface Props {
   tenant: Tenant;
@@ -35,6 +36,8 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
   const [priceSol, setPriceSol] = useState(0.1);
   const [duration, setDuration] = useState(86400);
   const [creatorFeeBps, setCreatorFeeBps] = useState(500);
+  const [mode, setMode] = useState<PoolMode>("public");
+  const [inviteCount, setInviteCount] = useState(100);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,6 +126,28 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Create a raffle</h1>
+
+      <PoolModePicker
+        mode={mode}
+        setMode={setMode}
+        tenantPrimaryColor={tenant.branding.primary_color}
+      />
+
+      {mode === "whitelisted" && (
+        <label className="block">
+          <span className="text-sm">Number of invite codes (1–1000)</span>
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            value={inviteCount}
+            onChange={(e) =>
+              setInviteCount(Math.min(1000, Math.max(1, parseInt(e.target.value) || 1)))
+            }
+            className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
+          />
+        </label>
+      )}
 
       <label className="block">
         <span className="text-sm">Raffle name</span>
