@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useUnifiedSigner } from "@/lib/raas/phantom-signer";
 import { Transaction } from "@solana/web3.js";
 import { createSolanaRpc, type Address, type TransactionSigner } from "@solana/kit";
 import { RaffleClient } from "@tombola/sdk-v2";
@@ -31,7 +32,7 @@ export function BrandedBuyButton({
   tenantPrimaryColor,
 }: Props) {
   const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction } = useUnifiedSigner();
   const { setVisible: setWalletModalVisible } = useWalletModal();
 
   const [qty, setQty] = useState<number>(1);
