@@ -106,3 +106,24 @@ export async function _setStatus(
   t.status = status;
   await redis.set(TENANT_KEY(slug), t);
 }
+
+const ACTIVE_WHITELISTED_POOL_KEY = (slug: string) =>
+  `raas:tenant:${slug}:active_whitelisted_pool`;
+
+/**
+ * Sets the active Whitelisted pool for a tenant. Used by the invite redeem
+ * page to find which pool a code belongs to. For Plan 3 v1, each tenant has
+ * a single active Whitelisted pool at a time. Multi-pool support is Plan 3.5.
+ */
+export async function setActiveWhitelistedPool(
+  slug: string,
+  poolPubkey: string,
+): Promise<void> {
+  await redis.set(ACTIVE_WHITELISTED_POOL_KEY(slug), poolPubkey);
+}
+
+export async function getActiveWhitelistedPool(
+  slug: string,
+): Promise<string | null> {
+  return await redis.get<string>(ACTIVE_WHITELISTED_POOL_KEY(slug));
+}

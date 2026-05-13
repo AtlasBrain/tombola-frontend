@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
 import { Transaction, PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
@@ -10,6 +9,9 @@ import { RaffleClient, AccessMode, PROGRAM_ID, findPrivatePoolPda } from "@tombo
 import { kitToWeb3 } from "@/lib/kit-to-web3";
 import type { Tenant } from "@/types/raas";
 import { PoolModePicker, type PoolMode } from "./PoolModePicker";
+import { generateInviteCodes, computeRootFromCodes } from "@/lib/raas/invite-codes";
+import { useUnifiedSigner } from "@/lib/raas/phantom-signer";
+import bs58 from "bs58";
 
 interface Props {
   tenant: Tenant;
@@ -27,7 +29,9 @@ const DURATIONS = [
 ];
 
 export function CreatePoolWizard({ tenant, solUsd }: Props) {
-  const { publicKey, signTransaction } = useWallet();
+  // Use unified signer so both Phantom Connect and wallet-adapter paths work.
+  const unifiedSigner = useUnifiedSigner();
+  // Keep useWallet for connection (it provides the RPC connection object).
   const { connection } = useConnection();
   const router = useRouter();
 
@@ -44,14 +48,41 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
   const priceUsd = (priceSol * solUsd).toFixed(2);
   const creatorFeePct = (creatorFeeBps / 100).toFixed(1);
 
+  // Derive connected wallet state from unified signer.
+  const publicKey = unifiedSigner.publicKey;
+  const signTransaction = unifiedSigner.signTransaction;
+  const signMessage = unifiedSigner.signMessage;
+
   async function submit() {
     if (!publicKey || !signTransaction) {
       setError("Connect your wallet first.");
       return;
     }
+    if (mode === "whitelisted" && !signMessage) {
+      setError("Your wallet does not support message signing (required for Whitelisted mode).");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
+      // Determine access mode and generate codes/root for Whitelisted pools.
+      let merkleRoot = new Uint8Array(32);
+      let codes: string[] = [];
+      let onChainAccessMode: typeof AccessMode[keyof typeof AccessMode] =
+        AccessMode.PublicMode;
+
+      if (mode === "whitelisted") {
+        codes = generateInviteCodes(inviteCount);
+        const root = await computeRootFromCodes(codes);
+        // Copy into a fresh ArrayBuffer-backed Uint8Array to satisfy
+        // @solana/kit's strict `Uint8Array<ArrayBuffer>` type (the merkle
+        // helper returns a Uint8Array whose .buffer may be SharedArrayBuffer).
+        const ab = new ArrayBuffer(root.byteLength);
+        new Uint8Array(ab).set(root);
+        merkleRoot = new Uint8Array(ab);
+        onChainAccessMode = AccessMode.WhitelistMode;
+      }
+
       // Mirror BuyTicketPrivateButton's signer shim pattern exactly.
       const creatorSigner = {
         address: publicKey.toBase58(),
@@ -65,17 +96,14 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
       const ticketPriceLamports = BigInt(Math.round(priceSol * LAMPORTS_PER_SOL));
       const durationSeconds = BigInt(duration);
 
-      // PublicMode (enum = 2): any wallet can buy directly via
-      // buy_ticket_public_mode — no invite code or whitelist needed.
-      // merkleRoot MUST be all-zero for PublicMode (enforced on-chain).
       const kitIx = await client.createPrivatePool({
         creator: creatorSigner,
         poolId,
         ticketPrice: ticketPriceLamports,
         duration: durationSeconds,
         creatorFeeBps,
-        accessMode: AccessMode.PublicMode,
-        merkleRoot: new Uint8Array(32),
+        accessMode: onChainAccessMode,
+        merkleRoot,
       });
 
       const tx = new Transaction().add(kitToWeb3(kitIx));
@@ -102,17 +130,53 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
       const poolPubkey = new PublicKey(poolPdaAddress).toBase58();
 
       // Attribute the pool to this tenant.
-      const res = await fetch(`/api/r/pool/${poolPubkey}/attribute`, {
+      const attrRes = await fetch(`/api/r/pool/${poolPubkey}/attribute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tenant_slug: tenant.slug }),
       });
-      if (!res.ok) {
+      if (!attrRes.ok) {
         // Attribution failure is non-fatal for the creator (pool is on-chain already).
-        console.warn("Pool attribution failed:", await res.text());
+        console.warn("Pool attribution failed:", await attrRes.text());
       }
 
-      router.push(`/r/${tenant.slug}/pool/${poolPubkey}`);
+      if (mode === "whitelisted" && signMessage) {
+        // Request a single-use nonce for the store_codes action.
+        const context = `store_codes:${poolPubkey}`;
+        const nonceRes = await fetch(
+          `/api/r/signed-nonce?context=${encodeURIComponent(context)}`,
+        );
+        if (!nonceRes.ok) throw new Error("Failed to get signing nonce");
+        const { nonce } = (await nonceRes.json()) as { nonce: string };
+
+        // Sign the nonce message with the connected wallet.
+        const msgBytes = new TextEncoder().encode(
+          `tombola:${context}:${nonce}`,
+        );
+        const sigBytes = await signMessage(msgBytes);
+        const signature = bs58.encode(sigBytes);
+
+        // POST codes (server encrypts them) — also sets active_whitelisted_pool.
+        const codesRes = await fetch(`/api/r/pool/${poolPubkey}/codes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenant_slug: tenant.slug,
+            codes,
+            signed_proof: { signature, nonce },
+          }),
+        });
+        if (!codesRes.ok) {
+          // Non-fatal: pool is on-chain; codes can be re-stored via admin flow.
+          console.warn("Code storage failed:", await codesRes.text());
+        }
+
+        // Redirect to the code-manager surface instead of the buy page.
+        router.push(`/r/${tenant.slug}/admin/pool/${poolPubkey}/codes`);
+      } else {
+        // PublicMode: go straight to the pool buy page.
+        router.push(`/r/${tenant.slug}/pool/${poolPubkey}`);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

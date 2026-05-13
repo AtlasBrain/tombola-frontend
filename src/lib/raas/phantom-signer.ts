@@ -9,6 +9,18 @@ export interface UnifiedSigner {
   signTransaction:
     | (<T extends Transaction | VersionedTransaction>(tx: T) => Promise<T>)
     | null;
+  /**
+   * Sign an arbitrary message (for nonce-gated API actions).
+   * Returns the raw signature bytes (64 bytes for Ed25519).
+   *
+   * Phantom Connect: `solana.signMessage(msg)` returns `{ signature: Uint8Array, publicKey: string }`.
+   *   Actual shape per `ISolanaChain` in `@phantom/chain-interfaces`:
+   *     signMessage(message: string | Uint8Array): Promise<{ signature: Uint8Array; publicKey: string }>
+   *   We unwrap `.signature` to return raw bytes.
+   *
+   * Wallet adapter: `wa.signMessage(msg)` returns `Promise<Uint8Array>` directly.
+   */
+  signMessage: ((msg: Uint8Array) => Promise<Uint8Array>) | null;
   source: "phantom-connect" | "wallet-adapter" | "none";
 }
 
@@ -21,6 +33,8 @@ export interface UnifiedSigner {
  *   - `solana.publicKey` is `string | null` → wrapped with `new PublicKey()`
  *   - `solana.signTransaction` returns `Promise<Transaction | VersionedTransaction>`
  *     (non-generic) → return is cast to `T` to satisfy the generic interface
+ *   - `solana.signMessage` returns `Promise<{ signature: Uint8Array; publicKey: string }>`
+ *     → unwrapped to return raw `Uint8Array` to match wallet-adapter's `signMessage`
  */
 export function useUnifiedSigner(): UnifiedSigner {
   // Wallet-adapter path (existing)
@@ -38,6 +52,11 @@ export function useUnifiedSigner(): UnifiedSigner {
         const signed = await solana.signTransaction(tx);
         return signed as T;
       },
+      // ISolanaChain.signMessage returns { signature: Uint8Array; publicKey: string }
+      signMessage: async (msg: Uint8Array): Promise<Uint8Array> => {
+        const result = await solana.signMessage(msg);
+        return result.signature;
+      },
       source: "phantom-connect",
     };
   }
@@ -46,9 +65,13 @@ export function useUnifiedSigner(): UnifiedSigner {
     return {
       publicKey: wa.publicKey,
       signTransaction: wa.signTransaction ?? null,
+      // wallet-adapter signMessage returns Promise<Uint8Array> directly
+      signMessage: wa.signMessage
+        ? async (msg: Uint8Array): Promise<Uint8Array> => wa.signMessage!(msg)
+        : null,
       source: "wallet-adapter",
     };
   }
 
-  return { publicKey: null, signTransaction: null, source: "none" };
+  return { publicKey: null, signTransaction: null, signMessage: null, source: "none" };
 }

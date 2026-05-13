@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import "server-only";
 import { Redis } from "@upstash/redis";
 import { encryptCodes, decryptCodes, type EncryptedCodeSet } from "@/lib/raas/code-storage";
-import { getTenant } from "@/lib/raas/tenant";
+import { getTenant, setActiveWhitelistedPool } from "@/lib/raas/tenant";
 import { verifySignedAction } from "@/lib/raas/signed-action";
 
 const redis = Redis.fromEnv();
@@ -53,6 +53,12 @@ export async function POST(
     iv: Buffer.from(encrypted.iv).toString("base64"),
     count: encrypted.count,
   });
+
+  // Set this pool as the tenant's active Whitelisted pool so invite links
+  // can resolve the pool from just the code. Folded here because storing
+  // codes for a Whitelisted pool == this pool is active. Separate endpoint
+  // would add round trips with no benefit.
+  await setActiveWhitelistedPool(body.tenant_slug, pubkey);
 
   return NextResponse.json({ ok: true, count: encrypted.count }, { status: 201 });
 }
