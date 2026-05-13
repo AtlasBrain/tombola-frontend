@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola — XP badges · cyber / circuit style</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e; --rose:#e8a5c0;
+    --cyan:#7cc4d8; --steel:#6aa1c5; --deep:#4a5fc1; --gold:#f0c44b;
+    --bg:#070707; --surface:#0d0d0d; --border:#262626; --border-soft:#1a1a1a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:radial-gradient(ellipse at 50% 0%, #0c0c0e 0%, #050505 60%);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{padding:40px 0 80px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1400px;margin:0 auto;padding:0 28px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:38px;letter-spacing:-.01em;text-transform:uppercase;text-align:center}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-dim);margin-top:10px;text-align:center;max-width:760px;margin-left:auto;margin-right:auto;line-height:1.7}
+  h2{font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin-top:42px;margin-bottom:10px;color:var(--text)}
+  .section-sub{font-family:'Space Mono';font-size:11px;color:var(--text-mute);margin-bottom:18px;line-height:1.7;max-width:920px}
+
+  /* Hero row — all 8 at app canonical size (120 px) */
+  .hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:60px 20px 30px;flex-wrap:nowrap;overflow-x:auto;background:linear-gradient(180deg, rgba(255,255,255,.015), transparent);border-radius:24px;margin-top:24px}
+  .hero-cell{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:120px;flex:0 0 auto;position:relative;padding:14px 8px}
+  .hero-cell .name{font-family:'Space Grotesk';font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--text)}
+  .hero-cell .lv{font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--text-faint)}
+  /* Connecting timeline arrow */
+  .timeline-line{position:relative;height:1px;background:linear-gradient(90deg, transparent, var(--border) 5%, var(--border) 95%, transparent);margin:-18px 36px 26px;display:flex;align-items:center}
+  .timeline-line::after{content:"›";position:absolute;right:-14px;top:-12px;color:var(--text-faint);font-size:18px;font-family:'Space Mono'}
+  .timeline-marks{position:absolute;inset:0;display:flex;justify-content:space-around;align-items:center}
+  .timeline-marks span{width:8px;height:8px;border-radius:50%;border:1px solid var(--border);background:var(--bg)}
+  .timeline-ends{display:flex;justify-content:space-between;margin:-6px 36px 0;font-family:'Space Mono';font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--text-faint)}
+
+  /* ─── Badge container (cyber style) ─── */
+  .badge{
+    width:120px;height:120px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    position:relative;
+    background:radial-gradient(circle at 50% 38%, rgba(255,255,255,.04), transparent 60%), #060606;
+  }
+  /* Thin metallic outer ring (gradient, not a flat stroke) */
+  .badge::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    padding:1px;
+    background:conic-gradient(from -45deg, color-mix(in srgb, var(--tier-color) 90%, #fff) 0%, var(--tier-color) 30%, color-mix(in srgb, var(--tier-color) 30%, #000) 55%, var(--tier-color) 80%, color-mix(in srgb, var(--tier-color) 90%, #fff) 100%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite:exclude;
+    pointer-events:none;
+  }
+  /* Outer glow */
+  .badge{box-shadow:0 0 0 1px color-mix(in srgb, var(--tier-color) 24%, transparent), 0 8px 32px color-mix(in srgb, var(--tier-color) 18%, transparent)}
+  /* SVG canvas */
+  .badge svg.creature{width:78px;height:78px;position:relative;z-index:2}
+  .badge svg.deco{position:absolute;inset:-22px;width:calc(100% + 44px);height:calc(100% + 44px);z-index:1;opacity:.55;pointer-events:none}
+  .badge svg.deco *{stroke:var(--tier-color);stroke-width:.8;fill:none;stroke-linecap:round}
+
+  /* Apex (Hump Back) extra — static gold rim with subtle particle field */
+  .badge.apex{box-shadow:0 0 0 1px rgba(240,196,75,.4), 0 0 28px rgba(240,196,75,.28), 0 12px 40px rgba(201,181,220,.18)}
+  .badge.apex::before{
+    background:conic-gradient(from 0deg, var(--gold), color-mix(in srgb, var(--gold) 70%, var(--coral)), color-mix(in srgb, var(--gold) 60%, var(--lavender)), var(--gold), color-mix(in srgb, var(--gold) 70%, var(--mint)), var(--gold));
+    padding:1.5px;
+  }
+  .badge.apex .particles circle{fill:var(--gold);animation:twinkle 3s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+  @keyframes shimmer-sweep{
+    0%   { transform:translateX(-110%); }
+    55%  { transform:translateX(110%); }
+    100% { transform:translateX(110%); }
+  }
+  .badge.apex::after{
+    content:"";
+    position:absolute;
+    inset:1px;
+    border-radius:50%;
+    background:linear-gradient(110deg, transparent 40%, rgba(255,240,180,.22) 50%, transparent 60%);
+    transform:translateX(-110%);
+    animation:shimmer-sweep 6s cubic-bezier(.55,.05,.45,.95) infinite;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .badge.apex{overflow:hidden;border-radius:50%}
+
+  /* ─── Size-test grid ─── */
+  .size-test{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px}
+  .size-test .row{display:flex;align-items:center;gap:30px;padding:18px 4px;border-bottom:1px dashed #1f1f1f}
+  .size-test .row:last-child{border-bottom:0}
+  .size-test .label{flex-shrink:0;min-width:160px}
+  .size-test .label .px{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.005em}
+  .size-test .label .ctx{font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-faint);margin-top:2px}
+  .size-test .swarm{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+
+  /* Size variants — same SVGs, scaled */
+  .badge.s120{width:120px;height:120px} .badge.s120 svg.creature{width:78px;height:78px}
+  .badge.s64 {width:64px;height:64px}   .badge.s64 svg.creature{width:42px;height:42px}
+  .badge.s48 {width:48px;height:48px}   .badge.s48 svg.creature{width:32px;height:32px}
+  .badge.s32 {width:32px;height:32px}   .badge.s32 svg.creature{width:22px;height:22px}
+  .badge.s24 {width:24px;height:24px}   .badge.s24 svg.creature{width:16px;height:16px}
+  .badge.s24,.badge.s32,.badge.s48{box-shadow:0 0 0 1px color-mix(in srgb, var(--tier-color) 30%, transparent)}
+  .badge.s24 svg.deco,.badge.s32 svg.deco,.badge.s48 svg.deco{display:none}
+  .badge.s64 svg.deco{opacity:.4}
+
+  /* In-context demos */
+  .demo-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 20px;display:flex;align-items:center;gap:12px;font-family:'Space Mono';font-size:11px}
+  .demo-card .pseudo{font-family:'Space Grotesk';font-weight:700;font-size:14px;letter-spacing:-.005em;text-transform:capitalize;color:var(--text)}
+  .demo-card .addr{color:var(--text-faint);text-transform:uppercase;letter-spacing:.12em;font-size:10px}
+  .demo-row{display:flex;flex-direction:column;gap:1px}
+  .pill-id{display:inline-flex;align-items:center;gap:8px;padding:5px 6px 5px 6px;background:#fafafa;color:#000;border-radius:999px;font-family:'Space Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .pill-id .name{font-family:'Space Grotesk';letter-spacing:-.005em;font-size:14px;padding-left:4px;text-transform:capitalize}
+  .pill-id .caret{width:24px;height:24px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;margin-left:4px}
+
+  .footer{margin-top:48px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px}
+  .footer h3{font-family:'Space Grotesk';font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:10px}
+  .footer p{font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.7}
+  .footer strong{color:var(--mint)}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h1>Cyber / Circuit style — 8 tiers</h1>
+  <p class="lede">
+    Reference style replicated: thin metallic ring · monochromatic tier color · subtle circuit-trace bloom around each badge · detailed creature silhouettes. All 8 rendered at the same canonical app size, then shown again at every size the UI actually uses.
+  </p>
+
+  <!-- ═══════ HERO ROW — app canonical size, all 8 ═══════ -->
+  <h2>Canonical badge · 120 px</h2>
+  <p class="section-sub">
+    The size used on the profile page, level-up modal, and the leaderboard "top whales" panel. All 8 identical dimensions — the badge frame never resizes, only the creature inside changes.
+  </p>
+
+  <div class="hero-row">
+
+    <!-- ───────────────── SHRIMP ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--coral)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 20 100 L 8 100"/><path d="M 30 70 L 14 60"/><path d="M 30 130 L 14 140"/>
+          <circle cx="10" cy="100" r="2"/><circle cx="12" cy="62" r="1.5"/><circle cx="12" cy="138" r="1.5"/>
+          <path d="M 170 80 L 184 70 L 192 70"/><path d="M 170 120 L 184 130 L 192 130"/>
+          <circle cx="194" cy="70" r="2"/><circle cx="194" cy="130" r="2"/>
+          <path d="M 100 14 L 100 4"/><circle cx="100" cy="2" r="1.5"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-shrimp" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".55"/>
+              <stop offset="40%" stop-color="var(--coral)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#5a2a2a" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 18 56 Q 26 42 50 44 Q 72 50 80 56 Q 76 64 60 66 Q 36 66 22 62 Z" fill="url(#C-shrimp)"/>
+          <g stroke="#000" stroke-width=".8" opacity=".4" fill="none">
+            <path d="M 34 50 Q 34 58 32 64"/><path d="M 44 48 Q 44 60 42 65"/>
+            <path d="M 54 48 Q 54 60 52 65"/><path d="M 64 50 Q 64 58 62 64"/>
+          </g>
+          <ellipse cx="74" cy="54" rx="9" ry="8" fill="var(--coral)"/>
+          <ellipse cx="71" cy="49" rx="5" ry="3" fill="#fff" opacity=".35"/>
+          <path d="M 82 50 Q 92 32 96 24" stroke="var(--coral)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M 84 56 Q 96 44 99 40" stroke="var(--coral)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M 18 56 L 6 44 L 12 50 L 6 56 L 12 62 L 6 68 Z" fill="var(--coral)"/>
+          <circle cx="77" cy="53" r="1.8" fill="#0a0a0a"/><circle cx="78" cy="52" r=".6" fill="#fff"/>
+          <g stroke="var(--coral)" stroke-width="1.3" stroke-linecap="round">
+            <line x1="32" y1="65" x2="30" y2="72"/>
+            <line x1="44" y1="66" x2="44" y2="74"/>
+            <line x1="56" y1="66" x2="58" y2="74"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Shrimp</div>
+      <div class="lv">LEVEL 1 · LV 1-12</div>
+    </div>
+
+    <!-- ───────────────── CRAB ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--sand)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 30 70 L 14 60"/><path d="M 30 130 L 14 140"/>
+          <circle cx="12" cy="60" r="1.5"/><circle cx="12" cy="140" r="1.5"/>
+          <path d="M 170 70 L 186 60 L 192 60"/><path d="M 170 130 L 186 140 L 192 140"/>
+          <circle cx="194" cy="60" r="2"/><circle cx="194" cy="140" r="2"/>
+          <path d="M 100 14 L 100 4"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-crab" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+              <stop offset="45%" stop-color="var(--sand)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#6a5520" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <g stroke="var(--sand)" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M 30 58 Q 22 64 18 74"/><path d="M 36 64 Q 30 70 28 80"/>
+            <path d="M 70 58 Q 78 64 82 74"/><path d="M 64 64 Q 70 70 72 80"/>
+          </g>
+          <path d="M 26 50 Q 14 40 10 30 Q 16 30 20 34 Q 24 30 28 32 Q 28 38 26 50 Z" fill="var(--sand)"/>
+          <path d="M 74 50 Q 86 40 90 30 Q 84 30 80 34 Q 76 30 72 32 Q 72 38 74 50 Z" fill="var(--sand)"/>
+          <path d="M 14 32 L 22 38" stroke="rgba(0,0,0,.3)" stroke-width="1.2"/>
+          <path d="M 86 32 L 78 38" stroke="rgba(0,0,0,.3)" stroke-width="1.2"/>
+          <path d="M 26 54 Q 50 38 74 54 Q 74 68 50 72 Q 26 68 26 54 Z" fill="url(#C-crab)"/>
+          <path d="M 32 50 Q 50 44 68 50" stroke="#fff" stroke-width="2.4" fill="none" opacity=".4"/>
+          <g stroke="var(--sand)" stroke-width="2.2" stroke-linecap="round">
+            <line x1="42" y1="50" x2="42" y2="42"/><line x1="58" y1="50" x2="58" y2="42"/>
+          </g>
+          <circle cx="42" cy="42" r="3" fill="#0a0a0a"/><circle cx="58" cy="42" r="3" fill="#0a0a0a"/>
+          <circle cx="43.2" cy="41" r=".9" fill="#fff"/><circle cx="59.2" cy="41" r=".9" fill="#fff"/>
+          <path d="M 45 62 Q 50 66 55 62" stroke="#0a0a0a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Crab</div>
+      <div class="lv">LEVEL 2 · LV 13-25</div>
+    </div>
+
+    <!-- ───────────────── OCTOPUS ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--lavender)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 30 80 L 14 70"/><path d="M 30 120 L 14 130"/>
+          <path d="M 170 80 L 186 70"/><path d="M 170 120 L 186 130"/>
+          <circle cx="12" cy="70" r="1.5"/><circle cx="12" cy="130" r="1.5"/>
+          <circle cx="188" cy="70" r="1.5"/><circle cx="188" cy="130" r="1.5"/>
+          <path d="M 100 14 L 100 4"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-octo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".55"/>
+              <stop offset="50%" stop-color="var(--lavender)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#5d4a73" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 22 56 Q 12 64 8 84 Q 14 86 18 78 Q 22 70 30 62 Z" fill="var(--lavender)"/>
+          <path d="M 30 60 Q 22 72 18 86 Q 26 90 28 82 Q 32 72 38 66 Z" fill="var(--lavender)"/>
+          <path d="M 40 62 Q 36 76 34 90 Q 42 92 42 84 Q 44 72 46 66 Z" fill="var(--lavender)"/>
+          <path d="M 50 62 Q 50 78 50 92 Q 54 92 54 84 Q 54 72 54 66 Z" fill="var(--lavender)"/>
+          <path d="M 60 62 Q 64 76 66 90 Q 58 92 58 84 Q 56 72 54 66 Z" fill="var(--lavender)"/>
+          <path d="M 70 60 Q 78 72 82 86 Q 74 90 72 82 Q 68 72 62 66 Z" fill="var(--lavender)"/>
+          <path d="M 78 56 Q 88 64 92 84 Q 86 86 82 78 Q 78 70 70 62 Z" fill="var(--lavender)"/>
+          <g fill="rgba(0,0,0,.18)">
+            <circle cx="22" cy="74" r="1.2"/><circle cx="30" cy="82" r="1.2"/>
+            <circle cx="42" cy="86" r="1.2"/><circle cx="50" cy="88" r="1.2"/>
+            <circle cx="58" cy="86" r="1.2"/><circle cx="70" cy="82" r="1.2"/>
+            <circle cx="78" cy="74" r="1.2"/>
+          </g>
+          <path d="M 22 42 Q 50 18 78 42 Q 80 56 50 62 Q 20 56 22 42 Z" fill="url(#C-octo)"/>
+          <ellipse cx="50" cy="32" rx="20" ry="5" fill="#fff" opacity=".4"/>
+          <circle cx="40" cy="46" r="3.6" fill="#fff"/><circle cx="60" cy="46" r="3.6" fill="#fff"/>
+          <ellipse cx="40" cy="47" rx="1.3" ry="2" fill="#0a0a0a"/>
+          <ellipse cx="60" cy="47" rx="1.3" ry="2" fill="#0a0a0a"/>
+          <path d="M 46 54 Q 50 57 54 54" stroke="#0a0a0a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Octopus</div>
+      <div class="lv">LEVEL 3 · LV 26-37</div>
+    </div>
+
+    <!-- ───────────────── FISH ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--mint)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 30 100 L 14 100"/><path d="M 170 100 L 186 100"/>
+          <circle cx="12" cy="100" r="1.5"/><circle cx="188" cy="100" r="1.5"/>
+          <path d="M 100 14 L 100 4"/><path d="M 100 186 L 100 196"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-fish" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+              <stop offset="50%" stop-color="var(--mint)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#1f5e57" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 22 50 Q 50 22 78 50 Q 50 78 22 50 Z" fill="url(#C-fish)"/>
+          <path d="M 22 50 L 6 38 L 14 50 L 6 62 Z" fill="var(--mint)"/>
+          <path d="M 44 30 L 52 24 L 60 32 Q 56 30 44 30 Z" fill="var(--mint)"/>
+          <path d="M 44 70 L 52 76 L 60 68 Q 56 70 44 70 Z" fill="var(--mint)"/>
+          <path d="M 50 52 Q 56 60 48 60 Z" fill="var(--mint)" opacity=".85"/>
+          <path d="M 58 40 Q 56 50 58 60" stroke="rgba(0,0,0,.3)" stroke-width="1.4" fill="none"/>
+          <g stroke="rgba(0,0,0,.18)" stroke-width=".8" fill="none">
+            <path d="M 38 44 Q 42 48 38 52"/><path d="M 44 44 Q 48 48 44 52"/>
+            <path d="M 50 44 Q 54 48 50 52"/>
+          </g>
+          <circle cx="66" cy="46" r="3.6" fill="#fff"/>
+          <circle cx="66.6" cy="46" r="2" fill="#0a0a0a"/>
+          <circle cx="67.2" cy="45.2" r=".6" fill="#fff"/>
+          <path d="M 64 56 Q 70 58 74 56" stroke="#0a0a0a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Fish</div>
+      <div class="lv">LEVEL 4 · LV 38-50</div>
+    </div>
+
+    <!-- ───────────────── DOLPHIN ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--cyan)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 30 100 L 14 100"/><path d="M 170 100 L 186 100"/>
+          <path d="M 60 30 L 50 18"/><path d="M 140 30 L 150 18"/>
+          <circle cx="12" cy="100" r="1.5"/><circle cx="188" cy="100" r="1.5"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-dolphin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".55"/>
+              <stop offset="40%" stop-color="var(--cyan)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#2c5466" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 14 58 Q 22 42 40 38 Q 60 36 78 44 Q 88 50 88 56 Q 84 64 74 60 Q 50 68 26 64 Z" fill="url(#C-dolphin)"/>
+          <path d="M 30 60 Q 50 66 70 60" stroke="#fff" stroke-width="3" fill="none" opacity=".25"/>
+          <path d="M 46 38 Q 52 24 60 28 Q 58 36 52 40 Z" fill="var(--cyan)"/>
+          <path d="M 14 58 L 4 44 Q 12 50 6 50 L 8 58 L 6 66 Q 12 66 4 72 Z" fill="var(--cyan)"/>
+          <path d="M 50 62 Q 46 76 64 70 Q 60 64 54 62 Z" fill="var(--cyan)" opacity=".9"/>
+          <path d="M 80 50 L 92 52 L 88 58 L 78 56 Z" fill="var(--cyan)"/>
+          <path d="M 80 55 L 90 55" stroke="rgba(0,0,0,.4)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="74" cy="48" r="2.4" fill="#fff"/>
+          <circle cx="74.5" cy="48" r="1.3" fill="#0a0a0a"/>
+          <circle cx="75" cy="47.5" r=".5" fill="#fff"/>
+          <ellipse cx="56" cy="38" rx="1.6" ry=".6" fill="rgba(0,0,0,.4)"/>
+        </svg>
+      </div>
+      <div class="name">Dolphin</div>
+      <div class="lv">LEVEL 5 · LV 51-62</div>
+    </div>
+
+    <!-- ───────────────── SHARK ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--steel)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 30 100 L 14 100"/><path d="M 170 100 L 186 100"/>
+          <path d="M 60 26 L 50 14"/><circle cx="48" cy="12" r="1.5"/>
+          <path d="M 140 174 L 150 186"/><circle cx="152" cy="188" r="1.5"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-shark" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#9ec0d8" stop-opacity="1"/>
+              <stop offset="50%" stop-color="var(--steel)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#2c4458" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 12 56 Q 24 40 56 38 Q 80 42 92 52 Q 88 64 78 62 Q 50 70 22 66 Z" fill="url(#C-shark)"/>
+          <path d="M 28 62 Q 50 68 78 62 L 78 64 Q 50 70 28 64 Z" fill="#e8eef3" opacity=".7"/>
+          <path d="M 48 38 L 56 14 L 68 42 Z" fill="var(--steel)"/>
+          <path d="M 28 44 L 30 32 L 38 44 Z" fill="var(--steel)" opacity=".85"/>
+          <path d="M 12 56 L 0 28 Q 6 48 4 50 L 8 56 L 4 62 Q 6 64 0 78 Z" fill="var(--steel)"/>
+          <path d="M 52 62 L 44 80 L 70 66 Z" fill="var(--steel)"/>
+          <g stroke="#0a0a0a" stroke-width="1.1" opacity=".55" stroke-linecap="round" fill="none">
+            <path d="M 58 50 Q 58 56 58 60"/><path d="M 62 50 Q 62 56 62 60"/>
+            <path d="M 66 50 Q 66 56 66 60"/>
+          </g>
+          <path d="M 72 58 L 92 56 L 90 60 L 88 56 L 86 60 L 84 56 L 82 60 L 80 56 L 78 60 L 76 56 Z" fill="#fafafa"/>
+          <path d="M 72 58 L 92 56" stroke="#0a0a0a" stroke-width=".8" stroke-linecap="round"/>
+          <circle cx="78" cy="50" r="2" fill="#fff"/>
+          <circle cx="78.5" cy="50" r="1.2" fill="#0a0a0a"/>
+        </svg>
+      </div>
+      <div class="name">Shark</div>
+      <div class="lv">LEVEL 6 · LV 63-75</div>
+    </div>
+
+    <!-- ───────────────── WHALE ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120" style="--tier-color:var(--deep)">
+        <svg class="deco" viewBox="0 0 200 200">
+          <path d="M 100 16 L 100 6"/><circle cx="100" cy="4" r="1.5"/>
+          <path d="M 30 100 L 14 100"/><path d="M 170 100 L 186 100"/>
+          <path d="M 100 184 L 100 194"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-whale" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7d8de0" stop-opacity="1"/>
+              <stop offset="50%" stop-color="var(--deep)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#1f284b" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M 12 60 Q 22 38 56 36 Q 84 42 92 56 Q 88 68 78 66 Q 50 74 22 70 Z" fill="url(#C-whale)"/>
+          <g stroke="rgba(255,255,255,.24)" stroke-width="1.4" fill="none">
+            <path d="M 30 64 Q 50 70 76 66"/><path d="M 32 68 Q 50 72 74 70"/>
+          </g>
+          <ellipse cx="50" cy="44" rx="30" ry="5" fill="#fff" opacity=".22"/>
+          <path d="M 12 60 L 0 40 Q 8 50 4 52 L 8 60 L 4 68 Q 8 70 0 84 Z" fill="var(--deep)"/>
+          <path d="M 56 36 L 58 26 L 62 36 Z" fill="var(--deep)"/>
+          <path d="M 50 64 Q 58 76 44 76 Q 50 70 48 64 Z" fill="var(--deep)" opacity=".9"/>
+          <g stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none">
+            <path d="M 56 36 Q 52 24 50 18"/><path d="M 56 36 Q 60 24 62 18"/>
+          </g>
+          <circle cx="50" cy="16" r="1.4" fill="#fff"/><circle cx="62" cy="16" r="1.4" fill="#fff"/>
+          <path d="M 72 58 Q 82 60 90 58" stroke="rgba(0,0,0,.45)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="76" cy="50" r="2" fill="#fff"/>
+          <circle cx="76.5" cy="50" r="1.2" fill="#0a0a0a"/>
+        </svg>
+      </div>
+      <div class="name">Whale</div>
+      <div class="lv">LEVEL 7 · LV 76-87</div>
+    </div>
+
+    <!-- ───────────────── HUMP BACK (apex) ───────────────── -->
+    <div class="hero-cell">
+      <div class="badge s120 apex" style="--tier-color:var(--gold)">
+        <svg class="deco particles" viewBox="0 0 200 200">
+          <circle cx="20" cy="50" r="1.4"/><circle cx="180" cy="50" r="1.4" style="animation-delay:-1s"/>
+          <circle cx="14" cy="120" r="1.2" style="animation-delay:-2s"/>
+          <circle cx="186" cy="120" r="1.2" style="animation-delay:-0.5s"/>
+          <circle cx="100" cy="10" r="1.4" style="animation-delay:-1.5s"/>
+          <circle cx="40" cy="180" r="1.2" style="animation-delay:-2.5s"/>
+          <circle cx="160" cy="180" r="1.2" style="animation-delay:-1.2s"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="C-hump" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7d8de0" stop-opacity="1"/>
+              <stop offset="50%" stop-color="var(--deep)" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#1c2745" stop-opacity="1"/>
+            </linearGradient>
+            <linearGradient id="C-hump-fin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--deep)" stop-opacity="1"/>
+              <stop offset="80%" stop-color="#e8eef3" stop-opacity=".95"/>
+            </linearGradient>
+          </defs>
+          <path d="M 8 60 Q 18 50 28 48 Q 36 28 56 28 Q 84 34 92 56 Q 86 68 76 66 Q 50 76 22 72 Z" fill="url(#C-hump)"/>
+          <g stroke="rgba(255,255,255,.3)" stroke-width="1.4" fill="none">
+            <path d="M 28 66 Q 50 72 76 66"/><path d="M 30 70 Q 50 74 74 70"/>
+            <path d="M 34 74 Q 50 76 72 74"/>
+          </g>
+          <g fill="rgba(0,0,0,.4)">
+            <circle cx="68" cy="38" r="1.4"/><circle cx="74" cy="36" r="1.4"/>
+            <circle cx="80" cy="40" r="1.4"/><circle cx="72" cy="44" r="1.2"/>
+            <circle cx="78" cy="46" r="1.2"/><circle cx="84" cy="44" r="1.2"/>
+          </g>
+          <ellipse cx="58" cy="40" rx="22" ry="4" fill="#fff" opacity=".25"/>
+          <path d="M 8 60 L 0 36 Q 6 48 0 52 L 6 60 L 0 70 Q 6 64 0 82 Z" fill="var(--deep)"/>
+          <path d="M 0 36 Q 4 46 6 56" stroke="var(--gold)" stroke-width=".7" fill="none" opacity=".5"/>
+          <path d="M 52 32 L 54 24 L 58 32 Z" fill="var(--deep)"/>
+          <path d="M 48 62 Q 60 84 38 88 Q 52 76 42 66 Z" fill="url(#C-hump-fin)"/>
+          <path d="M 38 88 Q 50 80 48 64" stroke="#fff" stroke-width=".7" fill="none" opacity=".4"/>
+          <g fill="#fff" opacity=".95">
+            <path d="M 52 28 Q 46 18 44 12 Q 50 14 52 24 Q 54 14 60 12 Q 58 18 52 28 Z"/>
+          </g>
+          <g fill="var(--gold)">
+            <circle cx="46" cy="14" r="1.1"/><circle cx="58" cy="14" r="1.1"/>
+          </g>
+          <path d="M 76 58 Q 86 60 92 58" stroke="rgba(0,0,0,.45)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="80" cy="50" r="2.2" fill="#fff"/>
+          <circle cx="80.5" cy="50" r="1.3" fill="#0a0a0a"/>
+          <circle cx="81" cy="49.5" r=".5" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="name" style="color:var(--gold)">Hump Back</div>
+      <div class="lv">LEVEL 8 · APEX</div>
+    </div>
+
+  </div>
+
+  <div class="timeline-line">
+    <div class="timeline-marks">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="timeline-ends">
+    <span>LOWEST LEVEL</span>
+    <span>HIGHEST LEVEL</span>
+  </div>
+
+  <!-- ═══════ SIZE TEST · same badges, every UI size ═══════ -->
+  <h2>Same badge · every UI size</h2>
+  <p class="section-sub">
+    The exact same SVG renders at five sizes the app actually uses. Circuit-trace bloom only shows at ≥64px (below that it'd just be noise); above 32px the badge keeps its inner highlight and outline; at 24px it shrinks to a flat colored chip.
+  </p>
+
+  <div class="size-test">
+
+    <div class="row">
+      <div class="label">
+        <div class="px">120 px</div>
+        <div class="ctx">PROFILE PAGE · LEVEL-UP MODAL</div>
+      </div>
+      <div class="swarm">
+        <div class="badge s120" style="--tier-color:var(--coral)"><svg class="creature" viewBox="0 0 100 100"><use href="#shrimp-mini"/></svg></div>
+        <div class="badge s120" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+        <div class="badge s120" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+        <div class="badge s120 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <div class="px">64 px</div>
+        <div class="ctx">LEVEL-UP TOAST · LEADERBOARD ROW</div>
+      </div>
+      <div class="swarm">
+        <div class="badge s64" style="--tier-color:var(--coral)"><svg class="creature" viewBox="0 0 100 100"><use href="#shrimp-mini"/></svg></div>
+        <div class="badge s64" style="--tier-color:var(--sand)"><svg class="creature" viewBox="0 0 100 100"><use href="#crab-mini"/></svg></div>
+        <div class="badge s64" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+        <div class="badge s64" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+        <div class="badge s64" style="--tier-color:var(--deep)"><svg class="creature" viewBox="0 0 100 100"><use href="#whale-mini"/></svg></div>
+        <div class="badge s64 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <div class="px">48 px</div>
+        <div class="ctx">FRIEND LIST · POOL PARTICIPANTS</div>
+      </div>
+      <div class="swarm">
+        <div class="badge s48" style="--tier-color:var(--coral)"><svg class="creature" viewBox="0 0 100 100"><use href="#shrimp-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--sand)"><svg class="creature" viewBox="0 0 100 100"><use href="#crab-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--lavender)"><svg class="creature" viewBox="0 0 100 100"><use href="#octo-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--cyan)"><svg class="creature" viewBox="0 0 100 100"><use href="#dolphin-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+        <div class="badge s48" style="--tier-color:var(--deep)"><svg class="creature" viewBox="0 0 100 100"><use href="#whale-mini"/></svg></div>
+        <div class="badge s48 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <div class="px">32 px</div>
+        <div class="ctx">IDENTITY PILL · SEARCH RESULTS</div>
+      </div>
+      <div class="swarm">
+        <div class="badge s32" style="--tier-color:var(--coral)"><svg class="creature" viewBox="0 0 100 100"><use href="#shrimp-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--sand)"><svg class="creature" viewBox="0 0 100 100"><use href="#crab-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--lavender)"><svg class="creature" viewBox="0 0 100 100"><use href="#octo-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--cyan)"><svg class="creature" viewBox="0 0 100 100"><use href="#dolphin-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+        <div class="badge s32" style="--tier-color:var(--deep)"><svg class="creature" viewBox="0 0 100 100"><use href="#whale-mini"/></svg></div>
+        <div class="badge s32 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <div class="px">24 px</div>
+        <div class="ctx">MENTIONS · INLINE PILLS</div>
+      </div>
+      <div class="swarm">
+        <div class="badge s24" style="--tier-color:var(--coral)"><svg class="creature" viewBox="0 0 100 100"><use href="#shrimp-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--sand)"><svg class="creature" viewBox="0 0 100 100"><use href="#crab-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--lavender)"><svg class="creature" viewBox="0 0 100 100"><use href="#octo-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--cyan)"><svg class="creature" viewBox="0 0 100 100"><use href="#dolphin-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+        <div class="badge s24" style="--tier-color:var(--deep)"><svg class="creature" viewBox="0 0 100 100"><use href="#whale-mini"/></svg></div>
+        <div class="badge s24 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ In-context demos ═══════ -->
+  <h2>In context · how badges sit alongside identity</h2>
+  <p class="section-sub">
+    Three real-app surfaces showing the cyber badges integrated with the existing UI tokens: identity pill (header), search-palette row, friend-list row. The badge size shrinks per context; the silhouette stays the same.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+    <div class="demo-card">
+      <div class="badge s48" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></div>
+      <div class="demo-row">
+        <span class="pseudo">marwan</span>
+        <span class="addr">A9XZ…CDWY · LV. 44 · FISH</span>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <div class="badge s48" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></div>
+      <div class="demo-row">
+        <span class="pseudo">jpegmillions</span>
+        <span class="addr">7HrA…dY9q · LV. 71 · SHARK</span>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <div class="badge s48 apex" style="--tier-color:var(--gold)"><svg class="creature" viewBox="0 0 100 100"><use href="#hump-mini"/></svg></div>
+      <div class="demo-row">
+        <span class="pseudo">solgodfather</span>
+        <span class="addr">9pXm…vU1q · LV. 93 · HUMP BACK · APEX</span>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <div class="badge s48" style="--tier-color:var(--sand)"><svg class="creature" viewBox="0 0 100 100"><use href="#crab-mini"/></svg></div>
+      <div class="demo-row">
+        <span class="pseudo">freewheel</span>
+        <span class="addr">HBQX…DWSX · LV. 18 · CRAB</span>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <span class="pill-id">
+        <span class="badge s24" style="--tier-color:var(--mint)"><svg class="creature" viewBox="0 0 100 100"><use href="#fish-mini"/></svg></span>
+        <span class="name">marwan</span>
+        <span class="caret">▾</span>
+      </span>
+      <span style="color:var(--text-faint);font-size:10px;letter-spacing:.15em;text-transform:uppercase">IdentityPill · header chrome</span>
+    </div>
+
+    <div class="demo-card">
+      <span class="pill-id" style="background:rgba(106,161,197,.14);color:var(--steel);border:1px solid rgba(106,161,197,.4)">
+        <span class="badge s24" style="--tier-color:var(--steel)"><svg class="creature" viewBox="0 0 100 100"><use href="#shark-mini"/></svg></span>
+        <span class="name" style="color:var(--steel)">jpegmillions</span>
+      </span>
+      <span style="color:var(--text-faint);font-size:10px;letter-spacing:.15em;text-transform:uppercase">Inline @-mention</span>
+    </div>
+  </div>
+
+  <!-- ═══════ Reusable SVG symbols ═══════ -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden>
+    <defs>
+      <symbol id="shrimp-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-shrimp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+          <stop offset="50%" stop-color="var(--coral)"/><stop offset="100%" stop-color="#5a2a2a"/>
+        </linearGradient>
+        <path d="M 18 56 Q 26 42 50 44 Q 72 50 80 56 Q 76 64 60 66 Q 36 66 22 62 Z" fill="url(#m-shrimp)"/>
+        <ellipse cx="74" cy="54" rx="9" ry="8" fill="var(--coral)"/>
+        <path d="M 82 50 Q 92 32 96 24 M 84 56 Q 96 44 99 40" stroke="var(--coral)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M 18 56 L 6 44 L 12 50 L 6 56 L 12 62 L 6 68 Z" fill="var(--coral)"/>
+        <circle cx="77" cy="53" r="1.8" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="crab-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-crab" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+          <stop offset="50%" stop-color="var(--sand)"/><stop offset="100%" stop-color="#6a5520"/>
+        </linearGradient>
+        <g stroke="var(--sand)" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M 30 58 Q 22 64 18 74"/><path d="M 36 64 Q 30 70 28 80"/>
+          <path d="M 70 58 Q 78 64 82 74"/><path d="M 64 64 Q 70 70 72 80"/>
+        </g>
+        <path d="M 26 50 Q 14 40 10 30 Q 16 30 20 34 Q 24 30 28 32 Q 28 38 26 50 Z" fill="var(--sand)"/>
+        <path d="M 74 50 Q 86 40 90 30 Q 84 30 80 34 Q 76 30 72 32 Q 72 38 74 50 Z" fill="var(--sand)"/>
+        <path d="M 26 54 Q 50 38 74 54 Q 74 68 50 72 Q 26 68 26 54 Z" fill="url(#m-crab)"/>
+        <line x1="42" y1="50" x2="42" y2="42" stroke="var(--sand)" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="58" y1="50" x2="58" y2="42" stroke="var(--sand)" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="42" cy="42" r="3" fill="#0a0a0a"/><circle cx="58" cy="42" r="3" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="octo-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-octo" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".55"/>
+          <stop offset="50%" stop-color="var(--lavender)"/><stop offset="100%" stop-color="#5d4a73"/>
+        </linearGradient>
+        <g fill="var(--lavender)">
+          <path d="M 22 56 Q 12 64 8 84 Q 14 86 18 78 Q 22 70 30 62 Z"/>
+          <path d="M 30 60 Q 22 72 18 86 Q 26 90 28 82 Q 32 72 38 66 Z"/>
+          <path d="M 40 62 Q 36 76 34 90 Q 42 92 42 84 Q 44 72 46 66 Z"/>
+          <path d="M 50 62 Q 50 78 50 92 Q 54 92 54 84 Q 54 72 54 66 Z"/>
+          <path d="M 60 62 Q 64 76 66 90 Q 58 92 58 84 Q 56 72 54 66 Z"/>
+          <path d="M 70 60 Q 78 72 82 86 Q 74 90 72 82 Q 68 72 62 66 Z"/>
+          <path d="M 78 56 Q 88 64 92 84 Q 86 86 82 78 Q 78 70 70 62 Z"/>
+        </g>
+        <path d="M 22 42 Q 50 18 78 42 Q 80 56 50 62 Q 20 56 22 42 Z" fill="url(#m-octo)"/>
+        <circle cx="40" cy="46" r="3.6" fill="#fff"/><circle cx="60" cy="46" r="3.6" fill="#fff"/>
+        <ellipse cx="40" cy="47" rx="1.3" ry="2" fill="#0a0a0a"/>
+        <ellipse cx="60" cy="47" rx="1.3" ry="2" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="fish-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-fish" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".5"/>
+          <stop offset="50%" stop-color="var(--mint)"/><stop offset="100%" stop-color="#1f5e57"/>
+        </linearGradient>
+        <path d="M 22 50 Q 50 22 78 50 Q 50 78 22 50 Z" fill="url(#m-fish)"/>
+        <path d="M 22 50 L 6 38 L 14 50 L 6 62 Z" fill="var(--mint)"/>
+        <path d="M 44 30 L 52 24 L 60 32 Q 56 30 44 30 Z" fill="var(--mint)"/>
+        <path d="M 44 70 L 52 76 L 60 68 Q 56 70 44 70 Z" fill="var(--mint)"/>
+        <circle cx="66" cy="46" r="3.6" fill="#fff"/>
+        <circle cx="66.6" cy="46" r="2" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="dolphin-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-dolphin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff" stop-opacity=".55"/>
+          <stop offset="50%" stop-color="var(--cyan)"/><stop offset="100%" stop-color="#2c5466"/>
+        </linearGradient>
+        <path d="M 14 58 Q 22 42 40 38 Q 60 36 78 44 Q 88 50 88 56 Q 84 64 74 60 Q 50 68 26 64 Z" fill="url(#m-dolphin)"/>
+        <path d="M 46 38 Q 52 24 60 28 Q 58 36 52 40 Z" fill="var(--cyan)"/>
+        <path d="M 14 58 L 4 44 Q 12 50 6 50 L 8 58 L 6 66 Q 12 66 4 72 Z" fill="var(--cyan)"/>
+        <path d="M 80 50 L 92 52 L 88 58 L 78 56 Z" fill="var(--cyan)"/>
+        <circle cx="74" cy="48" r="2.4" fill="#fff"/>
+        <circle cx="74.5" cy="48" r="1.3" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="shark-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-shark" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9ec0d8"/><stop offset="50%" stop-color="var(--steel)"/>
+          <stop offset="100%" stop-color="#2c4458"/>
+        </linearGradient>
+        <path d="M 12 56 Q 24 40 56 38 Q 80 42 92 52 Q 88 64 78 62 Q 50 70 22 66 Z" fill="url(#m-shark)"/>
+        <path d="M 48 38 L 56 14 L 68 42 Z" fill="var(--steel)"/>
+        <path d="M 12 56 L 0 28 Q 6 48 4 50 L 8 56 L 4 62 Q 6 64 0 78 Z" fill="var(--steel)"/>
+        <path d="M 52 62 L 44 80 L 70 66 Z" fill="var(--steel)"/>
+        <path d="M 72 58 L 92 56 L 90 60 L 88 56 L 86 60 L 84 56 L 82 60 L 80 56 L 78 60 L 76 56 Z" fill="#fafafa"/>
+        <circle cx="78" cy="50" r="2" fill="#fff"/>
+        <circle cx="78.5" cy="50" r="1.2" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="whale-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-whale" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7d8de0"/><stop offset="50%" stop-color="var(--deep)"/>
+          <stop offset="100%" stop-color="#1f284b"/>
+        </linearGradient>
+        <path d="M 12 60 Q 22 38 56 36 Q 84 42 92 56 Q 88 68 78 66 Q 50 74 22 70 Z" fill="url(#m-whale)"/>
+        <path d="M 12 60 L 0 40 Q 8 50 4 52 L 8 60 L 4 68 Q 8 70 0 84 Z" fill="var(--deep)"/>
+        <path d="M 56 36 L 58 26 L 62 36 Z" fill="var(--deep)"/>
+        <path d="M 50 64 Q 58 76 44 76 Q 50 70 48 64 Z" fill="var(--deep)" opacity=".9"/>
+        <g stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none">
+          <path d="M 56 36 Q 52 24 50 18"/><path d="M 56 36 Q 60 24 62 18"/>
+        </g>
+        <circle cx="76" cy="50" r="2" fill="#fff"/>
+        <circle cx="76.5" cy="50" r="1.2" fill="#0a0a0a"/>
+      </symbol>
+
+      <symbol id="hump-mini" viewBox="0 0 100 100">
+        <linearGradient id="m-hump" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7d8de0"/><stop offset="50%" stop-color="var(--deep)"/>
+          <stop offset="100%" stop-color="#1c2745"/>
+        </linearGradient>
+        <linearGradient id="m-hump-fin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--deep)"/><stop offset="80%" stop-color="#e8eef3" stop-opacity=".95"/>
+        </linearGradient>
+        <path d="M 8 60 Q 18 50 28 48 Q 36 28 56 28 Q 84 34 92 56 Q 86 68 76 66 Q 50 76 22 72 Z" fill="url(#m-hump)"/>
+        <g fill="rgba(0,0,0,.4)">
+          <circle cx="68" cy="38" r="1.4"/><circle cx="74" cy="36" r="1.4"/>
+          <circle cx="80" cy="40" r="1.4"/><circle cx="72" cy="44" r="1.2"/>
+          <circle cx="78" cy="46" r="1.2"/><circle cx="84" cy="44" r="1.2"/>
+        </g>
+        <path d="M 8 60 L 0 36 Q 6 48 0 52 L 6 60 L 0 70 Q 6 64 0 82 Z" fill="var(--deep)"/>
+        <path d="M 52 32 L 54 24 L 58 32 Z" fill="var(--deep)"/>
+        <path d="M 48 62 Q 60 84 38 88 Q 52 76 42 66 Z" fill="url(#m-hump-fin)"/>
+        <path d="M 52 28 Q 46 18 44 12 Q 50 14 52 24 Q 54 14 60 12 Q 58 18 52 28 Z" fill="#fff" opacity=".95"/>
+        <circle cx="46" cy="14" r="1.1" fill="var(--gold)"/><circle cx="58" cy="14" r="1.1" fill="var(--gold)"/>
+        <circle cx="80" cy="50" r="2.2" fill="#fff"/>
+        <circle cx="80.5" cy="50" r="1.3" fill="#0a0a0a"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="footer">
+    <h3>Ship it?</h3>
+    <p>
+      All 8 badges render at <strong>identical canonical dimensions</strong> (120 px in the hero row). The same SVG scales cleanly down to 24 px for inline mentions — no separate small-size assets needed. Circuit-trace decorations attached to the badge frame hide below 64 px to keep small badges legible.<br/><br/>
+      The apex Hump Back keeps its non-rotating effect: static gold conic rim · subtle particle field · diagonal shimmer sweep every 6s · gentle breathing scale.<br/><br/>
+      Reply with <strong>"go cyber"</strong> and I'll lock the spec around this style + start phase 1 (math + schema + tests). If a creature wants refinement (e.g. "make the dolphin face left", "less circuit-trace on the apex") call it out per creature and I'll iterate before locking.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
