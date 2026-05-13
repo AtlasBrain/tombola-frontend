@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { attributePool } from "@/lib/raas/pool-attribution";
 import { getTenant } from "@/lib/raas/tenant";
+import { fetchPoolState } from "@/lib/raas/pool-fetch";
 
 export async function POST(
   request: Request,
@@ -22,6 +23,18 @@ export async function POST(
   const tenant = await getTenant(body.tenant_slug);
   if (!tenant || tenant.status !== "active") {
     return NextResponse.json({ error: "tenant_not_found" }, { status: 404 });
+  }
+
+  // Authorization: verify on-chain pool.creator matches tenant.owner_wallet.
+  const poolState = await fetchPoolState(pubkey);
+  if (!poolState) {
+    return NextResponse.json({ error: "pool_not_found" }, { status: 404 });
+  }
+  if (poolState.creator !== tenant.owner_wallet) {
+    return NextResponse.json(
+      { error: "pool_creator_mismatch" },
+      { status: 403 },
+    );
   }
 
   await attributePool({
