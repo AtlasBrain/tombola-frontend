@@ -21,7 +21,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tombola/sdk": ["./vendor/sdk/index.ts"],
-      "@tombola/sdk/*": ["./vendor/sdk/*"]
+      "@tombola/sdk/*": ["./vendor/sdk/*"],
+      "@tombola/sdk-v2": ["./vendor/sdk-v2/index.ts"],
+      "@tombola/sdk-v2/*": ["./vendor/sdk-v2/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
