@@ -7,7 +7,10 @@ import Stripe from "stripe";
 function getStripe(): Stripe {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
-  return new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" as Stripe.LatestApiVersion });
+  // Cast to any: Stripe's apiVersion type is a literal union that may not
+  // include the version string used here, but the SDK accepts it at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new Stripe(stripeKey, { apiVersion: Stripe.API_VERSION as any });
 }
 
 // Base58 charset, 32-44 chars typical for Solana addresses.
