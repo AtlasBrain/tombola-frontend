@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tombola — XP badges · matching reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#88cfc4; --lavender:#c9b5dc; --coral:#e89999; --sand:#e8d89e; --rose:#e8a5c0;
+    --cyan:#7cc4d8; --steel:#6aa1c5; --deep:#7d6acf; --gold:#f0c44b;
+    --bg:#040406; --surface:#0a0a0c; --border:#1a1a1f; --border-soft:#15151a;
+    --text:#fafafa; --text-mute:#a3a3a3; --text-dim:#737373; --text-faint:#525252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    background:radial-gradient(ellipse at 50% -10%, #14141a 0%, #060608 50%, #030305 100%);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  body{padding:60px 0 100px}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  .page{max-width:1440px;margin:0 auto;padding:0 28px}
+
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:32px;letter-spacing:-.005em;text-transform:uppercase;text-align:center;margin-bottom:6px}
+  .lede{font-family:'Space Mono';font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--text-dim);text-align:center;max-width:780px;margin:0 auto 50px;line-height:1.8}
+
+  /* Hero row — the lineup like the reference */
+  .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:14px;
+    padding:60px 8px 30px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+  }
+  .cell{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    min-width:130px;
+    flex:0 0 auto;
+    padding:4px;
+  }
+  .cell .name{
+    font-family:'Space Grotesk';
+    font-weight:700;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:color-mix(in srgb, var(--tier-color) 80%, #fafafa);
+    text-align:center;
+  }
+  .cell .lv{
+    font-family:'Space Mono';
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.2em;
+    color:var(--text-faint);
+    text-align:center;
+  }
+
+  /* Badge container — matches the reference's soft glow ring */
+  .badge{
+    width:128px;
+    height:128px;
+    border-radius:50%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    /* Inner darkness with subtle tier-color radial */
+    background:
+      radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--tier-color) 8%, transparent) 0%, transparent 55%),
+      radial-gradient(circle at 50% 50%, #0a0a0d 0%, #050506 70%);
+    /* Outer soft glow + thin tier-color ring */
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--tier-color) 90%, transparent),
+      inset 0 0 24px color-mix(in srgb, var(--tier-color) 12%, transparent),
+      0 0 0 1px rgba(0,0,0,.5),
+      0 0 24px color-mix(in srgb, var(--tier-color) 22%, transparent),
+      0 8px 32px rgba(0,0,0,.6);
+  }
+  /* Decorative tick marks at cardinal points — sparse, elegant */
+  .badge::before, .badge::after{
+    content:"";
+    position:absolute;
+    width:8px; height:1.5px;
+    background:color-mix(in srgb, var(--tier-color) 70%, transparent);
+    box-shadow:0 0 4px color-mix(in srgb, var(--tier-color) 50%, transparent);
+    border-radius:1px;
+  }
+  .badge::before{ left:-14px;  top:50%; transform:translateY(-50%) }
+  .badge::after{  right:-14px; top:50%; transform:translateY(-50%) }
+  /* Top / bottom ticks via deco SVG */
+  .badge svg.deco{
+    position:absolute;
+    inset:-22px;
+    width:calc(100% + 44px);
+    height:calc(100% + 44px);
+    pointer-events:none;
+    z-index:1;
+  }
+  .badge svg.deco *{stroke:color-mix(in srgb, var(--tier-color) 70%, transparent);stroke-width:1.4;fill:color-mix(in srgb, var(--tier-color) 70%, transparent);stroke-linecap:round}
+  .badge svg.creature{
+    width:94px;
+    height:94px;
+    position:relative;
+    z-index:2;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.6)) drop-shadow(0 0 8px color-mix(in srgb, var(--tier-color) 30%, transparent));
+  }
+
+  /* Apex (Hump Back) — adds animated particles + brighter glow, no rotation */
+  .apex{
+    box-shadow:
+      inset 0 0 0 1.5px var(--gold),
+      inset 0 0 30px color-mix(in srgb, var(--gold) 18%, transparent),
+      0 0 0 1px rgba(0,0,0,.5),
+      0 0 38px color-mix(in srgb, var(--gold) 38%, transparent),
+      0 0 80px color-mix(in srgb, var(--lavender) 18%, transparent),
+      0 8px 32px rgba(0,0,0,.6) !important;
+  }
+  .apex .sparkles circle{
+    fill:var(--gold);
+    animation:twinkle 3s ease-in-out infinite;
+  }
+  .apex .sparkles circle:nth-child(2){animation-delay:-.4s}
+  .apex .sparkles circle:nth-child(3){animation-delay:-.8s}
+  .apex .sparkles circle:nth-child(4){animation-delay:-1.2s}
+  .apex .sparkles circle:nth-child(5){animation-delay:-1.6s}
+  .apex .sparkles circle:nth-child(6){animation-delay:-2.0s}
+  .apex .sparkles circle:nth-child(7){animation-delay:-2.4s}
+  @keyframes twinkle{
+    0%,100%{opacity:.25;transform:scale(.85)}
+    50%{opacity:1;transform:scale(1.15)}
+  }
+
+  /* Footer hints */
+  .footer{margin-top:60px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px}
+  .footer h3{font-family:'Space Grotesk';font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:10px}
+  .footer p{font-family:'Space Mono';font-size:11px;color:var(--text-mute);line-height:1.7}
+  .footer strong{color:var(--mint)}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h1>Know if you're a crypto whale or crypto shrimp</h1>
+  <p class="lede">Eight tier badges · matching the reference's dark monochrome + soft glow ring + 3D-rendered creature aesthetic</p>
+
+  <div class="row">
+
+    <!-- ─── SHRIMP ─── -->
+    <div class="cell" style="--tier-color:var(--coral)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="ref-shrimp-body" cx="50%" cy="38%" r="60%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+              <stop offset="20%" stop-color="color-mix(in srgb, var(--coral) 50%, #fff)"/>
+              <stop offset="60%" stop-color="var(--coral)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--coral) 40%, #000)"/>
+            </radialGradient>
+            <radialGradient id="ref-shrimp-head" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+              <stop offset="30%" stop-color="color-mix(in srgb, var(--coral) 50%, #fff)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--coral) 50%, #000)"/>
+            </radialGradient>
+          </defs>
+          <!-- body with curve -->
+          <path d="M 16 56 Q 22 40 50 42 Q 72 46 80 54 Q 76 66 60 68 Q 36 68 22 64 Z" fill="url(#ref-shrimp-body)"/>
+          <!-- segment shadows -->
+          <g fill="rgba(80,20,20,.55)">
+            <path d="M 33 50 Q 36 60 32 66 L 30 66 Q 32 56 30 50 Z"/>
+            <path d="M 43 48 Q 46 60 42 67 L 40 67 Q 42 56 40 48 Z"/>
+            <path d="M 53 48 Q 56 60 52 67 L 50 67 Q 52 56 50 48 Z"/>
+            <path d="M 63 50 Q 66 60 62 66 L 60 66 Q 62 56 60 50 Z"/>
+          </g>
+          <!-- segment highlights -->
+          <g fill="#fff" opacity=".35">
+            <ellipse cx="32" cy="49" rx="1" ry="2"/>
+            <ellipse cx="42" cy="47" rx="1" ry="2"/>
+            <ellipse cx="52" cy="47" rx="1" ry="2"/>
+            <ellipse cx="62" cy="49" rx="1" ry="2"/>
+          </g>
+          <!-- head -->
+          <ellipse cx="74" cy="54" rx="9" ry="8" fill="url(#ref-shrimp-head)"/>
+          <ellipse cx="71" cy="49" rx="4" ry="2.5" fill="#fff" opacity=".5"/>
+          <!-- antennae -->
+          <path d="M 82 50 Q 91 32 95 24" stroke="var(--coral)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <path d="M 84 55 Q 93 44 96 41" stroke="var(--coral)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <circle cx="95" cy="24" r=".9" fill="var(--coral)"/>
+          <circle cx="96" cy="41" r=".9" fill="var(--coral)"/>
+          <!-- tail fan -->
+          <path d="M 16 56 L 4 44 L 11 51 L 4 56 L 11 61 L 4 68 Z" fill="url(#ref-shrimp-body)"/>
+          <!-- eye -->
+          <circle cx="77" cy="53" r="2" fill="#0a0a0a"/>
+          <circle cx="77.8" cy="52" r=".8" fill="#fff"/>
+          <!-- legs -->
+          <g stroke="var(--coral)" stroke-width="1.3" stroke-linecap="round" fill="none">
+            <path d="M 32 66 Q 30 70 28 74"/>
+            <path d="M 42 67 Q 42 71 41 75"/>
+            <path d="M 52 67 Q 52 71 53 75"/>
+            <path d="M 62 66 Q 64 70 65 74"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Shrimp</div>
+      <div class="lv">Level 1</div>
+    </div>
+
+    <!-- ─── CRAB ─── -->
+    <div class="cell" style="--tier-color:var(--sand)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="ref-crab-shell" cx="50%" cy="30%" r="65%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".75"/>
+              <stop offset="25%" stop-color="color-mix(in srgb, var(--sand) 60%, #fff)"/>
+              <stop offset="65%" stop-color="var(--sand)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--sand) 40%, #000)"/>
+            </radialGradient>
+            <radialGradient id="ref-crab-claw" cx="50%" cy="40%" r="55%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".75"/>
+              <stop offset="40%" stop-color="var(--sand)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--sand) 35%, #000)"/>
+            </radialGradient>
+          </defs>
+          <!-- back legs -->
+          <g stroke="color-mix(in srgb, var(--sand) 50%, #000)" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M 30 58 Q 22 64 18 74"/>
+            <path d="M 36 64 Q 30 70 28 80"/>
+            <path d="M 70 58 Q 78 64 82 74"/>
+            <path d="M 64 64 Q 70 70 72 80"/>
+          </g>
+          <g stroke="var(--sand)" stroke-width="2.4" stroke-linecap="round" fill="none">
+            <path d="M 30 58 Q 22 64 18 74"/>
+            <path d="M 36 64 Q 30 70 28 80"/>
+            <path d="M 70 58 Q 78 64 82 74"/>
+            <path d="M 64 64 Q 70 70 72 80"/>
+          </g>
+          <!-- claws -->
+          <path d="M 26 50 Q 14 38 10 28 Q 16 28 20 32 Q 24 28 28 30 Q 28 38 26 50 Z" fill="url(#ref-crab-claw)"/>
+          <path d="M 74 50 Q 86 38 90 28 Q 84 28 80 32 Q 76 28 72 30 Q 72 38 74 50 Z" fill="url(#ref-crab-claw)"/>
+          <!-- pincer split lines -->
+          <path d="M 13 30 L 22 38" stroke="rgba(60,40,0,.65)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M 87 30 L 78 38" stroke="rgba(60,40,0,.65)" stroke-width="1.4" stroke-linecap="round"/>
+          <!-- shell body -->
+          <path d="M 26 54 Q 50 38 74 54 Q 74 68 50 72 Q 26 68 26 54 Z" fill="url(#ref-crab-shell)"/>
+          <!-- shell rim highlight -->
+          <path d="M 30 50 Q 50 42 70 50" stroke="#fff" stroke-width="2" fill="none" opacity=".55"/>
+          <!-- shell pattern -->
+          <g stroke="rgba(60,40,0,.4)" stroke-width="1" fill="none">
+            <path d="M 40 60 Q 50 64 60 60"/>
+            <path d="M 35 64 Q 50 68 65 64"/>
+          </g>
+          <!-- eye stalks -->
+          <line x1="42" y1="50" x2="42" y2="42" stroke="var(--sand)" stroke-width="2.4" stroke-linecap="round"/>
+          <line x1="58" y1="50" x2="58" y2="42" stroke="var(--sand)" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="42" cy="42" r="3.2" fill="#0a0a0a"/>
+          <circle cx="58" cy="42" r="3.2" fill="#0a0a0a"/>
+          <circle cx="43" cy="41" r="1.1" fill="#fff"/>
+          <circle cx="59" cy="41" r="1.1" fill="#fff"/>
+          <!-- mouth -->
+          <path d="M 45 62 Q 50 66 55 62" stroke="rgba(60,40,0,.7)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Crab</div>
+      <div class="lv">Level 2</div>
+    </div>
+
+    <!-- ─── OCTOPUS ─── -->
+    <div class="cell" style="--tier-color:var(--lavender)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="ref-octo" cx="50%" cy="25%" r="72%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+              <stop offset="20%" stop-color="color-mix(in srgb, var(--lavender) 50%, #fff)"/>
+              <stop offset="60%" stop-color="var(--lavender)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--lavender) 40%, #000)"/>
+            </radialGradient>
+            <linearGradient id="ref-octo-tent" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--lavender)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--lavender) 35%, #000)"/>
+            </linearGradient>
+          </defs>
+          <!-- back tentacles -->
+          <path d="M 22 56 Q 12 62 6 84 Q 14 88 18 78 Q 22 70 30 62 Z" fill="url(#ref-octo-tent)"/>
+          <path d="M 78 56 Q 88 62 94 84 Q 86 88 82 78 Q 78 70 70 62 Z" fill="url(#ref-octo-tent)"/>
+          <!-- mid tentacles -->
+          <path d="M 30 60 Q 22 72 18 88 Q 26 92 28 82 Q 32 72 38 66 Z" fill="url(#ref-octo-tent)"/>
+          <path d="M 70 60 Q 78 72 82 88 Q 74 92 72 82 Q 68 72 62 66 Z" fill="url(#ref-octo-tent)"/>
+          <!-- front tentacles -->
+          <path d="M 40 62 Q 36 78 34 92 Q 42 94 42 84 Q 44 72 46 66 Z" fill="url(#ref-octo-tent)"/>
+          <path d="M 60 62 Q 64 78 66 92 Q 58 94 58 84 Q 56 72 54 66 Z" fill="url(#ref-octo-tent)"/>
+          <path d="M 50 62 Q 50 80 50 94 Q 54 94 54 84 Q 54 72 54 66 Z" fill="url(#ref-octo-tent)"/>
+          <!-- suckers -->
+          <g fill="rgba(50,30,80,.6)">
+            <circle cx="22" cy="74" r="1.3"/><circle cx="30" cy="82" r="1.3"/>
+            <circle cx="42" cy="86" r="1.3"/><circle cx="50" cy="88" r="1.3"/>
+            <circle cx="58" cy="86" r="1.3"/><circle cx="70" cy="82" r="1.3"/>
+            <circle cx="78" cy="74" r="1.3"/>
+          </g>
+          <g fill="#fff" opacity=".4">
+            <circle cx="22.5" cy="73.5" r=".4"/><circle cx="30.5" cy="81.5" r=".4"/>
+            <circle cx="42.5" cy="85.5" r=".4"/><circle cx="50.5" cy="87.5" r=".4"/>
+            <circle cx="58.5" cy="85.5" r=".4"/><circle cx="70.5" cy="81.5" r=".4"/>
+            <circle cx="78.5" cy="73.5" r=".4"/>
+          </g>
+          <!-- mantle (head) -->
+          <path d="M 20 42 Q 50 16 80 42 Q 82 58 50 64 Q 18 58 20 42 Z" fill="url(#ref-octo)"/>
+          <!-- mantle highlight -->
+          <ellipse cx="50" cy="28" rx="22" ry="6" fill="#fff" opacity=".55"/>
+          <ellipse cx="38" cy="26" rx="5" ry="2.5" fill="#fff" opacity=".7"/>
+          <!-- eyes -->
+          <circle cx="39" cy="46" r="4.5" fill="#fff"/>
+          <circle cx="61" cy="46" r="4.5" fill="#fff"/>
+          <ellipse cx="39" cy="47" rx="1.5" ry="2.5" fill="#0a0a0a"/>
+          <ellipse cx="61" cy="47" rx="1.5" ry="2.5" fill="#0a0a0a"/>
+          <circle cx="39.5" cy="46" r=".6" fill="#fff"/>
+          <circle cx="61.5" cy="46" r=".6" fill="#fff"/>
+          <!-- mouth -->
+          <path d="M 46 56 Q 50 59 54 56" stroke="rgba(50,30,80,.7)" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Octopus</div>
+      <div class="lv">Level 3</div>
+    </div>
+
+    <!-- ─── FISH ─── -->
+    <div class="cell" style="--tier-color:var(--mint)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="ref-fish" cx="65%" cy="30%" r="72%">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+              <stop offset="18%" stop-color="color-mix(in srgb, var(--mint) 50%, #fff)"/>
+              <stop offset="55%" stop-color="var(--mint)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--mint) 30%, #000)"/>
+            </radialGradient>
+            <linearGradient id="ref-fish-fin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--mint) 80%, #fff)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--mint) 40%, #000)"/>
+            </linearGradient>
+          </defs>
+          <!-- body -->
+          <path d="M 22 50 Q 50 22 78 50 Q 50 78 22 50 Z" fill="url(#ref-fish)"/>
+          <!-- belly band -->
+          <path d="M 32 56 Q 50 62 68 56" stroke="#fff" stroke-width="2.5" fill="none" opacity=".35"/>
+          <!-- tail fan -->
+          <path d="M 22 50 L 4 38 L 12 50 L 4 62 Z" fill="url(#ref-fish-fin)"/>
+          <!-- top fin -->
+          <path d="M 42 32 L 52 22 L 64 34 Q 58 30 42 32 Z" fill="url(#ref-fish-fin)"/>
+          <!-- bottom fin -->
+          <path d="M 42 68 L 52 78 L 64 66 Q 58 70 42 68 Z" fill="url(#ref-fish-fin)"/>
+          <!-- pectoral fin -->
+          <path d="M 50 52 Q 58 62 48 62 Z" fill="url(#ref-fish-fin)" opacity=".95"/>
+          <!-- gill -->
+          <path d="M 58 38 Q 56 50 58 62" stroke="rgba(20,80,70,.6)" stroke-width="1.4" fill="none"/>
+          <!-- scales -->
+          <g stroke="rgba(20,80,70,.4)" stroke-width=".9" fill="none">
+            <path d="M 35 42 Q 39 47 35 52"/>
+            <path d="M 42 42 Q 46 47 42 52"/>
+            <path d="M 49 42 Q 53 47 49 52"/>
+            <path d="M 38 49 Q 42 54 38 59"/>
+            <path d="M 45 49 Q 49 54 45 59"/>
+          </g>
+          <!-- eye -->
+          <circle cx="66" cy="46" r="4" fill="#fff"/>
+          <circle cx="66.5" cy="46" r="2.3" fill="#0a0a0a"/>
+          <circle cx="67" cy="45.2" r=".7" fill="#fff"/>
+          <!-- mouth -->
+          <path d="M 64 56 Q 70 58 76 56" stroke="rgba(20,80,70,.7)" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">Fish</div>
+      <div class="lv">Level 4</div>
+    </div>
+
+    <!-- ─── DOLPHIN ─── -->
+    <div class="cell" style="--tier-color:var(--cyan)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="ref-dolphin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+              <stop offset="15%" stop-color="color-mix(in srgb, var(--cyan) 50%, #fff)"/>
+              <stop offset="55%" stop-color="var(--cyan)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--cyan) 30%, #000)"/>
+            </linearGradient>
+            <linearGradient id="ref-dolphin-belly" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--cyan) 60%, #fff)"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity=".95"/>
+            </linearGradient>
+          </defs>
+          <!-- body -->
+          <path d="M 12 60 Q 20 40 38 36 Q 60 32 78 42 Q 90 50 90 58 Q 84 66 72 62 Q 50 70 24 66 Z" fill="url(#ref-dolphin)"/>
+          <!-- belly -->
+          <path d="M 28 60 Q 48 68 70 62 Q 60 66 30 64 Z" fill="url(#ref-dolphin-belly)" opacity=".75"/>
+          <!-- dorsal fin (sickle curve) -->
+          <path d="M 44 38 Q 50 22 60 26 Q 60 34 52 40 Z" fill="url(#ref-dolphin)"/>
+          <!-- tail fluke -->
+          <path d="M 12 60 L 0 42 Q 8 50 4 52 L 10 60 L 4 68 Q 8 70 0 80 Z" fill="url(#ref-dolphin)"/>
+          <!-- pectoral fin -->
+          <path d="M 52 62 Q 48 80 66 70 Q 60 64 56 62 Z" fill="url(#ref-dolphin)" opacity=".9"/>
+          <!-- rostrum (beak) -->
+          <path d="M 82 50 L 96 52 L 90 58 L 78 56 Z" fill="url(#ref-dolphin)"/>
+          <!-- mouth -->
+          <path d="M 80 55 L 92 55" stroke="rgba(15,55,75,.7)" stroke-width="1.3" stroke-linecap="round"/>
+          <!-- eye -->
+          <circle cx="74" cy="48" r="2.6" fill="#fff"/>
+          <circle cx="74.5" cy="48" r="1.5" fill="#0a0a0a"/>
+          <circle cx="75" cy="47.3" r=".55" fill="#fff"/>
+          <!-- blowhole -->
+          <ellipse cx="56" cy="38" rx="1.8" ry=".8" fill="rgba(15,55,75,.7)"/>
+          <!-- highlight curve -->
+          <path d="M 36 42 Q 56 36 76 44" stroke="#fff" stroke-width="1.5" fill="none" opacity=".4"/>
+        </svg>
+      </div>
+      <div class="name">Dolphin</div>
+      <div class="lv">Level 5</div>
+    </div>
+
+    <!-- ─── SHARK ─── -->
+    <div class="cell" style="--tier-color:var(--steel)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="ref-shark" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--steel) 70%, #fff)"/>
+              <stop offset="35%" stop-color="var(--steel)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--steel) 30%, #000)"/>
+            </linearGradient>
+            <linearGradient id="ref-shark-belly" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--steel) 30%, #fff)"/>
+            </linearGradient>
+          </defs>
+          <!-- body -->
+          <path d="M 10 56 Q 22 38 56 38 Q 82 42 94 52 Q 88 64 78 62 Q 50 70 20 66 Z" fill="url(#ref-shark)"/>
+          <!-- white belly -->
+          <path d="M 26 62 Q 50 68 78 62 L 78 64 Q 50 70 26 64 Z" fill="url(#ref-shark-belly)" opacity=".85"/>
+          <path d="M 28 60 Q 50 66 76 60" stroke="#fff" stroke-width="3" fill="none" opacity=".3"/>
+          <!-- tall pointed dorsal fin -->
+          <path d="M 46 38 L 56 12 L 70 42 Z" fill="url(#ref-shark)"/>
+          <!-- second dorsal -->
+          <path d="M 28 44 L 30 30 L 38 44 Z" fill="url(#ref-shark)" opacity=".9"/>
+          <!-- asymmetric tail -->
+          <path d="M 10 56 L 0 26 Q 4 46 4 48 L 8 56 L 4 64 Q 4 66 0 78 Z" fill="url(#ref-shark)"/>
+          <!-- pectoral fin -->
+          <path d="M 50 62 L 42 80 L 72 66 Z" fill="url(#ref-shark)"/>
+          <!-- gills -->
+          <g stroke="rgba(15,40,60,.7)" stroke-width="1.2" stroke-linecap="round" fill="none">
+            <path d="M 58 48 Q 58 56 58 60"/>
+            <path d="M 62 48 Q 62 56 62 60"/>
+            <path d="M 66 48 Q 66 56 66 60"/>
+          </g>
+          <!-- teeth -->
+          <path d="M 70 58 L 92 56 L 90 60 L 88 56 L 86 60 L 84 56 L 82 60 L 80 56 L 78 60 L 76 56 L 74 60 Z" fill="#fafafa"/>
+          <path d="M 70 58 L 92 56" stroke="rgba(0,0,0,.6)" stroke-width="1" stroke-linecap="round"/>
+          <!-- eye -->
+          <circle cx="78" cy="50" r="2.2" fill="#fff"/>
+          <circle cx="78.5" cy="50" r="1.4" fill="#0a0a0a"/>
+          <circle cx="79" cy="49.3" r=".5" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="name">Shark</div>
+      <div class="lv">Level 6</div>
+    </div>
+
+    <!-- ─── WHALE ─── -->
+    <div class="cell" style="--tier-color:var(--deep)">
+      <div class="badge">
+        <svg class="deco" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="100" cy="6" r="1.6"/><circle cx="100" cy="194" r="1.6"/>
+          <line x1="22" y1="58" x2="14" y2="50" stroke-width="1.2"/>
+          <line x1="178" y1="142" x2="186" y2="150" stroke-width="1.2"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="ref-whale" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--deep) 60%, #fff)"/>
+              <stop offset="35%" stop-color="var(--deep)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--deep) 30%, #000)"/>
+            </linearGradient>
+            <linearGradient id="ref-whale-belly" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--deep) 40%, #fff)"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity=".85"/>
+            </linearGradient>
+          </defs>
+          <!-- body -->
+          <path d="M 10 60 Q 22 38 56 36 Q 84 42 94 56 Q 88 68 78 66 Q 50 74 22 70 Z" fill="url(#ref-whale)"/>
+          <!-- belly -->
+          <path d="M 26 66 Q 50 72 76 66 L 76 68 Q 50 74 26 68 Z" fill="url(#ref-whale-belly)" opacity=".85"/>
+          <!-- belly grooves -->
+          <g stroke="rgba(255,255,255,.35)" stroke-width="1.5" fill="none">
+            <path d="M 30 64 Q 50 70 76 66"/>
+            <path d="M 32 68 Q 50 72 74 70"/>
+          </g>
+          <!-- tail fluke -->
+          <path d="M 10 60 L 0 38 Q 6 50 0 52 L 6 60 L 0 68 Q 6 70 0 84 Z" fill="url(#ref-whale)"/>
+          <!-- small dorsal -->
+          <path d="M 54 36 L 58 24 L 62 36 Z" fill="url(#ref-whale)"/>
+          <!-- pectoral fin -->
+          <path d="M 50 64 Q 58 78 42 78 Q 50 70 48 64 Z" fill="url(#ref-whale)" opacity=".95"/>
+          <!-- heart-shaped spout -->
+          <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none">
+            <path d="M 56 36 Q 52 22 50 14"/>
+            <path d="M 56 36 Q 60 22 62 14"/>
+          </g>
+          <circle cx="50" cy="12" r="1.6" fill="#fff"/>
+          <circle cx="62" cy="12" r="1.6" fill="#fff"/>
+          <!-- mouth -->
+          <path d="M 72 58 Q 82 60 92 58" stroke="rgba(0,0,0,.6)" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+          <!-- eye -->
+          <circle cx="76" cy="50" r="2.2" fill="#fff"/>
+          <circle cx="76.5" cy="50" r="1.4" fill="#0a0a0a"/>
+          <circle cx="77" cy="49.3" r=".55" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="name">Whale</div>
+      <div class="lv">Level 7</div>
+    </div>
+
+    <!-- ─── HUMP BACK · APEX ─── -->
+    <div class="cell" style="--tier-color:var(--gold)">
+      <div class="badge apex">
+        <svg class="deco sparkles" viewBox="0 0 200 200" aria-hidden>
+          <circle cx="22" cy="50" r="1.8"/>
+          <circle cx="178" cy="50" r="1.5"/>
+          <circle cx="20" cy="130" r="1.5"/>
+          <circle cx="180" cy="130" r="1.8"/>
+          <circle cx="100" cy="14" r="1.5"/>
+          <circle cx="50" cy="180" r="1.5"/>
+          <circle cx="150" cy="180" r="1.8"/>
+        </svg>
+        <svg class="creature" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="ref-hump" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--deep) 60%, #fff)"/>
+              <stop offset="35%" stop-color="var(--deep)"/>
+              <stop offset="100%" stop-color="color-mix(in srgb, var(--deep) 25%, #000)"/>
+            </linearGradient>
+            <linearGradient id="ref-hump-fin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--deep)"/>
+              <stop offset="80%" stop-color="#fff" stop-opacity=".9"/>
+            </linearGradient>
+            <linearGradient id="ref-hump-belly" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="color-mix(in srgb, var(--deep) 50%, #fff)"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity=".85"/>
+            </linearGradient>
+          </defs>
+          <!-- breaching body with pronounced hump -->
+          <path d="M 8 62 Q 18 50 28 48 Q 36 28 56 28 Q 84 34 94 56 Q 88 68 78 66 Q 50 78 22 72 Z" fill="url(#ref-hump)"/>
+          <!-- belly with grooves -->
+          <path d="M 26 68 Q 50 74 76 68 L 76 70 Q 50 76 26 70 Z" fill="url(#ref-hump-belly)" opacity=".85"/>
+          <g stroke="rgba(255,255,255,.42)" stroke-width="1.4" fill="none">
+            <path d="M 26 66 Q 50 72 76 66"/>
+            <path d="M 28 70 Q 50 74 74 70"/>
+            <path d="M 32 74 Q 50 76 70 74"/>
+          </g>
+          <!-- knobby head tubercles -->
+          <g fill="rgba(0,0,0,.55)">
+            <circle cx="68" cy="38" r="1.5"/>
+            <circle cx="74" cy="36" r="1.5"/>
+            <circle cx="80" cy="40" r="1.5"/>
+            <circle cx="72" cy="44" r="1.3"/>
+            <circle cx="78" cy="46" r="1.3"/>
+            <circle cx="86" cy="44" r="1.3"/>
+          </g>
+          <!-- highlights on tubercles -->
+          <g fill="rgba(255,255,255,.45)">
+            <circle cx="67.5" cy="37.5" r=".4"/>
+            <circle cx="73.5" cy="35.5" r=".4"/>
+            <circle cx="79.5" cy="39.5" r=".4"/>
+          </g>
+          <!-- back highlight -->
+          <ellipse cx="58" cy="38" rx="22" ry="4" fill="#fff" opacity=".35"/>
+          <!-- tail fluke -->
+          <path d="M 8 62 L 0 36 Q 4 48 0 52 L 6 60 L 0 68 Q 4 64 0 84 Z" fill="url(#ref-hump)"/>
+          <!-- tail edge highlight -->
+          <path d="M 0 36 Q 4 48 6 58" stroke="var(--gold)" stroke-width="1" fill="none" opacity=".6"/>
+          <!-- small dorsal -->
+          <path d="M 52 32 L 54 24 L 58 32 Z" fill="url(#ref-hump)"/>
+          <!-- LONG pectoral fin (humpback signature) -->
+          <path d="M 48 62 Q 60 86 38 90 Q 52 76 42 66 Z" fill="url(#ref-hump-fin)"/>
+          <path d="M 38 90 Q 50 80 48 64" stroke="#fff" stroke-width="1" fill="none" opacity=".5"/>
+          <!-- heart-shaped spout -->
+          <g fill="#fff" opacity=".95">
+            <path d="M 52 28 Q 46 18 44 10 Q 50 12 52 22 Q 54 12 60 10 Q 58 18 52 28 Z"/>
+          </g>
+          <g fill="var(--gold)">
+            <circle cx="46" cy="12" r="1.3"/>
+            <circle cx="58" cy="12" r="1.3"/>
+          </g>
+          <!-- gold particles around spout -->
+          <g fill="var(--gold)" opacity=".8">
+            <circle cx="42" cy="6" r=".8"/>
+            <circle cx="64" cy="6" r=".8"/>
+            <circle cx="50" cy="4" r=".7"/>
+            <circle cx="56" cy="4" r=".7"/>
+          </g>
+          <!-- mouth -->
+          <path d="M 76 60 Q 86 62 92 60" stroke="rgba(0,0,0,.6)" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+          <!-- eye -->
+          <circle cx="80" cy="50" r="2.4" fill="#fff"/>
+          <circle cx="80.5" cy="50" r="1.4" fill="#0a0a0a"/>
+          <circle cx="81" cy="49.3" r=".55" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="name" style="color:var(--gold)">Hump Back</div>
+      <div class="lv">Level 8 · Apex</div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <h3>What changed vs the previous attempt</h3>
+    <p>
+      <strong>1.</strong> Ring is now a <strong>thin soft-glow stroke</strong> (1.5px inset shadow + outer glow), not a hard metallic conic gradient. Matches the reference's softer luminous quality.<br/>
+      <strong>2.</strong> Each creature uses a <strong>multi-stop radial or linear gradient</strong> (4 stops: highlight white → tier tint → tier color → deep shadow) for the 3D rendered feel.<br/>
+      <strong>3.</strong> Added <strong>specular highlights</strong> (top-left light source) on shells, mantles, body curves so the creatures read as dimensional.<br/>
+      <strong>4.</strong> Sparser <strong>decoration</strong>: two ticks at cardinal points + small accent dots at top/bottom (closer to the reference's restraint).<br/>
+      <strong>5.</strong> Apex Hump Back keeps the <strong>static gold rim</strong> (no rotation), gets <strong>animated gold particles</strong> around it (twinkle 3s loop), plus brighter glow + gold accent dots around the spout — matching the reference's particle-field treatment.<br/><br/>
+      Reply <strong>"go this one"</strong> to lock it, or call out specific creatures to redraw (e.g. "shark should face left", "octopus needs less suckers").
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
