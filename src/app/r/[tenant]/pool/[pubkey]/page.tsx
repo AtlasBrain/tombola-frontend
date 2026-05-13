@@ -5,7 +5,8 @@ import { fetchPoolState } from "@/lib/raas/pool-fetch";
 import { BrandedHeader } from "@/components/raas/BrandedHeader";
 import { PoweredByTombolaFooter } from "@/components/raas/PoweredByTombolaFooter";
 import { FeeBreakdownPanel } from "@/components/raas/FeeBreakdownPanel";
-import { BrandedBuyButton } from "@/components/raas/BrandedBuyButton";
+import { SmartBuyPanel } from "@/components/raas/SmartBuyPanel";
+import { getSolUsd } from "@/lib/raas/sol-usd";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +41,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PoolDetailPage({ params }: Props) {
   const { tenant: slug, pubkey } = await params;
 
-  const [tenant, pool] = await Promise.all([
+  const [tenant, pool, solUsd] = await Promise.all([
     getTenant(slug),
     fetchPoolState(pubkey),
+    getSolUsd(),
   ]);
 
   if (!tenant) notFound();
@@ -114,11 +116,13 @@ export default async function PoolDetailPage({ params }: Props) {
         />
 
         {pool.state === "Open" && remainingMs > 0 && pool.access_mode === "PublicMode" && (
-          <BrandedBuyButton
+          <SmartBuyPanel
             poolPubkey={pubkey}
             ticketPriceLamports={pool.ticket_price_lamports}
             totalTickets={pool.total_tickets}
             tenantPrimaryColor={tenant.branding.primary_color}
+            tenantDisplayName={tenant.display_name}
+            solUsd={solUsd}
           />
         )}
 

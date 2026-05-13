@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { classifyWalletState } from "./wallet-state-detector.js";
 
-const TICKET_PRICE_SOL = 0.05;
 const TICKET_PRICE_LAMPORTS = 50_000_000n;
 const SOL_USD = 200; // fixture price
 
