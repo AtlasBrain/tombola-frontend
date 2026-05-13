@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useUnifiedSigner } from "@/lib/raas/phantom-signer";
+import { FriendsInviteSender } from "@/components/raas/FriendsInviteSender";
 
 interface Code {
   raw: string;
@@ -165,10 +166,28 @@ export function CodeManager({ tenantSlug, poolPubkey, tenantPrimaryColor }: Prop
 
       {codes && (
         <>
-          <div className="flex items-center gap-4 text-sm opacity-70">
-            <span>{codes.length} total</span>
-            <span>{unredeemedCount} unredeemed</span>
-            <span>{voidedCount} voided</span>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-4 text-sm opacity-70">
+              <span>{codes.length} total</span>
+              <span>{unredeemedCount} unredeemed</span>
+              <span>{voidedCount} voided</span>
+            </div>
+            {unredeemedCount > 0 && (
+              <FriendsInviteSender
+                tenantSlug={tenantSlug}
+                poolPubkey={poolPubkey}
+                availableCodes={codes
+                  .filter((c) => c.status === "unredeemed")
+                  .map((c) => c.raw)}
+                tenantPrimaryColor={tenantPrimaryColor}
+                onSent={(assignments) => {
+                  // Off-chain hint only — codes remain unredeemed on-chain
+                  // until the friend actually redeems. Just log for now;
+                  // Plan 3.5 will surface "assigned" status in the UI.
+                  console.log("Assigned codes to friends:", assignments);
+                }}
+              />
+            )}
           </div>
           <ul className="divide-y divide-white/10 border border-white/10 rounded-md">
             {codes.map((c) => (
