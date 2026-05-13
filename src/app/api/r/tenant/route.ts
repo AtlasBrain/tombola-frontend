@@ -43,6 +43,20 @@ export async function POST(request: Request) {
     }
   }
 
+  const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+  if (!HEX_COLOR_RE.test(body.primary_color as string)) {
+    return NextResponse.json(
+      { error: "invalid_color", field: "primary_color" },
+      { status: 400 },
+    );
+  }
+  if (!HEX_COLOR_RE.test(body.accent_color as string)) {
+    return NextResponse.json(
+      { error: "invalid_color", field: "accent_color" },
+      { status: 400 },
+    );
+  }
+
   const slug = body.slug as string;
   if (!isValidSlug(slug)) {
     return NextResponse.json({ error: "invalid_slug", slug }, { status: 400 });
