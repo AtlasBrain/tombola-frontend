@@ -23,7 +23,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = pool
     ? `${(Number(pool.total_pot_lamports) / 1e9).toFixed(2)} SOL pot · ${pool.total_tickets} tickets sold`
     : "On-chain raffle";
-  return { title, description };
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      images: [`/api/r/og/pool/${pubkey}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [`/api/r/og/pool/${pubkey}`],
+    },
+  };
 }
 
 export default async function PoolDetailPage({ params }: Props) {
