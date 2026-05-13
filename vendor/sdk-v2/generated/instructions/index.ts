@@ -8,6 +8,7 @@
 
 export * from "./buyTicketPrivate";
 export * from "./buyTicketPublic";
+export * from "./buyTicketPublicMode";
 export * from "./closeEmptyPrivatePool";
 export * from "./commitDrawPrivate";
 export * from "./commitDrawPublic";

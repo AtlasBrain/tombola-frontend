@@ -59,6 +59,7 @@ import {
 import {
   getBuyTicketPrivateInstructionAsync,
   getBuyTicketPublicInstruction,
+  getBuyTicketPublicModeInstruction,
   getCloseEmptyPrivatePoolInstruction,
   getCommitDrawPrivateInstruction,
   getCommitDrawPublicInstruction,
@@ -74,6 +75,7 @@ import {
   getVoidInviteCodeInstruction,
   parseBuyTicketPrivateInstruction,
   parseBuyTicketPublicInstruction,
+  parseBuyTicketPublicModeInstruction,
   parseCloseEmptyPrivatePoolInstruction,
   parseCommitDrawPrivateInstruction,
   parseCommitDrawPublicInstruction,
@@ -89,6 +91,7 @@ import {
   parseVoidInviteCodeInstruction,
   type BuyTicketPrivateAsyncInput,
   type BuyTicketPublicInput,
+  type BuyTicketPublicModeInput,
   type CloseEmptyPrivatePoolInput,
   type CommitDrawPrivateInput,
   type CommitDrawPublicInput,
@@ -97,6 +100,7 @@ import {
   type InitializePublicPoolInput,
   type ParsedBuyTicketPrivateInstruction,
   type ParsedBuyTicketPublicInstruction,
+  type ParsedBuyTicketPublicModeInstruction,
   type ParsedCloseEmptyPrivatePoolInstruction,
   type ParsedCommitDrawPrivateInstruction,
   type ParsedCommitDrawPublicInstruction,
@@ -223,6 +227,7 @@ export function identifyRaffleV2Account(
 export enum RaffleV2Instruction {
   BuyTicketPrivate,
   BuyTicketPublic,
+  BuyTicketPublicMode,
   CloseEmptyPrivatePool,
   CommitDrawPrivate,
   CommitDrawPublic,
@@ -263,6 +268,17 @@ export function identifyRaffleV2Instruction(
     )
   ) {
     return RaffleV2Instruction.BuyTicketPublic;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([220, 252, 59, 152, 43, 232, 143, 4]),
+      ),
+      0,
+    )
+  ) {
+    return RaffleV2Instruction.BuyTicketPublicMode;
   }
   if (
     containsBytes(
@@ -423,6 +439,9 @@ export type ParsedRaffleV2Instruction<
       instructionType: RaffleV2Instruction.BuyTicketPublic;
     } & ParsedBuyTicketPublicInstruction<TProgram>)
   | ({
+      instructionType: RaffleV2Instruction.BuyTicketPublicMode;
+    } & ParsedBuyTicketPublicModeInstruction<TProgram>)
+  | ({
       instructionType: RaffleV2Instruction.CloseEmptyPrivatePool;
     } & ParsedCloseEmptyPrivatePoolInstruction<TProgram>)
   | ({
@@ -479,6 +498,13 @@ export function parseRaffleV2Instruction<TProgram extends string>(
       return {
         instructionType: RaffleV2Instruction.BuyTicketPublic,
         ...parseBuyTicketPublicInstruction(instruction),
+      };
+    }
+    case RaffleV2Instruction.BuyTicketPublicMode: {
+      assertIsInstructionWithAccounts(instruction);
+      return {
+        instructionType: RaffleV2Instruction.BuyTicketPublicMode,
+        ...parseBuyTicketPublicModeInstruction(instruction),
       };
     }
     case RaffleV2Instruction.CloseEmptyPrivatePool: {
@@ -612,6 +638,10 @@ export type RaffleV2PluginInstructions = {
     input: BuyTicketPublicInput,
   ) => ReturnType<typeof getBuyTicketPublicInstruction> &
     SelfPlanAndSendFunctions;
+  buyTicketPublicMode: (
+    input: BuyTicketPublicModeInput,
+  ) => ReturnType<typeof getBuyTicketPublicModeInstruction> &
+    SelfPlanAndSendFunctions;
   closeEmptyPrivatePool: (
     input: CloseEmptyPrivatePoolInput,
   ) => ReturnType<typeof getCloseEmptyPrivatePoolInstruction> &
@@ -710,6 +740,11 @@ export function raffleV2Program() {
             addSelfPlanAndSendFunctions(
               client,
               getBuyTicketPublicInstruction(input),
+            ),
+          buyTicketPublicMode: (input) =>
+            addSelfPlanAndSendFunctions(
+              client,
+              getBuyTicketPublicModeInstruction(input),
             ),
           closeEmptyPrivatePool: (input) =>
             addSelfPlanAndSendFunctions(

@@ -52,19 +52,20 @@ export function getProtocolConfigDiscriminatorBytes(): ReadonlyUint8Array {
 export type ProtocolConfig = {
   discriminator: ReadonlyUint8Array;
   /**
-   * Squads multisig 2-of-3 pubkey. Receives the 0.5% protocol fee on every
+   * Squads multisig 2-of-3 pubkey. Receives the 1% protocol fee on every
    * fulfilled draw. The program never treats this as a signer — only a
    * transfer destination.
    */
   treasury: Address;
   /**
-   * Hard-coded at 50 bps (0.5%). Stored on-chain so a future migration could
-   * in principle change it via a new instruction; v1 has no such instruction.
+   * Hard-coded at 100 bps (1.0%) for v2. Stored on-chain so a future
+   * migration could in principle change it via a new instruction; v2 has
+   * no such instruction.
    */
   protocolFeeBps: number;
   /**
-   * Hard cap for private-pool creator fee (500 bps = 5%). Used by
-   * `create_private_pool` validation in step 8.
+   * Hard cap for private-pool creator fee (3000 bps = 30%) for v2. Used by
+   * `create_private_pool` validation.
    */
   maxCreatorFeeBps: number;
   /**
@@ -77,19 +78,20 @@ export type ProtocolConfig = {
 
 export type ProtocolConfigArgs = {
   /**
-   * Squads multisig 2-of-3 pubkey. Receives the 0.5% protocol fee on every
+   * Squads multisig 2-of-3 pubkey. Receives the 1% protocol fee on every
    * fulfilled draw. The program never treats this as a signer — only a
    * transfer destination.
    */
   treasury: Address;
   /**
-   * Hard-coded at 50 bps (0.5%). Stored on-chain so a future migration could
-   * in principle change it via a new instruction; v1 has no such instruction.
+   * Hard-coded at 100 bps (1.0%) for v2. Stored on-chain so a future
+   * migration could in principle change it via a new instruction; v2 has
+   * no such instruction.
    */
   protocolFeeBps: number;
   /**
-   * Hard cap for private-pool creator fee (500 bps = 5%). Used by
-   * `create_private_pool` validation in step 8.
+   * Hard cap for private-pool creator fee (3000 bps = 30%) for v2. Used by
+   * `create_private_pool` validation.
    */
   maxCreatorFeeBps: number;
   /**

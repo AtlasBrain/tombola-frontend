@@ -16,15 +16,19 @@ import {
 } from "@solana/kit";
 
 /**
- * Two access modes for private pools (spec lines 54, 87–89):
+ * Three access modes for private pools (spec lines 54, 87–89; Plan 1.5):
  * - `WhitelistMode`: redeeming a code marks the buyer's wallet as
  * whitelisted; they can then buy unlimited tickets in this pool.
  * - `OneCodePerTicket`: each code redemption mints exactly one ticket; the
  * code is burned. The buyer never has a separate "whitelisted" PDA.
+ * - `PublicMode`: no access codes required; any wallet may buy tickets
+ * directly via `buy_ticket_public_mode`. `merkle_root` MUST be all-zero
+ * at create time (enforced by `create_private_pool`).
  */
 export enum AccessMode {
   WhitelistMode,
   OneCodePerTicket,
+  PublicMode,
 }
 
 export type AccessModeArgs = AccessMode;

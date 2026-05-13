@@ -46,6 +46,7 @@ import {
   getSettleDrawPrivateInstruction,
   getCloseEmptyPrivatePoolInstruction,
   getVoidInviteCodeInstruction,
+  getBuyTicketPublicModeInstruction,
   // account fetchers
   fetchProtocolConfig,
   fetchPublicPool,
@@ -577,6 +578,36 @@ export class RaffleClient {
         redemptionRecord,
         code: args.code,
         proof: args.proof,
+      },
+      { programAddress: this.programId },
+    );
+  }
+
+  /**
+   * v2.1 PublicMode: any wallet can buy tickets in a PublicMode pool with
+   * one signature — no invite code redemption required.
+   *
+   * Caller must provide the current `pool.total_tickets` value (used to
+   * derive the TicketBatch PDA). Fetch the pool account before constructing
+   * this instruction.
+   */
+  async buyTicketPublicMode(args: {
+    buyer: TransactionSigner;
+    pool: Address;
+    totalTickets: bigint;
+    quantity: bigint;
+  }): Promise<Instruction> {
+    const [ticketBatch] = await findTicketBatchPda(
+      this.programId,
+      args.pool,
+      args.totalTickets,
+    );
+    return getBuyTicketPublicModeInstruction(
+      {
+        pool: args.pool,
+        ticketBatch,
+        buyer: args.buyer,
+        quantity: args.quantity,
       },
       { programAddress: this.programId },
     );

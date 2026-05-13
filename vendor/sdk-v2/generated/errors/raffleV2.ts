@@ -64,6 +64,10 @@ export const RAFFLE_V2_ERROR__NON_EMPTY_POOL = 0x1786; // 6022
 export const RAFFLE_V2_ERROR__NOT_POOL_CREATOR = 0x1787; // 6023
 /** PoolNotActiveForVoid: Cannot void a code after pool has been drawn or settled */
 export const RAFFLE_V2_ERROR__POOL_NOT_ACTIVE_FOR_VOID = 0x1788; // 6024
+/** MerkleRootMustBeZeroForPublic: merkle_root must be all-zero for PublicMode pools */
+export const RAFFLE_V2_ERROR__MERKLE_ROOT_MUST_BE_ZERO_FOR_PUBLIC = 0x1789; // 6025
+/** PoolNotInPublicMode: This instruction requires a PublicMode pool */
+export const RAFFLE_V2_ERROR__POOL_NOT_IN_PUBLIC_MODE = 0x178a; // 6026
 
 export type RaffleV2Error =
   | typeof RAFFLE_V2_ERROR__CREATOR_FEE_TOO_HIGH
@@ -74,6 +78,7 @@ export type RaffleV2Error =
   | typeof RAFFLE_V2_ERROR__INVALID_POOL_TYPE
   | typeof RAFFLE_V2_ERROR__INVALID_RANDOMNESS_ACCOUNT
   | typeof RAFFLE_V2_ERROR__INVALID_TICKET_PRICE
+  | typeof RAFFLE_V2_ERROR__MERKLE_ROOT_MUST_BE_ZERO_FOR_PUBLIC
   | typeof RAFFLE_V2_ERROR__NON_EMPTY_POOL
   | typeof RAFFLE_V2_ERROR__NOT_POOL_CREATOR
   | typeof RAFFLE_V2_ERROR__OVERFLOW
@@ -81,6 +86,7 @@ export type RaffleV2Error =
   | typeof RAFFLE_V2_ERROR__POOL_NOT_ACTIVE_FOR_VOID
   | typeof RAFFLE_V2_ERROR__POOL_NOT_AWAITING_VRF
   | typeof RAFFLE_V2_ERROR__POOL_NOT_CLOSED
+  | typeof RAFFLE_V2_ERROR__POOL_NOT_IN_PUBLIC_MODE
   | typeof RAFFLE_V2_ERROR__POOL_NOT_OPEN
   | typeof RAFFLE_V2_ERROR__PREVIOUS_ROUND_NOT_RESOLVED
   | typeof RAFFLE_V2_ERROR__RANDOMNESS_ACCOUNT_MISMATCH
@@ -103,6 +109,7 @@ if (process.env["NODE_ENV"] !== "production") {
     [RAFFLE_V2_ERROR__INVALID_POOL_TYPE]: `Invalid pool type — must be 0..=3 (Weekly/Biweekly/Triweekly/Monthly)`,
     [RAFFLE_V2_ERROR__INVALID_RANDOMNESS_ACCOUNT]: `Switchboard randomness account is malformed or has wrong discriminator`,
     [RAFFLE_V2_ERROR__INVALID_TICKET_PRICE]: `Ticket price must be greater than zero`,
+    [RAFFLE_V2_ERROR__MERKLE_ROOT_MUST_BE_ZERO_FOR_PUBLIC]: `merkle_root must be all-zero for PublicMode pools`,
     [RAFFLE_V2_ERROR__NON_EMPTY_POOL]: `close_empty_private_pool requires total_tickets == 0`,
     [RAFFLE_V2_ERROR__NOT_POOL_CREATOR]: `Caller is not the pool creator`,
     [RAFFLE_V2_ERROR__OVERFLOW]: `Arithmetic overflow`,
@@ -110,6 +117,7 @@ if (process.env["NODE_ENV"] !== "production") {
     [RAFFLE_V2_ERROR__POOL_NOT_ACTIVE_FOR_VOID]: `Cannot void a code after pool has been drawn or settled`,
     [RAFFLE_V2_ERROR__POOL_NOT_AWAITING_VRF]: `Pool is not in AwaitingVrf state`,
     [RAFFLE_V2_ERROR__POOL_NOT_CLOSED]: `Pool's close_time has not yet passed`,
+    [RAFFLE_V2_ERROR__POOL_NOT_IN_PUBLIC_MODE]: `This instruction requires a PublicMode pool`,
     [RAFFLE_V2_ERROR__POOL_NOT_OPEN]: `Pool is not in the Open state`,
     [RAFFLE_V2_ERROR__PREVIOUS_ROUND_NOT_RESOLVED]: `Previous round must be in Resolved state before reopen`,
     [RAFFLE_V2_ERROR__RANDOMNESS_ACCOUNT_MISMATCH]: `Provided randomness account does not match the one stored at commit time`,

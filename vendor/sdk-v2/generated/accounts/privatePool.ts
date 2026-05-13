@@ -74,7 +74,7 @@ export type PrivatePool = {
   openTime: bigint;
   closeTime: bigint;
   ticketPrice: bigint;
-  /** 0–500 bps. Hard-capped at `MAX_CREATOR_FEE_BPS` at create time. */
+  /** 0–3000 bps. Hard-capped at `MAX_CREATOR_FEE_BPS` at create time. */
   creatorFeeBps: number;
   accessMode: AccessMode;
   /** Merkle root of the keccak256-double-hashed code set (D-046, D-047). */
@@ -96,7 +96,7 @@ export type PrivatePoolArgs = {
   openTime: number | bigint;
   closeTime: number | bigint;
   ticketPrice: number | bigint;
-  /** 0–500 bps. Hard-capped at `MAX_CREATOR_FEE_BPS` at create time. */
+  /** 0–3000 bps. Hard-capped at `MAX_CREATOR_FEE_BPS` at create time. */
   creatorFeeBps: number;
   accessMode: AccessModeArgs;
   /** Merkle root of the keccak256-double-hashed code set (D-046, D-047). */
