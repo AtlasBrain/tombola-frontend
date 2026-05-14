@@ -11,7 +11,7 @@ const TENANT_POOLS_KEY = (slug: string) => `raas:tenant:${slug}:pools`;
 export interface AttributePoolInput {
   pool_pubkey: string;
   tenant_slug: string;
-  created_via: "manual";
+  created_via: "manual" | "recurring";
 }
 
 export async function attributePool(input: AttributePoolInput): Promise<void> {

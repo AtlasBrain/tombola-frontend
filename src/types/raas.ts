@@ -23,6 +23,12 @@ export interface TenantLimits {
   max_monthly_pot_lamports: number; // default 1_000_000_000_000 (1k SOL)
 }
 
+export interface DelegatedSigner {
+  pubkey: string; // base58
+  created_at: string;
+  revoked_at: string | null;
+}
+
 export interface Tenant {
   slug: string;
   display_name: string;
@@ -34,10 +40,30 @@ export interface Tenant {
   branding: TenantBranding;
   features: TenantFeatures;
   limits: TenantLimits;
+  delegated_signer?: DelegatedSigner | null;
 }
 
 export interface PoolAttribution {
   tenant_slug: string;
   created_at: string;
-  created_via: "manual"; // MVP: only manual; "recurring" added in Plan 3
+  created_via: "manual" | "recurring";
+}
+
+export interface Schedule {
+  schedule_id: string;
+  tenant_slug: string;
+  cadence: "daily" | "weekly" | "biweekly" | "monthly";
+  day_of_week: number | null; // 0-6 (Sun-Sat) for weekly/biweekly
+  hour_utc: number; // 0-23
+  template: {
+    name_template: string; // e.g. "MrBeast Weekly #{n}"
+    ticket_price_lamports: number;
+    duration_seconds: number;
+    creator_fee_bps: number;
+    gating_mode: "public" | "whitelisted";
+    invite_count: number | null;
+  };
+  next_run_at: string; // ISO8601
+  status: "active" | "paused";
+  run_count: number;
 }
