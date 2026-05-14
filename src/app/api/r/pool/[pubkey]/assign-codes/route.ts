@@ -24,6 +24,7 @@ import "server-only";
 import { Redis } from "@upstash/redis";
 import { verifySignedAction } from "@/lib/raas/signed-action";
 import { getTenant } from "@/lib/raas/tenant";
+import { postToDiscord, hexToDecimal } from "@/lib/raas/discord-webhook";
 
 const redis = Redis.fromEnv();
 
@@ -122,6 +123,19 @@ export async function POST(
     // Cap the list to 50 entries per wallet to prevent unbounded growth.
     await redis.ltrim(PENDING_INVITES_KEY(a.friend_wallet), 0, 49);
   }
+
+  // Discord webhook — fires once per batch (not per assignment) to avoid spam.
+  await postToDiscord(tenant.integrations?.discord_webhook_url, {
+    embeds: [
+      {
+        title: `${tenant.display_name} — invite codes assigned`,
+        description: `**${body.assignments.length}** invite code(s) assigned for pool \`${pubkey.slice(0, 8)}…\`.`,
+        url: `${baseUrl}/r/${body.tenant_slug}/pool/${pubkey}`,
+        color: hexToDecimal(tenant.branding.primary_color),
+        timestamp: createdAt,
+      },
+    ],
+  });
 
   return NextResponse.json({ ok: true, assigned: body.assignments.length });
 }

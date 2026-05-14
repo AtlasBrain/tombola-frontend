@@ -29,6 +29,11 @@ export interface DelegatedSigner {
   revoked_at: string | null;
 }
 
+export interface TenantIntegrations {
+  /** Discord Incoming Webhook URL. Set via AdminSettings / PATCH /api/r/tenant/[slug]/integrations. */
+  discord_webhook_url?: string;
+}
+
 export interface Tenant {
   slug: string;
   display_name: string;
@@ -41,6 +46,8 @@ export interface Tenant {
   features: TenantFeatures;
   limits: TenantLimits;
   delegated_signer?: DelegatedSigner | null;
+  /** Optional third-party integration settings. Added in Plan 3 Phase G. */
+  integrations?: TenantIntegrations;
 }
 
 export interface PoolAttribution {

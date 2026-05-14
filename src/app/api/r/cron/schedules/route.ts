@@ -14,6 +14,7 @@ import { listDueSchedules, advanceSchedule } from "@/lib/raas/schedule";
 import { getTenant } from "@/lib/raas/tenant";
 import { loadDelegatedKey } from "@/lib/raas/delegated-key";
 import { attributePool } from "@/lib/raas/pool-attribution";
+import { postToDiscord, hexToDecimal } from "@/lib/raas/discord-webhook";
 
 const redis = Redis.fromEnv();
 const TENANT_CODE_KEY = (slug: string) => `raas:tenant:${slug}:code_key`;
@@ -170,6 +171,22 @@ export async function POST(req: Request) {
         `notifications:${tenant.owner_wallet}`,
         JSON.stringify(notif),
       );
+
+      // Discord webhook — fires if the tenant has configured one.
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ??
+        "https://tombola.app";
+      await postToDiscord(tenant.integrations?.discord_webhook_url, {
+        embeds: [
+          {
+            title: `${tenant.display_name} — new raffle created`,
+            description: `**${poolName}** fired from your recurring schedule.`,
+            url: `${baseUrl}/r/${tenant.slug}/pool/${poolPda.toBase58()}`,
+            color: hexToDecimal(tenant.branding.primary_color),
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      });
 
       results.push({
         schedule_id: schedule.schedule_id,

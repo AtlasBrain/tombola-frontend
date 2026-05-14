@@ -22,6 +22,14 @@ export function AdminSettings({ tenant }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Discord webhook state
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState<string>(
+    tenant.integrations?.discord_webhook_url ?? "",
+  );
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [webhookSaved, setWebhookSaved] = useState(false);
+  const [webhookError, setWebhookError] = useState<string | null>(null);
+
   async function revokeKey() {
     if (!signer.publicKey || !signer.signMessage) return;
     setRevoking(true);
@@ -58,6 +66,45 @@ export function AdminSettings({ tenant }: Props) {
       setRevokeError(e instanceof Error ? e.message : String(e));
     } finally {
       setRevoking(false);
+    }
+  }
+
+  async function saveWebhook() {
+    if (!signer.publicKey || !signer.signMessage) return;
+    setSavingWebhook(true);
+    setWebhookError(null);
+    setWebhookSaved(false);
+    try {
+      const bs58 = (await import("bs58")).default;
+      const context = `update_integrations:${tenant.slug}`;
+
+      const nonceRes = await fetch(
+        `/api/r/signed-nonce?context=${encodeURIComponent(context)}`,
+      );
+      if (!nonceRes.ok) throw new Error("nonce_failed");
+      const { nonce } = (await nonceRes.json()) as { nonce: string };
+
+      const msg = new TextEncoder().encode(`tombola:${context}:${nonce}`);
+      const sigBytes = await signer.signMessage(msg);
+      const signature = bs58.encode(sigBytes);
+
+      const res = await fetch(`/api/r/tenant/${tenant.slug}/integrations`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          discord_webhook_url: discordWebhookUrl || null,
+          signed_proof: { nonce, signature },
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? "save_failed");
+      }
+      setWebhookSaved(true);
+    } catch (e) {
+      setWebhookError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSavingWebhook(false);
     }
   }
 
@@ -134,6 +181,44 @@ export function AdminSettings({ tenant }: Props) {
             onProvisioned={(pk) => setDelegatedPubkey(pk)}
           />
         )}
+      </section>
+
+      {/* Discord webhook section */}
+      <section className="space-y-3 border-t border-white/10 pt-6">
+        <h2 className="text-lg font-semibold">Discord webhook</h2>
+        <p className="text-sm opacity-60">
+          Paste a Discord Incoming Webhook URL to receive notifications when
+          new pools are created and invite codes are assigned.
+        </p>
+        <input
+          type="url"
+          value={discordWebhookUrl}
+          onChange={(e) => {
+            setDiscordWebhookUrl(e.target.value);
+            setWebhookSaved(false);
+            setWebhookError(null);
+          }}
+          placeholder="https://discord.com/api/webhooks/…"
+          className="w-full rounded-md border border-white/10 bg-neutral-900 px-3 py-2 text-sm font-mono focus:outline-none focus:border-white/30"
+        />
+        {webhookError && (
+          <div className="rounded-md bg-red-500/10 border border-red-500/30 p-2 text-red-200 text-sm">
+            {webhookError}
+          </div>
+        )}
+        {webhookSaved && (
+          <div className="rounded-md bg-green-500/10 border border-green-500/30 p-2 text-green-200 text-sm">
+            Webhook saved.
+          </div>
+        )}
+        <button
+          onClick={saveWebhook}
+          disabled={savingWebhook || !signer.publicKey}
+          className="px-4 py-2 rounded-md text-black text-sm font-semibold disabled:opacity-40 transition"
+          style={{ background: tenant.branding.primary_color }}
+        >
+          {savingWebhook ? "Saving…" : "Save webhook"}
+        </button>
       </section>
 
       {/* Danger zone */}
