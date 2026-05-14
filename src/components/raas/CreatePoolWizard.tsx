@@ -37,7 +37,11 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [priceSol, setPriceSol] = useState(0.1);
+  // String-backed input so the user can freely backspace/edit (a number-backed
+  // controlled input with parseFloat falls back to 0 on empty string, which
+  // leaves "0" stuck in the field as the user tries to type).
+  const [priceSolStr, setPriceSolStr] = useState("0.1");
+  const priceSol = parseFloat(priceSolStr) || 0;
   const [duration, setDuration] = useState(86400);
   const [creatorFeeBps, setCreatorFeeBps] = useState(500);
   const [mode, setMode] = useState<PoolMode>("public");
@@ -264,14 +268,24 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
       <label className="block">
         <span className="text-sm">Ticket price (SOL)</span>
         <input
-          type="number"
-          step="0.001"
-          min="0.001"
-          value={priceSol}
-          onChange={(e) => setPriceSol(parseFloat(e.target.value) || 0)}
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          value={priceSolStr}
+          onChange={(e) => {
+            // Allow digits + a single decimal point only.
+            const v = e.target.value.replace(/[^0-9.]/g, "");
+            const parts = v.split(".");
+            const sanitized =
+              parts.length > 1
+                ? parts[0] + "." + parts.slice(1).join("")
+                : v;
+            setPriceSolStr(sanitized);
+          }}
+          placeholder="0.1"
           className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
         />
-        {solUsd > 0 && (
+        {solUsd > 0 && priceSol > 0 && (
           <span className="text-xs opacity-60">≈ ${priceUsd} USD</span>
         )}
       </label>
