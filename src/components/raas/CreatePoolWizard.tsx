@@ -65,6 +65,32 @@ export function CreatePoolWizard({ tenant, solUsd }: Props) {
     setSubmitting(true);
     setError(null);
     try {
+      // Pre-check: verify tenant limits before submitting on-chain.
+      const limitRes = await fetch(`/api/r/tenant/${tenant.slug}/check-can-create`);
+      if (limitRes.status === 404) {
+        setError("Tenant not found.");
+        return;
+      }
+      const limitData = (await limitRes.json()) as
+        | { ok: true }
+        | { ok: false; reason: string; limit?: number; current?: number };
+      if (!limitData.ok) {
+        const reason = limitData.reason;
+        if (reason === "tenant_suspended") {
+          setError("Your account is suspended. Contact support.");
+        } else if (reason === "max_active_pools_reached") {
+          const d = limitData as { ok: false; reason: string; limit?: number; current?: number };
+          setError(
+            `Active pool limit reached (${d.current ?? "?"}/${d.limit ?? "?"}). Close or settle an existing raffle first.`,
+          );
+        } else if (reason === "monthly_volume_cap_reached") {
+          setError("Monthly pot volume cap reached. Contact support to increase your limit.");
+        } else {
+          setError(`Cannot create raffle: ${reason}`);
+        }
+        return;
+      }
+
       // Determine access mode and generate codes/root for Whitelisted pools.
       let merkleRoot = new Uint8Array(32);
       let codes: string[] = [];
