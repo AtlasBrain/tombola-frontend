@@ -18,6 +18,7 @@ import { postToDiscord, hexToDecimal } from "@/lib/raas/discord-webhook";
 
 const redis = Redis.fromEnv();
 const TENANT_CODE_KEY = (slug: string) => `raas:tenant:${slug}:code_key`;
+const SCHEDULE_LOCK_KEY = (id: string) => `raas:schedule:${id}:lock`;
 
 /**
  * Inline Kit→web3.js instruction converter.
@@ -58,6 +59,20 @@ export async function POST(req: Request) {
   const conn = new Connection(rpcUrl, "confirmed");
 
   for (const schedule of due) {
+    // Distributed lock: prevent double-fire if two cron invocations overlap.
+    // SET NX EX 60 — only one invocation wins; losers skip, lock auto-expires
+    // on failure so the next cron window can retry.
+    const lockKey = SCHEDULE_LOCK_KEY(schedule.schedule_id);
+    const locked = await redis.set(lockKey, "1", { nx: true, ex: 60 });
+    if (!locked) {
+      results.push({
+        schedule_id: schedule.schedule_id,
+        status: "skipped",
+        reason: "concurrent_lock",
+      });
+      continue;
+    }
+
     try {
       const tenant = await getTenant(schedule.tenant_slug);
       if (
@@ -158,6 +173,9 @@ export async function POST(req: Request) {
 
       // Advance the schedule to its next firing time.
       await advanceSchedule(schedule.schedule_id);
+      // Explicit lock release on success. On failure the lock auto-expires
+      // after 60s — intentionally NOT deleted to prevent immediate retry storms.
+      await redis.del(lockKey);
 
       // Notify tenant owner in-app.
       const notif = {
