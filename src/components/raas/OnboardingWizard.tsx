@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useRouter } from "next/navigation";
 import { slugify, isValidSlug } from "@/lib/raas/slug";
 
@@ -16,7 +17,8 @@ const FONT_PAIRS = [
 ] as const;
 
 export function OnboardingWizard() {
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, disconnect } = useWallet();
+  const { setVisible: setWalletModalVisible } = useWalletModal();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("wallet");
@@ -110,14 +112,37 @@ export function OnboardingWizard() {
       {step === "wallet" && (
         <div className="space-y-4">
           <p>First, connect the wallet that will own this raffle space. That wallet receives all creator fees.</p>
-          <p className="opacity-60 text-sm">{connected ? `Connected: ${publicKey?.toBase58().slice(0, 8)}…` : "Not connected"}</p>
-          <button
-            disabled={!connected}
-            onClick={nextFromWallet}
-            className="px-4 py-2 rounded-md bg-mint text-black disabled:opacity-30"
-          >
-            Continue
-          </button>
+          {connected && publicKey ? (
+            <div className="space-y-3">
+              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">
+                Connected: <span className="font-mono">{publicKey.toBase58().slice(0, 8)}…{publicKey.toBase58().slice(-4)}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={nextFromWallet}
+                  className="px-4 py-2 rounded-md bg-mint text-black font-semibold"
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={() => disconnect()}
+                  className="px-4 py-2 rounded-md border border-white/20 text-sm opacity-70 hover:opacity-100"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="opacity-60 text-sm">Not connected</p>
+              <button
+                onClick={() => setWalletModalVisible(true)}
+                className="px-4 py-2 rounded-md bg-mint text-black font-semibold"
+              >
+                Connect wallet
+              </button>
+            </div>
+          )}
         </div>
       )}
 
