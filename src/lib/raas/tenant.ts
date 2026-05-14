@@ -107,6 +107,17 @@ export async function _setStatus(
   await redis.set(TENANT_KEY(slug), t);
 }
 
+/**
+ * Soft-deletes a tenant by setting status to "deleted".
+ * Slug reservation is retained so it cannot be re-registered.
+ */
+export async function softDeleteTenant(slug: string): Promise<void> {
+  const t = await getTenant(slug);
+  if (!t) throw new Error(`tenant not found: ${slug}`);
+  t.status = "deleted";
+  await redis.set(TENANT_KEY(slug), t);
+}
+
 const ACTIVE_WHITELISTED_POOL_KEY = (slug: string) =>
   `raas:tenant:${slug}:active_whitelisted_pool`;
 

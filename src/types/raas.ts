@@ -1,6 +1,6 @@
 // src/types/raas.ts — RaaS tenant type definitions.
 
-export type TenantStatus = "active" | "suspended";
+export type TenantStatus = "active" | "suspended" | "deleted";
 
 export interface TenantBranding {
   logo_url: string | null;
