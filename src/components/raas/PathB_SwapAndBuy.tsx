@@ -64,20 +64,17 @@ export function PathB_SwapAndBuy(props: Props) {
       });
       const buyInstruction = kitToWeb3(kitIx);
 
-      // 2) Determine input amount: use the available stable balance, capped to
-      //    110% of what we need (slippage margin). Jupiter swap is ExactIn.
+      // 2) ExactOut: ask Jupiter for exactly priceLamports of SOL output.
+      //    Jupiter sizes the USDC/USDT input; leftover stable stays in wallet.
+      //    500 bps (5%) slippage buffer covers volatile quotes.
       const SOL_MINT = "So11111111111111111111111111111111111111112";
-      // We ask Jupiter to send exactly priceLamports out (ExactOut via input sizing).
-      // For MVP use ExactIn with the stable balance capped to an estimate.
-      const stableBalance = useUsdc
-        ? props.balances.usdc_atoms
-        : props.balances.usdt_atoms;
 
       const quote = await getSwapQuote({
         inputMint,
         outputMint: SOL_MINT,
-        amount: stableBalance.toString(),
-        slippageBps: 100, // 1%
+        amount: props.ticketPriceLamports, // desired SOL output in lamports
+        slippageBps: 500,                 // 5% slippage buffer
+        swapMode: "ExactOut",
       });
 
       const swapIxs = await getSwapInstructions({
