@@ -3,6 +3,7 @@
 import { notFound } from "next/navigation";
 import { getTenant } from "@/lib/raas/tenant";
 import { TenantProvider } from "@/components/raas/TenantContext";
+import { RaasNotificationListener } from "@/components/raas/RaasNotificationListener";
 
 export default async function TenantLayout({
   children,
@@ -30,7 +31,10 @@ export default async function TenantLayout({
           `,
         }}
       />
-      <TenantProvider tenant={tenant}>{children}</TenantProvider>
+      <TenantProvider tenant={tenant}>
+        {children}
+        <RaasNotificationListener />
+      </TenantProvider>
     </>
   );
 }
