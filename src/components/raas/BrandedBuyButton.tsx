@@ -35,10 +35,19 @@ export function BrandedBuyButton({
   const { publicKey, signTransaction } = useUnifiedSigner();
   const { setVisible: setWalletModalVisible } = useWalletModal();
 
-  const [qty, setQty] = useState<number>(1);
+  // Track the raw input string so the user can freely backspace / clear
+  // mid-edit. Derive the numeric `qty` on the fly; only enforce bounds at
+  // submit time (and via `onBlur` to snap empty/invalid back to MIN_QTY).
+  const [qtyInput, setQtyInput] = useState<string>("1");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const parsedQty = parseInt(qtyInput, 10);
+  const qty =
+    isNaN(parsedQty) || parsedQty < MIN_QTY
+      ? MIN_QTY
+      : Math.min(MAX_QTY, parsedQty);
 
   const priceLamports = BigInt(ticketPriceLamports);
   const totalLamports = priceLamports * BigInt(qty);
@@ -113,10 +122,13 @@ export function BrandedBuyButton({
           type="number"
           min={MIN_QTY}
           max={MAX_QTY}
-          value={qty}
-          onChange={(e) => {
-            const v = parseInt(e.target.value, 10);
-            if (!isNaN(v)) setQty(Math.max(MIN_QTY, Math.min(MAX_QTY, v)));
+          value={qtyInput}
+          onChange={(e) => setQtyInput(e.target.value)}
+          onBlur={() => {
+            // Snap empty/invalid/out-of-range back to a valid number on blur.
+            const n = parseInt(qtyInput, 10);
+            if (isNaN(n) || n < MIN_QTY) setQtyInput(String(MIN_QTY));
+            else if (n > MAX_QTY) setQtyInput(String(MAX_QTY));
           }}
           className="w-20 rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-center text-sm"
           disabled={busy}
