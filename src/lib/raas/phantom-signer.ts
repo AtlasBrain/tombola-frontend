@@ -4,6 +4,14 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { usePhantom, useSolana } from "@phantom/react-sdk";
 import { PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js";
 
+// Phantom Connect is gated by env. When NEXT_PUBLIC_PHANTOM_APP_ID is unset,
+// PhantomConnectProvider in WalletProviders.tsx renders a no-op pass-through,
+// which means usePhantom() / useSolana() would throw "must be used within
+// PhantomProvider". Read the env constant once at module load — it never
+// changes within a process, so the conditional hook calls below are stable
+// across renders (Rules of Hooks compliant).
+const PHANTOM_ENABLED = !!process.env.NEXT_PUBLIC_PHANTOM_APP_ID;
+
 export interface UnifiedSigner {
   publicKey: PublicKey | null;
   signTransaction:
@@ -37,11 +45,20 @@ export interface UnifiedSigner {
  *     → unwrapped to return raw `Uint8Array` to match wallet-adapter's `signMessage`
  */
 export function useUnifiedSigner(): UnifiedSigner {
-  // Wallet-adapter path (existing)
+  // Wallet-adapter path (always available)
   const wa = useWallet();
-  // Phantom Connect path (new)
-  const { isConnected: phantomConnected } = usePhantom();
-  const { solana } = useSolana();
+
+  // Phantom Connect path — only call its hooks when the provider is actually
+  // mounted, otherwise they throw. PHANTOM_ENABLED is a build-time constant,
+  // so this conditional is stable across renders.
+  let phantomConnected = false;
+  let solana: ReturnType<typeof useSolana>["solana"] | null = null;
+  if (PHANTOM_ENABLED) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    phantomConnected = usePhantom().isConnected;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    solana = useSolana().solana;
+  }
 
   if (phantomConnected && solana && solana.publicKey) {
     return {
