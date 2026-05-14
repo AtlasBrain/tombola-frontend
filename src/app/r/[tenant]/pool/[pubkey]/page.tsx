@@ -7,6 +7,7 @@ import { PoweredByTombolaFooter } from "@/components/raas/PoweredByTombolaFooter
 import { FeeBreakdownPanel } from "@/components/raas/FeeBreakdownPanel";
 import { SmartBuyPanel } from "@/components/raas/SmartBuyPanel";
 import { getSolUsd } from "@/lib/raas/sol-usd";
+import { WinnerShareSection } from "@/components/raas/WinnerShareSection";
 
 export const dynamic = "force-dynamic";
 
@@ -127,14 +128,25 @@ export default async function PoolDetailPage({ params }: Props) {
         )}
 
         {pool.winner && (
-          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4">
-            <p className="font-semibold">
-              Winner:{" "}
-              <span className="font-mono">
-                {pool.winner.slice(0, 16)}…
-              </span>
-            </p>
-          </div>
+          <>
+            <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4">
+              <p className="font-semibold">
+                Winner:{" "}
+                <span className="font-mono">
+                  {pool.winner.slice(0, 16)}…
+                </span>
+              </p>
+            </div>
+
+            {/* Post-settle share button — only shown when pool is Resolved with winner */}
+            <WinnerShareSection
+              pubkey={pubkey}
+              tenantSlug={slug}
+              tenantDisplayName={tenant.display_name}
+              winner={pool.winner}
+              potSol={potSol}
+            />
+          </>
         )}
       </main>
       <PoweredByTombolaFooter />
