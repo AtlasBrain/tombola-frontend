@@ -12,7 +12,6 @@ import { listAllTenantSlugs } from "@/lib/raas/tenant";
 import { listTenantPools } from "@/lib/raas/pool-attribution";
 import { fetchPoolState } from "@/lib/raas/pool-fetch";
 import {
-  getMonthlyMetrics,
   currentYearMonth,
   type MonthlyMetrics,
 } from "@/lib/raas/monthly-metrics";
