@@ -1,9 +1,10 @@
 // src/lib/raas/delegated-key.ts — Delegated hot-key store/load helpers.
 //
-// The delegated private key is encrypted at rest using AES-256-GCM with the
-// tenant's code_key (already provisioned in Phase A / Task A3). This means
-// all tenant-owned crypto material lives under one shared encryption key per
-// tenant. The key is never stored or transmitted in plaintext.
+// The delegated private key is encrypted at rest using AES-256-GCM with a
+// dedicated signer_key stored at raas:tenant:{slug}:signer_key. This key is
+// separate from code_key (invite-code encryption) so that a Redis compromise
+// of code_key does not also expose the signing key (defense in depth).
+// The plaintext is never persisted.
 import "server-only";
 import { Redis } from "@upstash/redis";
 import nacl from "tweetnacl";
@@ -13,6 +14,25 @@ const redis = Redis.fromEnv();
 
 const DELEGATED_KEY_PRIVATE = (slug: string) =>
   `raas:tenant:${slug}:delegated_private`;
+
+const SIGNER_KEY = (slug: string) => `raas:tenant:${slug}:signer_key`;
+
+/**
+ * Returns the tenant's signer encryption key, provisioning a fresh 32-byte
+ * random key if one does not yet exist. Existing tenants without a signer_key
+ * get one created lazily on their next POST to /delegated-key.
+ */
+export async function getOrProvisionSignerKey(
+  slug: string,
+): Promise<Uint8Array> {
+  let b64 = await redis.get<string>(SIGNER_KEY(slug));
+  if (!b64) {
+    const fresh = crypto.getRandomValues(new Uint8Array(32));
+    b64 = Buffer.from(fresh).toString("base64");
+    await redis.set(SIGNER_KEY(slug), b64);
+  }
+  return new Uint8Array(Buffer.from(b64, "base64"));
+}
 
 // ── AES-GCM helpers ───────────────────────────────────────────────────────────
 

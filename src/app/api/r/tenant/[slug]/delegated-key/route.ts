@@ -4,12 +4,11 @@ import { Redis } from "@upstash/redis";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import { getTenant } from "@/lib/raas/tenant";
-import { storeDelegatedKey } from "@/lib/raas/delegated-key";
+import { storeDelegatedKey, getOrProvisionSignerKey } from "@/lib/raas/delegated-key";
 import { verifySignedAction } from "@/lib/raas/signed-action";
 
 const redis = Redis.fromEnv();
 const TENANT_KEY = (slug: string) => `raas:tenant:${slug}`;
-const TENANT_CODE_KEY = (slug: string) => `raas:tenant:${slug}:code_key`;
 const DELEGATED_KEY_PRIVATE = (slug: string) =>
   `raas:tenant:${slug}:delegated_private`;
 
@@ -63,18 +62,13 @@ export async function POST(
     return NextResponse.json({ error: "bad_signature" }, { status: 403 });
   }
 
-  // Lazily provision the tenant's code_key (shared encryption key).
-  let keyB64 = await redis.get<string>(TENANT_CODE_KEY(slug));
-  if (!keyB64) {
-    const fresh = crypto.getRandomValues(new Uint8Array(32));
-    keyB64 = Buffer.from(fresh).toString("base64");
-    await redis.set(TENANT_CODE_KEY(slug), keyB64);
-  }
-  const codeKey = new Uint8Array(Buffer.from(keyB64, "base64"));
+  // Lazily provision a dedicated signer_key — separate from code_key so that
+  // a Redis compromise of invite-code material does not also expose the signing key.
+  const signerKey = await getOrProvisionSignerKey(slug);
 
   // Encrypt + store the private key (never stored plaintext).
   const privBytes = new Uint8Array(Buffer.from(body.private_key_b64, "base64"));
-  await storeDelegatedKey(slug, privBytes, codeKey);
+  await storeDelegatedKey(slug, privBytes, signerKey);
 
   // Update tenant record with delegated signer metadata.
   tenant.delegated_signer = {

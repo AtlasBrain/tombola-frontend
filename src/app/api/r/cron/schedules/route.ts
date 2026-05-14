@@ -12,12 +12,11 @@ import type { Instruction } from "@solana/kit";
 
 import { listDueSchedules, advanceSchedule } from "@/lib/raas/schedule";
 import { getTenant } from "@/lib/raas/tenant";
-import { loadDelegatedKey } from "@/lib/raas/delegated-key";
+import { loadDelegatedKey, getOrProvisionSignerKey } from "@/lib/raas/delegated-key";
 import { attributePool } from "@/lib/raas/pool-attribution";
 import { postToDiscord, hexToDecimal } from "@/lib/raas/discord-webhook";
 
 const redis = Redis.fromEnv();
-const TENANT_CODE_KEY = (slug: string) => `raas:tenant:${slug}:code_key`;
 const SCHEDULE_LOCK_KEY = (id: string) => `raas:schedule:${id}:lock`;
 
 /**
@@ -88,20 +87,10 @@ export async function POST(req: Request) {
         continue;
       }
 
-      // Load + decrypt the delegated private key.
-      const codeKeyB64 = await redis.get<string>(
-        TENANT_CODE_KEY(schedule.tenant_slug),
-      );
-      if (!codeKeyB64) {
-        results.push({
-          schedule_id: schedule.schedule_id,
-          status: "failed",
-          reason: "no_code_key",
-        });
-        continue;
-      }
-      const codeKey = new Uint8Array(Buffer.from(codeKeyB64, "base64"));
-      const privBytes = await loadDelegatedKey(schedule.tenant_slug, codeKey);
+      // Load + decrypt the delegated private key using the dedicated signer_key
+      // (separate from code_key — defense in depth for Redis compromise).
+      const signerKey = await getOrProvisionSignerKey(schedule.tenant_slug);
+      const privBytes = await loadDelegatedKey(schedule.tenant_slug, signerKey);
       if (!privBytes) {
         results.push({
           schedule_id: schedule.schedule_id,
