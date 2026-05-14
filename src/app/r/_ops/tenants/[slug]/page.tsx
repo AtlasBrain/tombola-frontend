@@ -4,6 +4,11 @@
 //
 // Actions: Suspend, Reactivate, Revoke delegation, Override limits.
 // Each action requires a signed nonce (ops_action context) from the operator wallet.
+//
+// GET also requires a signed nonce (read_tenant:{slug} context) matching the
+// PATCH auth pattern — prevents unauthenticated reads of tenant detail.
+
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
@@ -29,11 +34,29 @@ export default function OpsTenantDetailPage({
   const [maxMonthlyPot, setMaxMonthlyPot] = useState(1_000_000_000_000);
 
   useEffect(() => {
-    if (!signer.publicKey) return;
+    if (!signer.publicKey || !signer.signMessage) return;
+    const walletB58 = signer.publicKey.toBase58();
     setLoading(true);
-    fetch(
-      `/api/r/_ops/tenants/${slug}?operator_wallet=${signer.publicKey.toBase58()}`,
-    )
+
+    // GET requires a signed nonce matching the PATCH auth pattern.
+    // 1. Issue nonce bound to read_tenant:{slug}.
+    // 2. Sign tombola:read_tenant:{slug}:{nonce} with operator wallet.
+    // 3. Pass wallet + nonce + signature as query params.
+    const context = `read_tenant:${slug}`;
+    fetch(`/api/r/signed-nonce?context=${encodeURIComponent(context)}`)
+      .then(async (r) => {
+        if (!r.ok) throw new Error("nonce_failed");
+        const { nonce } = (await r.json()) as { nonce: string };
+        const msg = new TextEncoder().encode(`tombola:${context}:${nonce}`);
+        const sigRaw = await signer.signMessage!(msg);
+        const signature = bs58.encode(sigRaw);
+        return fetch(
+          `/api/r/_ops/tenants/${slug}` +
+            `?wallet=${encodeURIComponent(walletB58)}` +
+            `&nonce=${encodeURIComponent(nonce)}` +
+            `&signature=${encodeURIComponent(signature)}`,
+        );
+      })
       .then((r) => r.json())
       .then((data: { tenant?: Tenant; error?: string }) => {
         if (data.error) setError(data.error);
@@ -45,7 +68,7 @@ export default function OpsTenantDetailPage({
       })
       .catch((e: unknown) => setError(String(e)))
       .finally(() => setLoading(false));
-  }, [slug, signer.publicKey]);
+  }, [slug, signer.publicKey, signer.signMessage]);
 
   async function runAction(
     action: string,

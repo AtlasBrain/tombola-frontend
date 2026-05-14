@@ -1,5 +1,9 @@
 // src/app/api/r/_ops/tenants/[slug]/route.ts — Operator tenant detail + PATCH actions.
 //
+// GET query params: wallet, nonce, signature
+//   wallet must be an operator; nonce + signature verified against
+//   context=read_tenant:{slug} (single-use, 5 min TTL).
+//
 // PATCH body: {
 //   action: "suspend" | "reactivate" | "revoke_delegation" | "override_limits",
 //   reason?: string,
@@ -28,9 +32,24 @@ export async function GET(
 ) {
   const { slug } = await params;
   const url = new URL(req.url);
-  const wallet = url.searchParams.get("operator_wallet");
-  if (!wallet || !isOperator(wallet)) {
+  const wallet = url.searchParams.get("wallet");
+  const nonce = url.searchParams.get("nonce");
+  const signature = url.searchParams.get("signature");
+
+  if (!wallet || !nonce || !signature) {
+    return NextResponse.json({ error: "missing_auth_params" }, { status: 400 });
+  }
+  if (!isOperator(wallet)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 });
+  }
+  const verified = await verifySignedAction({
+    wallet,
+    nonce,
+    signature,
+    context: `read_tenant:${slug}`,
+  });
+  if (!verified) {
+    return NextResponse.json({ error: "invalid_signature" }, { status: 403 });
   }
 
   const tenant = await redis.get<Tenant>(TENANT_KEY(slug));
