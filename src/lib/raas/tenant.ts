@@ -9,6 +9,7 @@ const redis = Redis.fromEnv();
 const TENANT_KEY = (slug: string) => `raas:tenant:${slug}`;
 const SLUG_RESERVATION_KEY = (slug: string) => `raas:slug:${slug}`;
 const OWNER_INDEX_KEY = (wallet: string) => `raas:owner:${wallet}`;
+const TENANTS_INDEX_KEY = "raas:tenants:index";
 
 export interface CreateTenantInput {
   slug: string;
@@ -79,6 +80,14 @@ export async function createTenant(input: CreateTenantInput): Promise<Tenant> {
     await redis.set(OWNER_INDEX_KEY(input.owner_wallet), owned);
   }
 
+  // Global tenant index — used by cron jobs that need to iterate all tenants.
+  const allSlugs =
+    (await redis.get<string[]>(TENANTS_INDEX_KEY)) ?? [];
+  if (!allSlugs.includes(input.slug)) {
+    allSlugs.push(input.slug);
+    await redis.set(TENANTS_INDEX_KEY, allSlugs);
+  }
+
   return tenant;
 }
 
@@ -137,4 +146,9 @@ export async function getActiveWhitelistedPool(
   slug: string,
 ): Promise<string | null> {
   return await redis.get<string>(ACTIVE_WHITELISTED_POOL_KEY(slug));
+}
+
+/** Returns all registered tenant slugs. Used by cron jobs. */
+export async function listAllTenantSlugs(): Promise<string[]> {
+  return (await redis.get<string[]>(TENANTS_INDEX_KEY)) ?? [];
 }

@@ -11,6 +11,10 @@
     {
       "path": "/api/r/cron/schedules",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/r/cron/metrics-rollup",
+      "schedule": "0 * * * *"
     }
   ]
 }
