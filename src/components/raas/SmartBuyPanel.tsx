@@ -32,9 +32,10 @@ export function SmartBuyPanel(props: SmartBuyPanelProps) {
       setBalances(null);
       return;
     }
+
     let cancelled = false;
-    setLoading(true);
-    (async () => {
+
+    async function fetchBalances() {
       try {
         const res = await fetch(
           `/api/r/wallet-balances/${signer.publicKey!.toBase58()}`,
@@ -59,9 +60,20 @@ export function SmartBuyPanel(props: SmartBuyPanelProps) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    // Initial fetch (shows loading spinner on first connect).
+    setLoading(true);
+    void fetchBalances();
+
+    // Poll every 10 s so PathC auto-promotes to PathA after a deposit lands.
+    const intervalId = setInterval(() => {
+      void fetchBalances();
+    }, 10_000);
+
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
   }, [signer.publicKey]);
 
