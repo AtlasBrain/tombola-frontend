@@ -17,8 +17,13 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tenant: slug, pubkey } = await params;
-  const tenant = await getTenant(slug);
-  const pool = await fetchPoolState(pubkey);
+  // Fetch in parallel + swallow errors — metadata generation must NEVER throw,
+  // otherwise the entire page render fails before the page component runs.
+  // We accept stale or missing OG description rather than a broken page.
+  const [tenant, pool] = await Promise.all([
+    getTenant(slug).catch(() => null),
+    fetchPoolState(pubkey).catch(() => null),
+  ]);
   const title = tenant
     ? `${tenant.display_name} Raffle`
     : "Tombola Raffle";
@@ -42,10 +47,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PoolDetailPage({ params }: Props) {
   const { tenant: slug, pubkey } = await params;
 
+  // Wrap each fetch in catch so one failure doesn't take down the whole page.
+  // notFound() below handles missing tenant / pool. RPC errors → null pool →
+  // notFound (better UX than the generic error boundary, since users can hit
+  // refresh on a 404 to retry).
   const [tenant, pool, solUsd] = await Promise.all([
-    getTenant(slug),
-    fetchPoolState(pubkey),
-    getSolUsd(),
+    getTenant(slug).catch(() => null),
+    fetchPoolState(pubkey).catch((err) => {
+      console.error("fetchPoolState failed:", err);
+      return null;
+    }),
+    getSolUsd().catch(() => 0),
   ]);
 
   if (!tenant) notFound();

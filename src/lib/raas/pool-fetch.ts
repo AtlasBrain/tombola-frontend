@@ -51,29 +51,47 @@ function mapPoolState(
 export async function fetchPoolState(
   pool_pubkey: string,
 ): Promise<PoolFetchedState | null> {
-  const rpc = createSolanaRpc(RPC_URL);
-  const poolAddress = address(pool_pubkey);
-  const maybeAccount = await fetchMaybePrivatePool(rpc, poolAddress);
+  try {
+    const rpc = createSolanaRpc(RPC_URL);
+    const poolAddress = address(pool_pubkey);
 
-  if (!maybeAccount.exists) {
+    // 8-second timeout on the RPC fetch so a slow/down devnet endpoint doesn't
+    // hang the page render. Vercel SSR has a hard timeout already, but we
+    // surface our own failure faster to log + degrade gracefully.
+    const fetchPromise = fetchMaybePrivatePool(rpc, poolAddress);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("rpc_timeout_8s")), 8_000),
+    );
+    const maybeAccount = await Promise.race([fetchPromise, timeoutPromise]);
+
+    if (!maybeAccount.exists) {
+      return null;
+    }
+
+    const data = maybeAccount.data;
+
+    return {
+      pool_pubkey,
+      creator: data.creator as string,
+      ticket_price_lamports: data.ticketPrice.toString(),
+      close_time: Number(data.closeTime),
+      total_tickets: Number(data.totalTickets),
+      total_pot_lamports: data.totalPot.toString(),
+      creator_fee_bps: data.creatorFeeBps,
+      state: mapPoolState(data.state),
+      access_mode: mapAccessMode(data.accessMode),
+      winner: isSome(data.winner) ? (data.winner.value as string) : null,
+      winning_ticket: isSome(data.winningTicket)
+        ? Number(data.winningTicket.value)
+        : null,
+    };
+  } catch (err) {
+    // Server-only: log to Vercel function logs so we can diagnose. Caller is
+    // wrapped in catch() and degrades to a 404 instead of the generic error.
+    console.error(
+      `fetchPoolState(${pool_pubkey}) threw:`,
+      err instanceof Error ? err.message : String(err),
+    );
     return null;
   }
-
-  const data = maybeAccount.data;
-
-  return {
-    pool_pubkey,
-    creator: data.creator as string,
-    ticket_price_lamports: data.ticketPrice.toString(),
-    close_time: Number(data.closeTime),
-    total_tickets: Number(data.totalTickets),
-    total_pot_lamports: data.totalPot.toString(),
-    creator_fee_bps: data.creatorFeeBps,
-    state: mapPoolState(data.state),
-    access_mode: mapAccessMode(data.accessMode),
-    winner: isSome(data.winner) ? (data.winner.value as string) : null,
-    winning_ticket: isSome(data.winningTicket)
-      ? Number(data.winningTicket.value)
-      : null,
-  };
 }
