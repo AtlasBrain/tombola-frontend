@@ -78,7 +78,22 @@ export function AdminRaffles({ tenant, poolPubkeys }: Props) {
       {loading && <p className="opacity-60 text-sm">Loading pools…</p>}
 
       {!loading && filtered.length === 0 && (
-        <p className="opacity-60 text-sm">No raffles match this filter.</p>
+        <div className="text-center py-8 border border-dashed border-white/10 rounded-md">
+          <p className="opacity-60 text-sm mb-3">
+            {filter === "all"
+              ? "You haven't created any raffles yet."
+              : "No raffles match this filter."}
+          </p>
+          {filter === "all" && (
+            <Link
+              href={`/r/${tenant.slug}/create`}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-md font-semibold text-black text-sm"
+              style={{ background: tenant.branding.primary_color }}
+            >
+              + Create your first raffle
+            </Link>
+          )}
+        </div>
       )}
 
       {!loading && filtered.length > 0 && (
