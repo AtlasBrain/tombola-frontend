@@ -7,14 +7,6 @@
     {
       "path": "/api/admin/cron/alert-scan",
       "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/r/cron/schedules",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/r/cron/metrics-rollup",
-      "schedule": "0 * * * *"
     }
   ]
 }
