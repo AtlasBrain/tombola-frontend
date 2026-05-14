@@ -7,16 +7,23 @@ import { Redis } from "@upstash/redis";
 
 const limiter = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.fixedWindow(3, "1 h"),
+  // 10/hour per IP in prod (loose enough for power users, tight enough to
+  // block scripted abuse). Local dev (no x-forwarded-for header) skips the
+  // limiter entirely — testing the wizard end-to-end shouldn't be
+  // rate-limited.
+  limiter: Ratelimit.fixedWindow(10, "1 h"),
   prefix: "raas:onboard:rl",
 });
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-  const { success } = await limiter.limit(ip);
-  if (!success) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  const ip = request.headers.get("x-forwarded-for");
+  if (ip) {
+    const { success } = await limiter.limit(ip);
+    if (!success) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
   }
+  // localhost dev (no x-forwarded-for) bypasses rate limiting.
 
   let body: Record<string, unknown>;
   try {
